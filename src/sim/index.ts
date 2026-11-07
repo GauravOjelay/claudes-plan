@@ -24,15 +24,18 @@ export const START_YEAR = 2026;
 export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
 export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
 
+/** A contract GameEvent plus a sim-only flag: `once` events fire at most once per game. */
+export type SimEvent = GameEvent & { once?: boolean };
+
 export interface Content {
   decisions: Decision[];
-  events: GameEvent[];
+  events: SimEvent[];
 }
 
 /** JSON imports are typed loosely; this is the one place we assert their shape. */
 export const defaultContent: Content = {
   decisions: cardsJson as unknown as Decision[],
-  events: eventsJson as unknown as GameEvent[],
+  events: eventsJson as unknown as SimEvent[],
 };
 
 const OUTLOOKS: ExpertOutlook[] = ['severeShock', 'middle', 'overblown'];
@@ -113,6 +116,7 @@ export function createStep(content: Content): StepFn {
 
   function fireEvents(state: WorldState, rng: { next(): number }): void {
     for (const event of content.events) {
+      if (event.once && state.eventLog.some((e) => e.eventId === event.id)) continue;
       if (!evalCondition(state, event.trigger)) continue;
       if (state.eventLog.some((e) => e.eventId === event.id && state.year - e.year < EVENT_COOLDOWN)) continue;
       const ce = event.cityEffect;
