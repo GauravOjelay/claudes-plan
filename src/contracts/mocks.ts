@@ -2,6 +2,7 @@
  * MOCK DATA for building screens before the real sim exists. Owned by the lead.
  * Claude 2 and 3: build against these; Claude 1's real step() will produce the same shapes.
  */
+import { CITIES, COMPANY_ROSTER } from './cities';
 import type { CityInfo, Company, Decision, RegionId, RegionVars, WorldState } from './index';
 
 const baseRegion = (gdp: number, population: number): RegionVars => ({
@@ -16,21 +17,8 @@ const baseRegion = (gdp: number, population: number): RegionVars => ({
   regulationStrictness: 30,
 });
 
-export const mockCompanies: Company[] = [
-  { id: 'novacore', name: 'NovaCore', archetype: 'frontierLab', homeRegion: 'US', homeCity: 'sf', playable: true,
-    vars: { money: 500, companyValue: 100, publicTrust: 60, aiCapability: 10, safetyLevel: 60 } },
-  { id: 'silicara', name: 'Silicara', archetype: 'chipMaker', homeRegion: 'US', homeCity: 'sf', playable: false,
-    vars: { money: 800, companyValue: 150, publicTrust: 55, aiCapability: 6, safetyLevel: 50 } },
-  { id: 'helix', name: 'Helix Labs', archetype: 'researchLab', homeRegion: 'US', homeCity: 'sf', playable: false,
-    vars: { money: 300, companyValue: 60, publicTrust: 65, aiCapability: 8, safetyLevel: 70 } },
-  { id: 'dragonmind', name: 'DragonMind', archetype: 'stateBackedLab', homeRegion: 'CN', homeCity: 'beijing', playable: false,
-    vars: { money: 700, companyValue: 90, publicTrust: 50, aiCapability: 9, safetyLevel: 40 } },
-];
-
-export const mockCities: CityInfo[] = [
-  { id: 'sf', name: 'San Francisco', region: 'US', mapPos: { x: 0.14, y: 0.38 }, companyIds: ['novacore', 'silicara', 'helix'] },
-  { id: 'beijing', name: 'Beijing', region: 'CN', mapPos: { x: 0.78, y: 0.34 }, companyIds: ['dragonmind'] },
-];
+export const mockCompanies: Company[] = COMPANY_ROSTER;
+export const mockCities: CityInfo[] = CITIES;
 
 const regions = Object.fromEntries(
   (['US', 'CN', 'EU', 'UK', 'IN', 'RU', 'GULF', 'AFRICA', 'LATAM', 'SEA'] as RegionId[]).map((r) => [r, baseRegion(1000, 100)]),

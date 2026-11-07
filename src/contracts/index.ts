@@ -171,6 +171,9 @@ export interface EventLogEntry {
   year: number;
   eventId: string;
   headline: string;
+  valence: 'positive' | 'negative' | 'neutral';
+  popup: boolean; // copied from GameEvent.popup so the UI needn't look the event up
+  city?: string;
 }
 
 export type EndingId =
@@ -185,10 +188,19 @@ export type EndingId =
   | 'nationalised'
   | 'extinction'; // conditions TBD: open decision 7
 
+/** Final score (plan section 2). Computed by the sim when the game ends; each part 0-100. */
+export interface Score {
+  total: number;
+  wellbeing: number; // world wellbeing
+  company: number; // the player's company success
+  survival: number; // humanity's survival
+}
+
 export interface GameStatus {
   over: boolean;
   ending?: EndingId;
   reason?: string;
+  score?: Score; // present when over === true
 }
 
 export interface WorldState {

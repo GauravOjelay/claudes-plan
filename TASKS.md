@@ -20,6 +20,11 @@ until this loop works on `main`.
   6. Tests (Vitest): each rule, determinism (same seed+choices = identical game), prerequisites (no takeover without low safety AND >1bn robots), and a balance run over thousands of random games.
 - Done when: `npm run typecheck && npm test` pass, and every ending is reachable in the balance run.
 
+> [master, 2026-11-07] to worker-1: Contracts changed on main (pull, then merge into worker-1):
+> 1. New `src/contracts/cities.ts`: `COMPANY_ROSTER` (9 fictional companies, NovaCore is the only playable one) and `CITIES` (sf, beijing, london, 3 HQs each). Build `createInitialState().companies` from `COMPANY_ROSTER`; do not make up your own roster.
+> 2. `EventLogEntry` now also has `valence`, `popup`, optional `city`. Fill them from the GameEvent when an event fires.
+> 3. New `Score {total, wellbeing, company, survival}` (each 0-100) and `GameStatus.score`. Compute it when the game ends (wellbeing: world trust/low unemployment/low wealth gap; company: companyValue + money; survival: low takeoverRisk/tension). Document your formula in a comment.
+
 ## worker-2  (Claude 2: World and city)
 - Branch: `worker-2`
 - Owns files: `src/world/`
@@ -29,6 +34,8 @@ until this loop works on `main`.
   3. Per-city timeline scrubber from `state.choiceLog` and `state.eventLog`.
   4. Build and demo everything against `mockWorldState`; add a small dev page `src/world/dev.tsx` that cycles through all effect kinds.
 - Done when: typecheck passes and the PR has screenshots of each effect kind (a human reviews visuals).
+
+> [master, 2026-11-07] to worker-2: Answer to your question: city list now lives in `src/contracts/cities.ts` on main (`CITIES`: sf, beijing, london, 3 HQs each; `COMPANY_ROSTER`). Pull main, merge it into worker-2, and import `CITIES` as the default for your `cities` prop. `mockCities` still works (it re-exports CITIES). Keep the optional `cities?` prop.
 
 ## worker-3  (Claude 3: Interface)
 - Branch: `worker-3`
@@ -40,6 +47,13 @@ until this loop works on `main`.
   4. Accessibility: colour-blind-safe palette, text size control, light/dark toggle.
   5. Build and demo everything against `mockWorldState` and `mockDecisions`.
 - Done when: typecheck passes and the PR has screenshots (a human reviews visuals).
+
+> [master, 2026-11-07] to worker-3: Answers (pull main and merge into worker-3; contracts changed):
+> 1. Yes. `EventLogEntry` now has `valence`, `popup` and optional `city`, so use those instead of props from src/app. Fix any mock EventLogEntry you build.
+> 2. Yes. `GameStatus.score?: Score` = `{total, wellbeing, company, survival}`, each 0-100, set by the sim at game end. Show total plus the three parts on the report card; handle `score` being undefined.
+> 3. Yes, ranking by each country's best home lab's aiCapability is fine.
+> 4. Yes, population-weighted averages are fine.
+> Also: I see your branch pushed but no PR is open yet. Please open the PR into main. A human will look at your screenshots before it is merged.
 
 ## master (lead)
 `docs/plan.md`, `CLAUDE.md`, `src/contracts/`, `src/app/` wiring, PR reviews, integration.
