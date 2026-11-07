@@ -12,7 +12,9 @@ import type {
 } from '../contracts';
 import cardsJson from '../../data/cards.json';
 import eventsJson from '../../data/events.json';
-import { PLACEHOLDER_GLOBAL, PLACEHOLDER_REGIONS } from './defaults';
+import baselineJson from '../../data/baseline.json';
+import { parseBaseline } from './baseline';
+import { GAME_DESIGNED_GLOBAL, regionFromBaseline } from './defaults';
 import { checkEndings, deriveTakeoverRisk } from './endings';
 import { RULES } from './rules';
 import { createRng, rngForTurn } from './rng';
@@ -20,18 +22,25 @@ import { ALL_REGIONS, companyById, evalCondition, num, writeVar } from './vars';
 
 export { createRng, rngForTurn };
 
-export const START_YEAR = 2026;
+/** Real starting numbers from the IMF snapshot (data/baseline.json), validated on load. */
+const baseline = parseBaseline(baselineJson);
+
+export const START_YEAR = baseline.startYear;
 export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
+export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
+
+/** A contract GameEvent plus a sim-only flag: `once` events fire at most once per game. */
+export type SimEvent = GameEvent & { once?: boolean };
 
 export interface Content {
   decisions: Decision[];
-  events: GameEvent[];
+  events: SimEvent[];
 }
 
 /** JSON imports are typed loosely; this is the one place we assert their shape. */
 export const defaultContent: Content = {
   decisions: cardsJson as unknown as Decision[],
-  events: eventsJson as unknown as GameEvent[],
+  events: eventsJson as unknown as SimEvent[],
 };
 
 const OUTLOOKS: ExpertOutlook[] = ['severeShock', 'middle', 'overblown'];
@@ -44,8 +53,8 @@ export function createInitialState(seed: number, playerCompanyId: string): World
   if (!player.playable) throw new Error(`${player.name} is not playable (only NovaCore is, for now)`);
 
   const outlook = OUTLOOKS[Math.floor(createRng(s).next() * OUTLOOKS.length)];
-  const regions = structuredClone(PLACEHOLDER_REGIONS);
-  const global = structuredClone(PLACEHOLDER_GLOBAL);
+  const regions = Object.fromEntries(ALL_REGIONS.map((r) => [r, regionFromBaseline(baseline.regions[r])])) as WorldState['regions'];
+  const global = structuredClone(GAME_DESIGNED_GLOBAL);
   const state: WorldState = {
     year: START_YEAR,
     seed: s,
@@ -112,7 +121,9 @@ export function createStep(content: Content): StepFn {
 
   function fireEvents(state: WorldState, rng: { next(): number }): void {
     for (const event of content.events) {
+      if (event.once && state.eventLog.some((e) => e.eventId === event.id)) continue;
       if (!evalCondition(state, event.trigger)) continue;
+      if (state.eventLog.some((e) => e.eventId === event.id && state.year - e.year < EVENT_COOLDOWN)) continue;
       const ce = event.cityEffect;
       // One live effect per city and kind: don't re-fire an event whose picture is already on screen.
       if (ce && state.activeCityEffects.some((a) => a.city === ce.city && a.kind === ce.kind)) continue;

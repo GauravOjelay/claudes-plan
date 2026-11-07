@@ -1,0 +1,56 @@
+{
+  "startYear": 2026,
+  "retrievedOn": "2026-11-07",
+  "regions": {
+    "US": {
+      "gdp": 32642.373,
+      "population": 342.838,
+      "unemployment": 4.2
+    },
+    "CN": {
+      "gdp": 21546.403,
+      "population": 1401.733,
+      "unemployment": 5.1
+    },
+    "UK": {
+      "gdp": 4268.446,
+      "population": 69.85,
+      "unemployment": 5.3
+    },
+    "IN": {
+      "gdp": 4060.207,
+      "population": 1476.626,
+      "unemployment": 5
+    },
+    "RU": {
+      "gdp": 2861.156,
+      "population": 143.394,
+      "unemployment": 2.2
+    },
+    "EU": {
+      "gdp": 22806.151,
+      "population": 451.424,
+      "unemployment": 6.021
+    },
+    "GULF": {
+      "gdp": 2521.734,
+      "population": 63.619,
+      "unemployment": null
+    },
+    "AFRICA": {
+      "gdp": 3628.685,
+      "population": 1502.443,
+      "unemployment": null
+    },
+    "LATAM": {
+      "gdp": 8210.679,
+      "population": 658.407,
+      "unemployment": 5.67
+    },
+    "SEA": {
+      "gdp": 4514.663,
+      "population": 700.278,
+      "unemployment": 3.848
+    }
+  }
+}

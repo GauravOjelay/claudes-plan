@@ -2,13 +2,464 @@
   {
     "id": "blackout-belt",
     "valence": "negative",
-    "trigger": { "kind": "var", "ref": { "scope": "region", "region": "US", "variable": "energy" }, "cmp": "<", "value": 0 },
+    "trigger": {
+      "kind": "var",
+      "ref": {
+        "scope": "region",
+        "variable": "energy",
+        "region": "US"
+      },
+      "cmp": "<",
+      "value": 0
+    },
     "chancePerTurn": 0.6,
     "effects": [
-      { "target": { "scope": "region", "region": "US", "variable": "publicTrust" }, "op": "add", "value": -5 }
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": -5
+      }
     ],
     "headline": "Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid",
-    "cityEffect": { "city": "sf", "kind": "blackout", "intensity": 0.6 },
+    "cityEffect": {
+      "city": "sf",
+      "kind": "blackout",
+      "intensity": 0.6
+    },
     "popup": true
+  },
+  {
+    "id": "ghost-offices",
+    "valence": "negative",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "sellsAgents"
+        },
+        {
+          "kind": "var",
+          "ref": {
+            "scope": "region",
+            "variable": "unemploymentSoftware",
+            "region": "US"
+          },
+          "cmp": ">",
+          "value": 12
+        }
+      ]
+    },
+    "chancePerTurn": 0.5,
+    "effects": [
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": -6
+      },
+      {
+        "target": {
+          "scope": "region",
+          "variable": "wealthGap",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 3
+      }
+    ],
+    "headline": "Office towers go dark floor by floor as cheap AI agents replace back-office staff",
+    "cityEffect": {
+      "city": "sf",
+      "kind": "ghostOffices",
+      "intensity": 0.7
+    },
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "deepfake-election",
+    "valence": "negative",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "looseContentPolicy"
+        },
+        {
+          "kind": "year",
+          "cmp": ">=",
+          "value": 2028
+        }
+      ]
+    },
+    "chancePerTurn": 0.4,
+    "effects": [
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "UK"
+        },
+        "op": "add",
+        "value": -8
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "publicTrust"
+        },
+        "op": "add",
+        "value": -6
+      },
+      {
+        "target": {
+          "scope": "global",
+          "variable": "geopoliticalTension"
+        },
+        "op": "add",
+        "value": 4
+      }
+    ],
+    "headline": "Fake candidate videos go viral and the election result is contested; protesters fill the squares",
+    "cityEffect": {
+      "city": "london",
+      "kind": "deepfakeProtests",
+      "intensity": 0.8
+    },
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "weights-stolen",
+    "valence": "negative",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "skippedSecurity"
+        },
+        {
+          "kind": "var",
+          "ref": {
+            "scope": "company",
+            "variable": "aiCapability"
+          },
+          "cmp": ">",
+          "value": 25
+        }
+      ]
+    },
+    "chancePerTurn": 0.25,
+    "effects": [
+      {
+        "target": {
+          "scope": "company",
+          "variable": "aiCapability"
+        },
+        "op": "add",
+        "value": -6
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "companyValue"
+        },
+        "op": "mul",
+        "value": 0.8
+      },
+      {
+        "target": {
+          "scope": "global",
+          "variable": "geopoliticalTension"
+        },
+        "op": "add",
+        "value": 6
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "safetyLevel"
+        },
+        "op": "add",
+        "value": -5
+      }
+    ],
+    "headline": "A rival state's labs leap ahead overnight after your model weights are taken; your lead evaporates",
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "war-threat",
+    "valence": "negative",
+    "trigger": {
+      "kind": "var",
+      "ref": {
+        "scope": "global",
+        "variable": "geopoliticalTension"
+      },
+      "cmp": ">",
+      "value": 80
+    },
+    "chancePerTurn": 0.3,
+    "effects": [
+      {
+        "target": {
+          "scope": "global",
+          "variable": "geopoliticalTension"
+        },
+        "op": "add",
+        "value": 8
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "companyValue"
+        },
+        "op": "mul",
+        "value": 0.9
+      }
+    ],
+    "headline": "Diplomats warn of open conflict as the AI race drives the blocs to the brink; markets fall",
+    "cityEffect": {
+      "city": "london",
+      "kind": "warBuildup",
+      "intensity": 0.7
+    },
+    "popup": true
+  },
+  {
+    "id": "regulation-crackdown",
+    "valence": "negative",
+    "trigger": {
+      "kind": "var",
+      "ref": {
+        "scope": "region",
+        "variable": "publicTrust",
+        "region": "US"
+      },
+      "cmp": "<",
+      "value": 30
+    },
+    "chancePerTurn": 0.5,
+    "effects": [
+      {
+        "target": {
+          "scope": "region",
+          "variable": "regulationStrictness",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 25
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "companyValue"
+        },
+        "op": "mul",
+        "value": 0.92
+      }
+    ],
+    "headline": "Lawmakers pass emergency limits on AI firms after public trust collapses",
+    "popup": true
+  },
+  {
+    "id": "breakthrough-year",
+    "valence": "positive",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "openSourcedMaterials"
+        },
+        {
+          "kind": "year",
+          "cmp": ">=",
+          "value": 2028
+        }
+      ]
+    },
+    "chancePerTurn": 0.5,
+    "effects": [
+      {
+        "target": {
+          "scope": "region",
+          "variable": "energy",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 8
+      },
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 5
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "publicTrust"
+        },
+        "op": "add",
+        "value": 4
+      }
+    ],
+    "headline": "Solar panels spread across rooftops as an open materials model slashes their cost, easing the grid",
+    "cityEffect": {
+      "city": "sf",
+      "kind": "solarBoom",
+      "intensity": 0.7
+    },
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "drug-discovery",
+    "valence": "positive",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "fundedScience"
+        },
+        {
+          "kind": "var",
+          "ref": {
+            "scope": "company",
+            "variable": "aiCapability"
+          },
+          "cmp": ">=",
+          "value": 25
+        }
+      ]
+    },
+    "chancePerTurn": 0.4,
+    "effects": [
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 6
+      },
+      {
+        "target": {
+          "scope": "region",
+          "variable": "gdp",
+          "region": "US"
+        },
+        "op": "mul",
+        "value": 1.01
+      },
+      {
+        "target": {
+          "scope": "company",
+          "variable": "companyValue"
+        },
+        "op": "mul",
+        "value": 1.1
+      }
+    ],
+    "headline": "AI-designed treatments clear early trials, and public confidence in the technology rises",
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "safety-audit-praised",
+    "valence": "positive",
+    "trigger": {
+      "kind": "all",
+      "of": [
+        {
+          "kind": "pathway",
+          "pathwayId": "safeguardsBuilt"
+        },
+        {
+          "kind": "year",
+          "cmp": ">=",
+          "value": 2028
+        }
+      ]
+    },
+    "chancePerTurn": 0.4,
+    "effects": [
+      {
+        "target": {
+          "scope": "company",
+          "variable": "publicTrust"
+        },
+        "op": "add",
+        "value": 6
+      },
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 4
+      },
+      {
+        "target": {
+          "scope": "global",
+          "variable": "geopoliticalTension"
+        },
+        "op": "add",
+        "value": -3
+      }
+    ],
+    "headline": "An independent audit praises your safeguards and rivals come under pressure to match them",
+    "popup": true,
+    "once": true
+  },
+  {
+    "id": "treaty-signed",
+    "valence": "positive",
+    "trigger": {
+      "kind": "pathway",
+      "pathwayId": "treaty"
+    },
+    "chancePerTurn": 0.5,
+    "effects": [
+      {
+        "target": {
+          "scope": "global",
+          "variable": "geopoliticalTension"
+        },
+        "op": "add",
+        "value": -10
+      },
+      {
+        "target": {
+          "scope": "region",
+          "variable": "publicTrust",
+          "region": "US"
+        },
+        "op": "add",
+        "value": 3
+      }
+    ],
+    "headline": "Leading powers sign a first AI treaty with shared inspections; tension eases",
+    "popup": true,
+    "once": true
   }
 ]
