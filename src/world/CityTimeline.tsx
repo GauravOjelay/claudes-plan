@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CityInfo, Decision, WorldState } from '../contracts';
-import { CITIES } from '../contracts/cities';
+import { ALL_CITIES } from './roster';
 import { EFFECT_INFO } from './util';
 import './world.css';
 
@@ -61,7 +61,7 @@ export function cityTimelineItems(state: WorldState, city: CityInfo, decisions: 
 
 const PAST_WIDTH = 78; // % of the track used for the past; the rest shows future branches
 
-export function CityTimeline({ state, cityId, cities = CITIES, decisions, onScrub }: CityTimelineProps) {
+export function CityTimeline({ state, cityId, cities = ALL_CITIES, decisions, onScrub }: CityTimelineProps) {
   const city = cities.find((c) => c.id === cityId);
   const [selected, setSelected] = useState<number | null>(null);
   if (!city) return null;

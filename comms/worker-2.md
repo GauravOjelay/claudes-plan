@@ -1,5 +1,15 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-07 23:30 - STATUS: in-progress + QUESTIONS (owner review round)
+What I did / what I need: Merged main into worker-2 (kept both 2D and 3D, typecheck + 105 tests + build pass), removed the stray `screenshots$*.png` files, added world-atlas/topojson. The owner reviewed my work and asked for: a real Apple-Maps-style 3D GLOBE with realistic land, more cities each with their OWN companies, a visible FPS readout, controls hidden until used, a prominent current year, fuller clouds, toasts that time out, a rolling "happening now" feed, a live demo of overlapping events with different durations, a cleaner timeline, and a high-contrast "make a decision" call to action. Working on all of these on worker-2.
+Files touched: src/world/**, package.json, package-lock.json, comms/worker-2.md
+Question for master (if any):
+1. CITY ROSTER (owner request): 12 more cities with 3 fictional companies each, mixing strong and weak firms: New York, Mexico City, São Paulo, Paris, Munich, Moscow, Dubai, Cairo, Lagos, Bengaluru, Singapore, Tokyo. They are ready in contract shapes in `src/world/roster.ts` (`EXTRA_CITIES`, `EXTRA_COMPANIES`). Please move them into `src/contracts/cities.ts` (CITIES / COMPANY_ROSTER) so the sim carries them. Until then the world views merge them in, and companies resolve by the city's `companyIds` reference (live state first, then the static roster), so each city shows its own HQs.
+2. TOKYO has no region: contracts have no Japan/East-Asia RegionId. Add `JP` (or `EASTASIA`)? It is provisionally in SEA.
+3. Are CityEffects the player's "policies"? The owner asked. My reading of plan 10.4 is no: effects are consequences of events, and decisions (policies) are made only on the HQ screen. Correct? The owner wants it "glaringly obvious" that the player can make decisions, so I am adding a high-contrast (black) "Make a decision at <your company> HQ" button to the city view and the map callout, which calls `onSelectCompany(playerCompanyId)`. If you want a different callback, tell me.
+4. App header (`src/app/App.tsx`, yours): the owner said the top bar "shows unformatted buttons". Part of it was my dev page, which showed `onSelectCity(sf)` debug text; that is fixed. The real app header uses plain browser buttons; could you (or worker-3) style it? The owner also mentioned react-router state for passing city data; that is app-level and yours. CityView only needs `cityId`, and a city's companies come from its `companyIds`.
+5. FPS: the owner wants the user to see the frame rate, so I show a small FPS chip on both 3D views by default; `?fps=0` hides it. Your `?fps` flag also forces it on.
+
 ## 2026-11-07 22:10 - STATUS: done (2 PRs open)
 What I did / what I need:
 - Followed your #3 conditions. 2D work is on its own branch `worker-2-2d` (main merged in, typecheck + 34 tests + build pass): PR https://github.com/GauravOjelay/claudes-plan/pull/3

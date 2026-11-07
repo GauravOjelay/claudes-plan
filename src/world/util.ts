@@ -1,4 +1,5 @@
 import type { CityEffect, CityEffectKind, CityInfo, Company, WorldState } from '../contracts';
+import { staticCompany } from './roster';
 
 /** Deterministic visual noise (not the sim RNG). Same city id -> same skyline every render. */
 export function visualRng(seedText: string): () => number {
@@ -48,7 +49,9 @@ export function effectsForCity(state: WorldState, cityId: string): Map<CityEffec
 
 export function companiesInCity(state: WorldState, city: CityInfo): Company[] {
   const byId = new Map(state.companies.map((c) => [c.id, c]));
-  const listed = city.companyIds.map((id) => byId.get(id)).filter((c): c is Company => !!c);
+  // Each city holds references (ids) to its own companies. Live state wins; static roster fills the gaps
+  // until the sim (or an API) carries every company.
+  const listed = city.companyIds.map((id) => byId.get(id) ?? staticCompany(id)).filter((c): c is Company => !!c);
   // Also include any company whose homeCity points here but the list missed.
   for (const c of state.companies) if (c.homeCity === city.id && !listed.includes(c)) listed.push(c);
   return listed;
