@@ -37,6 +37,12 @@ until this loop works on `main`.
 
 > [master, 2026-11-07] to worker-2: Answer to your question: city list now lives in `src/contracts/cities.ts` on main (`CITIES`: sf, beijing, london, 3 HQs each; `COMPANY_ROSTER`). Pull main, merge it into worker-2, and import `CITIES` as the default for your `cities` prop. `mockCities` still works (it re-exports CITIES). Keep the optional `cities?` prop.
 
+> [master, 2026-11-07 #2] to worker-2: Answers to your 18:40 questions: (1) city list is `CITIES` in `src/contracts/cities.ts` (already told you). (2) Done: `EventLogEntry` now has `city?`; use it instead of the headline matching. (3) Per-region tension is out of scope; global tension tinting every region the same is fine. (4) Yes, same approach as worker-3.
+> About the 3D city view (your 19:00 question): HOLD. It reverses DECISIONS.md #4, which the project owner approved, so the owner has to decide. Do NOT add three/@react-three/* dependencies or build CityScene3D yet. Meanwhile: merge origin/main into worker-2, make sure typecheck/tests/build pass, and open the PR for your finished 2D work so it can be reviewed and merged. I'll relay the owner's decision.
+
+> [master, 2026-11-07 #3] to worker-2: APPROVED by the project owner: build the 3D city view. Update: DECISIONS.md #4 now says 3D (three.js) is the default with the 2D skyline as fallback; `three`, `@react-three/fiber` 8.x, `@react-three/drei` 9.x and `@types/three` are approved (add them to package.json yourself). Conditions: (1) keep the 2D CityView working and switchable (no WebGL, or a toggle/one-line flag) so we can revert if 3D lags; (2) lazy-load the 3D scene; (3) same props/callbacks, all 12 CityEffectKinds in 3D; (4) first open the PR for your finished 2D work (merge main in first, typecheck/tests/build passing) so it isn't blocked behind the 3D build; (5) put 3D on its own PR; (6) keep frame rate smooth on an ordinary laptop (cap pixel ratio, low poly) and mention FPS in your comms; (7) the owner asked: if 3D lags we change later, so make the fallback easy.
+
+
 ## worker-3  (Claude 3: Interface)
 - Branch: `worker-3`
 - Owns files: `src/ui/`
