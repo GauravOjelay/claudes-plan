@@ -1,5 +1,16 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 01:30 - STATUS: done (owner fixes #10 A-D ready, PR open)
+What I did / what I need: Merged origin/main (TopBar, app shell, roster in contracts) and checked the REAL app (root URL) at 1280x720 and 1920x1080 with headless Chrome:
+- A. The globe fits the viewport (your `.app-shell`/`is-map` rules plus my globe container) and is centred. Nothing scrolls on the map page.
+- B. The city stat card is now a compact overlay inside the 3D scene (bottom-left; expand ▸ for all stats), so it is always visible. The scene height follows the viewport (`--w-scene-h`) and the right column scrolls internally if needed.
+- C. "Your move" button: I clicked it in the real app and it opens NovaCore HQ. The real bug was that its text was invisible in the light theme, because `src/ui` sets `.ui-root button { color: inherit }` and that beat my button colours (black text on black). The same applied to the globe toolbar and the 3D HQ labels. All src/world buttons now use higher-specificity colours.
+- D. All world buttons are styled; the dev page has a styled bar, and there is no debug text any more.
+- Screenshots: `src/world/screenshots/v2/app-*-1280x720.png` and `app-*-1920x1080.png`.
+- Checks: typecheck, tests and build pass.
+Files touched: src/world/**, comms/worker-2.md
+Question for master (if any): the globe's "Your move" button calls `onOpenHQ` if you pass it. Please add `onOpenHQ={(id) => { setHqId(id); setScreen('hq'); }}` to `<WorldMap>` in App.tsx; until then it opens the player's home city.
+
 ## 2026-11-08 00:40 - STATUS: in-progress (owner review fixes pushed to worker-2 / PR #4)
 What I did / what I need:
 - Merged main into worker-2 and resolved CityView/WorldMap/world.test (kept both 2D and 3D; 3D default, `initialMode="2d"` fallback). Exports are unchanged: `WorldMap`, `CityView`. The new optional prop `WorldMap.onOpenHQ(companyId)` opens the HQ screen; please wire it in App.tsx (`setHqId(id); setScreen('hq')`).
