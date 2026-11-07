@@ -14,6 +14,40 @@ export interface ReportCardProps {
   showControls?: boolean;
 }
 
+/**
+ * Real-world debrief (docs/plan.md 9.2). General context only: no real figures are quoted here
+ * (plan 9.3), just what each source forecasts and a link to it, next to the game's own number.
+ */
+const DEBRIEF: { source: string; topic: string; url: string; yours: (s: WorldState) => string }[] = [
+  {
+    source: 'IPCC Sixth Assessment Report',
+    topic: 'Warming and sea-level rise to 2100 under different emission paths.',
+    url: 'https://www.ipcc.ch/report/ar6/syr/',
+    yours: (s) => `Your game: +${fmt1(s.global.temperature)} °C, sea level +${Math.round(Number(s.global.seaLevel) || 0)} cm`,
+  },
+  {
+    source: 'IEA, Energy and AI',
+    topic: 'How much electricity data centres and AI may use in the coming years.',
+    url: 'https://www.iea.org/reports/energy-and-ai',
+    yours: (s) => {
+      const short = Object.values(s.regions).filter((r) => Number(r.energy) < 0).length;
+      return `Your game: ${short} of ${Object.keys(s.regions).length} regions short of power`;
+    },
+  },
+  {
+    source: 'UN World Population Prospects',
+    topic: 'World and country population projections to 2100.',
+    url: 'https://population.un.org/wpp/',
+    // population is in millions (contracts RegionVars)
+    yours: (s) => `Your game: ${formatCompact(Object.values(s.regions).reduce((t, r) => t + (Number(r.population) || 0), 0) * 1e6)} people in the game's regions`,
+  },
+];
+
+function fmt1(v: unknown): string {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toFixed(1) : '?';
+}
+
 const SCORE_PARTS: { key: keyof Omit<Score, 'total'>; label: string; hint: string }[] = [
   { key: 'wellbeing', label: 'World wellbeing', hint: 'trust, jobs, fair shares' },
   { key: 'company', label: 'Your company', hint: 'value and money' },
@@ -145,6 +179,23 @@ export function ReportCard({ state, decisions = [], maxDecisions = 10, onRestart
         <p className="ui-small ui-muted" style={{ marginBottom: 0 }}>
           Future events in this game are speculative, based on real forecasts where they exist.
         </p>
+      </section>
+
+      <section className="ui-panel ui-debrief" aria-labelledby="ui-debrief-title">
+        <h2 id="ui-debrief-title">How this compares to real forecasts</h2>
+        <p className="ui-small ui-muted">
+          General context, not a verdict on your run. The game simplifies a lot; these are the real
+          sources it draws on.
+        </p>
+        <ul>
+          {DEBRIEF.map((d) => (
+            <li key={d.url}>
+              <a href={d.url} target="_blank" rel="noopener noreferrer">{d.source}</a>
+              <span className="ui-muted"> - {d.topic}</span>
+              <div className="ui-small">{d.yours(state)}</div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <div className="ui-report-actions">

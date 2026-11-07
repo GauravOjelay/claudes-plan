@@ -77,7 +77,7 @@ describe('data/baseline.json and data/sources.json', () => {
     expect(typeof baseline.startYear).toBe('number');
     expect(Object.keys(baseline.regions).sort()).toEqual([...ALL_REGIONS].sort());
   });
-  it('every number in the baseline has a matching, unverified source entry', () => {
+  it('every number in the baseline has a matching source entry (verified flag is a boolean a human flips)', () => {
     for (const r of ALL_REGIONS) {
       for (const [variable, value] of Object.entries(baseline.regions[r]) as [string, number | null][]) {
         if (value === null) {
@@ -87,7 +87,7 @@ describe('data/baseline.json and data/sources.json', () => {
         const e = entries.find((x) => x.id === `${variable}.${r}`);
         expect(e, `${variable}.${r}`).toBeDefined();
         expect(e?.value).toBe(value);
-        expect(e?.verified).toBe(false);
+        expect(typeof e?.verified).toBe('boolean'); // false until a human ticks it off (data/VERIFY.md)
         expect(e?.year).toBe(baseline.startYear);
       }
     }

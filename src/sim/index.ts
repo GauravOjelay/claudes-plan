@@ -3,7 +3,7 @@
  * Public API: createInitialState, step, createStep, createRng, rngForTurn.
  *
  * Turn pipeline (plan section 3):
- *   apply choices -> apply scheduled effects -> run rules -> fade city effects
+ *   apply choices -> apply scheduled effects -> run rules -> update city effects (src/sim/cityEffects.ts)
  *   -> check event thresholds -> derive takeoverRisk -> advance year -> record history -> check endings
  */
 import { COMPANY_ROSTER } from '../contracts/cities';
@@ -15,6 +15,7 @@ import eventsJson from '../../data/events.json';
 import baselineJson from '../../data/baseline.json';
 import { parseBaseline } from './baseline';
 import { GAME_DESIGNED_GLOBAL, regionFromBaseline } from './defaults';
+import { peaksFromEvents, startIntensity, updateCityEffects } from './cityEffects';
 import { checkEndings, deriveTakeoverRisk } from './endings';
 import { RULES } from './rules';
 import { createRng, rngForTurn } from './rng';
@@ -26,7 +27,6 @@ export { createRng, rngForTurn };
 const baseline = parseBaseline(baselineJson);
 
 export const START_YEAR = baseline.startYear;
-export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
 export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
 
 /** A contract GameEvent plus a sim-only flag: `once` events fire at most once per game. */
@@ -114,10 +114,7 @@ export function createStep(content: Content): StepFn {
     for (const p of due) writeVar(state, p.effect.target, p.effect.op, p.effect.value);
   }
 
-  function fadeCityEffects(state: WorldState): void {
-    for (const e of state.activeCityEffects) e.intensity = Math.round((e.intensity - CITY_EFFECT_FADE) * 1000) / 1000;
-    state.activeCityEffects = state.activeCityEffects.filter((e) => e.intensity > 0);
-  }
+  const peaks = peaksFromEvents(content.events);
 
   function fireEvents(state: WorldState, rng: { next(): number }): void {
     for (const event of content.events) {
@@ -133,7 +130,7 @@ export function createStep(content: Content): StepFn {
         if (delay > 0) state.pending.push({ applyYear: state.year + delay, effect });
         else writeVar(state, effect.target, effect.op, effect.value);
       }
-      if (ce) state.activeCityEffects.push({ city: ce.city, kind: ce.kind, intensity: ce.intensity, sinceYear: state.year });
+      if (ce) state.activeCityEffects.push({ city: ce.city, kind: ce.kind, intensity: startIntensity(ce.kind, ce.intensity), sinceYear: state.year });
       state.eventLog.push({
         year: state.year, eventId: event.id, headline: event.headline,
         valence: event.valence, popup: event.popup === true, ...(ce ? { city: ce.city } : {}),
@@ -148,7 +145,7 @@ export function createStep(content: Content): StepFn {
     applyChoices(next, choices);
     applyScheduled(next);
     for (const rule of RULES) rule.apply(next);
-    fadeCityEffects(next);
+    updateCityEffects(next, peaks);
     fireEvents(next, rng);
     next.global.takeoverRisk = deriveTakeoverRisk(next);
     next.year += 1;

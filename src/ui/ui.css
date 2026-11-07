@@ -115,12 +115,46 @@
   overflow: hidden;
   isolation: isolate;
 }
-.ui-hq-bg {
-  position: absolute; inset: 0; z-index: -1;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--hq-color) 22%, var(--bg)) 0%, var(--bg) 70%);
+.ui-hq-bg { position: absolute; inset: 0; z-index: -1; background: #0b0d12; }
+.ui-hq-bg .ui-boardroom { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Text that sits straight on the boardroom picture gets its own backing so it reads in both themes. */
+.ui-hq-header > div, .ui-hq-header .ui-year, .ui-hq aside h3, .ui-hq aside .ui-popups > p {
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border-radius: 10px; padding: 0.3rem 0.7rem;
+  backdrop-filter: blur(4px);
 }
-.ui-hq-bg svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 55%; opacity: 0.18; color: var(--hq-color); }
+.ui-hq aside h3, .ui-hq aside .ui-popups > p { align-self: flex-start; margin: 0; }
+
+/* Boardroom motion: slow, transform/opacity only. Turned off with reduced motion. */
+.ui-boardroom .ui-br-clouds { animation: ui-br-drift 90s linear infinite alternate; }
+.ui-boardroom .ui-br-flicker { animation: ui-br-flicker 7s steps(1) infinite; }
+.ui-boardroom .ui-br-f1 { animation-duration: 9s; } .ui-boardroom .ui-br-f2 { animation-duration: 11s; animation-delay: -3s; }
+.ui-boardroom .ui-br-f3 { animation-duration: 13s; animation-delay: -6s; } .ui-boardroom .ui-br-f4 { animation-duration: 8s; animation-delay: -2s; }
+.ui-boardroom .ui-br-f5 { animation-duration: 15s; animation-delay: -9s; }
+.ui-boardroom .ui-br-sweep { animation: ui-br-sweep 14s ease-in-out infinite; }
+.ui-boardroom .ui-br-glare { animation: ui-br-glare 8s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-strip { animation: ui-br-glare 6s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-idle { animation: ui-br-breathe 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+.ui-boardroom .ui-br-arm { animation: ui-br-gesture 4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 0% 50%; }
+.ui-boardroom .ui-br-twinkle { animation: ui-br-glare 3s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-smoke { animation: ui-br-smoke 10s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+@keyframes ui-br-drift { to { transform: translateX(120px); } }
+@keyframes ui-br-flicker { 0%, 100% { opacity: 0.85; } 40% { opacity: 0.15; } 55% { opacity: 0.85; } }
+@keyframes ui-br-sweep { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 60%, 100% { transform: translateX(2100px); opacity: 0; } }
+@keyframes ui-br-glare { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes ui-br-breathe { to { transform: translateY(-1.5px) scaleY(1.01); } }
+@keyframes ui-br-gesture { from { transform: rotate(-6deg); } to { transform: rotate(10deg); } }
+@keyframes ui-br-smoke { to { transform: translateX(30px) scaleY(1.2); opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .ui-boardroom * { animation: none !important; } }
+@media (max-width: 640px) { .ui-boardroom .ui-br-sign { display: none; } }
+.ui-hq-bg .ui-skyline { position: absolute; bottom: 4rem; left: 0; width: 100%; height: 60%; overflow: visible; color: var(--hq-color); }
+.ui-skyline .ui-drone { animation: ui-hover 3s ease-in-out infinite alternate; }
+.ui-skyline .ui-flood { animation: ui-tide 4s ease-in-out infinite alternate; }
+@keyframes ui-hover { to { translate: 6px -2px; } }
+@keyframes ui-tide { to { translate: 0 1px; } }
+.ui-hq-effects { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0; }
+.ui-hq .ui-hint-legend { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem 0.8rem; }
+.ui-hq-effects > .ui-muted { background: var(--surface); border-radius: 999px; padding: 0.1rem 0.6rem; color: var(--text); }
+.ui-chip { background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.85em; }
 .ui-hq-header { grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .ui-hq-header h1 { margin: 0; font-size: 1.6rem; }
 .ui-hq-header .ui-year { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 700; }
@@ -286,3 +320,60 @@
 @media (prefers-reduced-motion: reduce) {
   .ui-ticker-viewport { overflow-x: auto; }
 }
+
+/* ---------- Intro screen ---------- */
+.ui-intro {
+  position: relative; min-height: 100vh; display: grid; place-items: center; padding: 1rem;
+  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--c-blue) 25%, var(--bg)), var(--bg) 70%);
+}
+.ui-intro-controls { position: absolute; top: 1rem; right: 1rem; }
+.ui-intro-body { max-width: 640px; text-align: center; }
+.ui-intro-years { letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.9em; opacity: 0.75; }
+.ui-intro h1 { font-size: clamp(3rem, 12vw, 6rem); margin: 0.2rem 0 0.6rem; line-height: 1; letter-spacing: -0.02em; }
+.ui-intro-pitch { font-size: 1.25em; line-height: 1.45; margin: 0 0 1.6rem; }
+.ui-intro-start { font-size: 1.2em; padding: 0.7rem 2.6rem; }
+.ui-intro-note { margin: 1.6rem auto 0; max-width: 480px; font-size: 0.9em; opacity: 0.8; }
+
+/* ---------- Real-world debrief ---------- */
+.ui-debrief { margin-top: 1rem; }
+.ui-debrief ul { padding-left: 1.2rem; margin: 0; display: grid; gap: 0.6rem; }
+
+/* ---------- Top bar ---------- */
+.ui-topbar {
+  display: flex; align-items: center; gap: 0.75rem 1.25rem; flex-wrap: wrap;
+  padding: 0.6rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.ui-topbar-brand { display: flex; align-items: baseline; gap: 0.7rem; }
+.ui-topbar-title { font-weight: 800; letter-spacing: 0.04em; opacity: 0.75; }
+.ui-topbar-year { font-size: 1.9rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.ui-topbar-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; background: var(--surface-2); padding: 0.25rem; border-radius: 10px; }
+.ui-topbar-tab {
+  background: none; border: 0; border-radius: 8px; padding: 0.4rem 0.85rem; font: inherit; color: var(--muted); cursor: pointer;
+}
+.ui-topbar-tab:hover { color: var(--text); }
+.ui-topbar-tab[aria-current='page'] { background: var(--surface); color: var(--text); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.ui-topbar-tab:focus-visible, .ui-topbar-cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ui-topbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto; }
+.ui-topbar-cta {
+  display: inline-flex; align-items: center; gap: 0.45rem; border: 0; border-radius: 999px; cursor: pointer;
+  padding: 0.45rem 1rem 0.45rem 0.45rem; font: inherit; font-weight: 700; background: #f0e442; color: #1d1d1f;
+  box-shadow: 0 0 0 2px #1d1d1f inset;
+}
+.ui-topbar-count {
+  background: #1d1d1f; color: #f0e442; border-radius: 999px; min-width: 1.7em; height: 1.7em;
+  display: inline-grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+.ui-topbar-cta:hover { filter: brightness(1.05); }
+@media (max-width: 640px) {
+  .ui-topbar-actions { margin-left: 0; }
+  .ui-topbar-tabs { flex-wrap: nowrap; width: 100%; overflow-x: auto; }
+  .ui-topbar-tab { flex: 1 0 auto; padding: 0.4rem 0.55rem; font-size: 0.92em; }
+  .ui-topbar-year { font-size: 1.5rem; }
+}
+
+/* ---------- How to play ---------- */
+.ui-howto-steps { padding-left: 1.3rem; margin: 0 0 1rem; display: grid; gap: 0.6rem; line-height: 1.45; }
+.ui-howto h2 { margin-top: 0; }
+.ui-help-btn { width: 2.1rem; height: 2.1rem; padding: 0; border-radius: 999px; font-weight: 800; }
+

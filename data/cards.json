@@ -91,6 +91,717 @@
     ]
   },
   {
+    "id": "materials-model",
+    "title": "A materials-science model",
+    "text": "Your lab built a model that could cut the cost of solar panels. Sell it, or give it away.",
+    "era": "2026-2030",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2027
+    },
+    "options": [
+      {
+        "id": "openMaterials",
+        "label": "Open-source it",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 4
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": -5
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": 1
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "openSourcedMaterials"
+        ]
+      },
+      {
+        "id": "keepMaterials",
+        "label": "Keep it proprietary",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 40
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 4
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "energy-source",
+    "title": "Where does the power come from?",
+    "text": "Your data centres are hungry. Fossil power is cheap and ready; clean power is slow.",
+    "era": "2026-2030",
+    "options": [
+      {
+        "id": "fossil",
+        "label": "Buy cheap fossil power",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 40
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "energy",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 10
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": -3
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "co2"
+            },
+            "op": "add",
+            "value": 2
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": -1
+        }
+      },
+      {
+        "id": "clean",
+        "label": "Invest in clean power",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -60
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "energy",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 8,
+            "delayYears": 2
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 4
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 1
+        }
+      },
+      {
+        "id": "existingGrid",
+        "label": "Lean on the existing grid",
+        "effects": [
+          {
+            "target": {
+              "scope": "region",
+              "variable": "energy",
+              "region": "any"
+            },
+            "op": "add",
+            "value": -2
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 10
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 0
+        }
+      },
+      {
+        "id": "ownPlant",
+        "label": "Build your own power plant",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -150
+          },
+          {
+            "target": {
+              "scope": "region",
+              "region": "any",
+              "variable": "energy"
+            },
+            "op": "add",
+            "value": 20,
+            "delayYears": 2
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "response-to-job-losses",
+    "title": "When the jobs go",
+    "text": "Unemployment is climbing and people are angry. What do you back?",
+    "era": "2026-2030",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2027
+    },
+    "options": [
+      {
+        "id": "backUbi",
+        "label": "Back universal basic income",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -80
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 6
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "wealthGap",
+              "region": "any"
+            },
+            "op": "add",
+            "value": -12
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "publicTrust",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 4
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "ubi"
+        ]
+      },
+      {
+        "id": "shareProfits",
+        "label": "Share some profits with workers",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -40
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "wealthGap",
+              "region": "any"
+            },
+            "op": "add",
+            "value": -6
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "publicTrust",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 2
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 1
+        }
+      },
+      {
+        "id": "noNet",
+        "label": "Leave it to governments",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 10
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": -1
+        }
+      }
+    ]
+  },
+  {
+    "id": "safety-mechanisms",
+    "title": "Safeguards before launch",
+    "text": "Red-teaming and monitoring will delay the launch by months. Rivals are shipping.",
+    "era": "2026-2030",
+    "options": [
+      {
+        "id": "buildSafeguards",
+        "label": "Build in safeguards",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "safetyLevel"
+            },
+            "op": "add",
+            "value": 15
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -40
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": -2
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "safeguardsBuilt"
+        ]
+      },
+      {
+        "id": "skipSafety",
+        "label": "Ship first",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": 5
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "safetyLevel"
+            },
+            "op": "add",
+            "value": -20
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 10
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 6
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": -1,
+          "publicTrust": -1
+        }
+      }
+    ]
+  },
+  {
+    "id": "job-automation",
+    "title": "Office automation agents",
+    "text": "A cheap agent could do the work of whole back offices. Customers are lining up.",
+    "era": "2026-2030",
+    "options": [
+      {
+        "id": "sellAgents",
+        "label": "Sell agents that replace workers",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 80
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 12
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "unemploymentSoftware",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 6
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "wealthGap",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "unlocks": [
+          "sellsAgents"
+        ]
+      },
+      {
+        "id": "assistTools",
+        "label": "Sell tools that assist workers",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 30
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "unemploymentSoftware",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 1
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 2
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 1
+        }
+      },
+      {
+        "id": "holdBack",
+        "label": "Hold back until rules are clear",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -20
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 3
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "regulationStrictness",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "content-policy",
+    "title": "Content rules before an election",
+    "text": "A big election is coming. Looser rules mean more engagement; tighter rules mean more complaints.",
+    "era": "2026-2030",
+    "options": [
+      {
+        "id": "loosen",
+        "label": "Loosen the content policy",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 10
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": -3
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "unlocks": [
+          "looseContentPolicy"
+        ]
+      },
+      {
+        "id": "tighten",
+        "label": "Keep strict content rules",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 3
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": -3
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        }
+      }
+    ]
+  },
+  {
     "id": "release-strategy",
     "title": "How do you release your model?",
     "text": "Your newest model is ready. Researchers want it released openly, investors want it sold, and officials have asked for a seat at the table.",
@@ -376,149 +1087,6 @@
     ]
   },
   {
-    "id": "job-automation",
-    "title": "Office automation agents",
-    "text": "A cheap agent could do the work of whole back offices. Customers are lining up.",
-    "era": "2026-2030",
-    "options": [
-      {
-        "id": "sellAgents",
-        "label": "Sell agents that replace workers",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 80
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": 12
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "unemploymentSoftware",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 6
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "wealthGap",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "unlocks": [
-          "sellsAgents"
-        ]
-      },
-      {
-        "id": "assistTools",
-        "label": "Sell tools that assist workers",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 30
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "unemploymentSoftware",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 1
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 2
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 1
-        }
-      },
-      {
-        "id": "holdBack",
-        "label": "Hold back until rules are clear",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -20
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 3
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "regulationStrictness",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 1
-        }
-      }
-    ]
-  },
-  {
     "id": "marketing-claims",
     "title": "What do you tell the market?",
     "text": "Your demo is impressive but fragile. A bold claim would lift the share price.",
@@ -587,229 +1155,6 @@
           "economy": 0,
           "safety": 0,
           "publicTrust": 1
-        }
-      }
-    ]
-  },
-  {
-    "id": "energy-source",
-    "title": "Where does the power come from?",
-    "text": "Your data centres are hungry. Fossil power is cheap and ready; clean power is slow.",
-    "era": "2026-2030",
-    "options": [
-      {
-        "id": "fossil",
-        "label": "Buy cheap fossil power",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 40
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "energy",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 10
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": -3
-          },
-          {
-            "target": {
-              "scope": "global",
-              "variable": "co2"
-            },
-            "op": "add",
-            "value": 2
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": -1
-        }
-      },
-      {
-        "id": "clean",
-        "label": "Invest in clean power",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -60
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "energy",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 8,
-            "delayYears": 2
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 4
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 1
-        }
-      },
-      {
-        "id": "existingGrid",
-        "label": "Lean on the existing grid",
-        "effects": [
-          {
-            "target": {
-              "scope": "region",
-              "variable": "energy",
-              "region": "any"
-            },
-            "op": "add",
-            "value": -2
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 10
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 0
-        }
-      }
-    ]
-  },
-  {
-    "id": "safety-mechanisms",
-    "title": "Safeguards before launch",
-    "text": "Red-teaming and monitoring will delay the launch by months. Rivals are shipping.",
-    "era": "2026-2030",
-    "options": [
-      {
-        "id": "buildSafeguards",
-        "label": "Build in safeguards",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "safetyLevel"
-            },
-            "op": "add",
-            "value": 15
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -40
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": -2
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "safeguardsBuilt"
-        ]
-      },
-      {
-        "id": "skipSafety",
-        "label": "Ship first",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": 5
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "safetyLevel"
-            },
-            "op": "add",
-            "value": -15
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": 10
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": -1,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": -1,
-          "publicTrust": -1
         }
       }
     ]
@@ -886,293 +1231,6 @@
         "unlocks": [
           "skippedSecurity"
         ]
-      }
-    ]
-  },
-  {
-    "id": "content-policy",
-    "title": "Content rules before an election",
-    "text": "A big election is coming. Looser rules mean more engagement; tighter rules mean more complaints.",
-    "era": "2026-2030",
-    "options": [
-      {
-        "id": "loosen",
-        "label": "Loosen the content policy",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": 10
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": -3
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "unlocks": [
-          "looseContentPolicy"
-        ]
-      },
-      {
-        "id": "tighten",
-        "label": "Keep strict content rules",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 3
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": -3
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 1
-        }
-      }
-    ]
-  },
-  {
-    "id": "response-to-job-losses",
-    "title": "When the jobs go",
-    "text": "Unemployment is climbing and people are angry. What do you back?",
-    "era": "2026-2030",
-    "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2027
-    },
-    "options": [
-      {
-        "id": "backUbi",
-        "label": "Back universal basic income",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -80
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 6
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "wealthGap",
-              "region": "any"
-            },
-            "op": "add",
-            "value": -12
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "publicTrust",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 4
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "ubi"
-        ]
-      },
-      {
-        "id": "shareProfits",
-        "label": "Share some profits with workers",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -40
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "wealthGap",
-              "region": "any"
-            },
-            "op": "add",
-            "value": -6
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "publicTrust",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 2
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 1
-        }
-      },
-      {
-        "id": "noNet",
-        "label": "Leave it to governments",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 10
-          }
-        ],
-        "shortTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": -1
-        }
-      }
-    ]
-  },
-  {
-    "id": "materials-model",
-    "title": "A materials-science model",
-    "text": "Your lab built a model that could cut the cost of solar panels. Sell it, or give it away.",
-    "era": "2026-2030",
-    "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2027
-    },
-    "options": [
-      {
-        "id": "openMaterials",
-        "label": "Open-source it",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 4
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": -5
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": 1
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "openSourcedMaterials"
-        ]
-      },
-      {
-        "id": "keepMaterials",
-        "label": "Keep it proprietary",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 40
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 0
-        }
       }
     ]
   },
@@ -1310,9 +1368,9 @@
     ]
   },
   {
-    "id": "robotics-rollout",
-    "title": "The robotics rollout",
-    "text": "Humanoid robots are ready for factories and warehouses. How fast do you go?",
+    "id": "treaty-or-race",
+    "title": "An international AI treaty",
+    "text": "Governments propose shared limits and inspections. Signing slows you down; refusing starts a race.",
     "era": "2031-2036",
     "requirements": {
       "kind": "year",
@@ -1321,34 +1379,67 @@
     },
     "options": [
       {
-        "id": "massRobots",
-        "label": "Mass-produce robots",
+        "id": "treaty",
+        "label": "Back the treaty",
         "effects": [
           {
             "target": {
               "scope": "global",
-              "variable": "robotCount"
-            },
-            "op": "mul",
-            "value": 30
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "gdp",
-              "region": "any"
-            },
-            "op": "mul",
-            "value": 1.03
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "unemploymentPhysical",
-              "region": "any"
+              "variable": "geopoliticalTension"
             },
             "op": "add",
-            "value": 4
+            "value": -15
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": -2
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "treaty"
+        ]
+      },
+      {
+        "id": "race",
+        "label": "Race ahead",
+        "effects": [
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 16
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": 5
           },
           {
             "target": {
@@ -1356,184 +1447,19 @@
               "variable": "companyValue"
             },
             "op": "add",
-            "value": 20
+            "value": 15
           }
         ],
         "shortTerm": {
           "economy": 1,
           "safety": -1,
-          "publicTrust": -1
+          "publicTrust": 0
         },
         "longTerm": {
-          "economy": 1,
+          "economy": 0,
           "safety": -1,
           "publicTrust": -1
-        },
-        "unlocks": [
-          "robotsEverywhere"
-        ]
-      },
-      {
-        "id": "controlledRobots",
-        "label": "Limit them to controlled industries",
-        "effects": [
-          {
-            "target": {
-              "scope": "global",
-              "variable": "robotCount"
-            },
-            "op": "mul",
-            "value": 3
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 20
-          }
-        ],
-        "shortTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 0
         }
-      },
-      {
-        "id": "softwareOnly",
-        "label": "Stay software-only",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 2
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -20
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 1
-        }
-      }
-    ]
-  },
-  {
-    "id": "robot-ownership",
-    "title": "Who owns the robots?",
-    "text": "Robots now do real work. Someone collects the income.",
-    "era": "2031-2036",
-    "requirements": {
-      "kind": "pathway",
-      "pathwayId": "robotsEverywhere"
-    },
-    "options": [
-      {
-        "id": "companyOwns",
-        "label": "Keep and rent them out",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 80
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "wealthGap",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 8
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": -3
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        }
-      },
-      {
-        "id": "dividend",
-        "label": "Pay a robot dividend to citizens",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -60
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "wealthGap",
-              "region": "any"
-            },
-            "op": "add",
-            "value": -12
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "publicTrust",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 5
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "robotDividend"
-        ]
       }
     ]
   },
@@ -1653,7 +1579,7 @@
               "variable": "safetyLevel"
             },
             "op": "add",
-            "value": -8
+            "value": -10
           },
           {
             "target": {
@@ -1673,6 +1599,447 @@
           "economy": 0,
           "safety": -1,
           "publicTrust": -1
+        }
+      }
+    ]
+  },
+  {
+    "id": "research-priority",
+    "title": "What does the lab work on?",
+    "text": "Your best researchers could chase cures or chase revenue.",
+    "era": "2031-2036",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2031
+    },
+    "options": [
+      {
+        "id": "fundScience",
+        "label": "Fund disease and space research",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -50
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "fundedScience"
+        ]
+      },
+      {
+        "id": "chaseProfit",
+        "label": "Chase profit",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 50
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": -2
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": -1
+        }
+      },
+      {
+        "id": "moonshot",
+        "label": "Launch a moonshot research programme",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -120
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 2
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 0,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": 1
+        },
+        "unlocks": [
+          "fundedScience"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "robotics-rollout",
+    "title": "The robotics rollout",
+    "text": "Humanoid robots are ready for factories and warehouses. How fast do you go?",
+    "era": "2031-2036",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2031
+    },
+    "options": [
+      {
+        "id": "massRobots",
+        "label": "Mass-produce robots",
+        "effects": [
+          {
+            "target": {
+              "scope": "global",
+              "variable": "robotCount"
+            },
+            "op": "mul",
+            "value": 30
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "gdp",
+              "region": "any"
+            },
+            "op": "mul",
+            "value": 1.03
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "unemploymentPhysical",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 4
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 20
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 12
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": -1
+        },
+        "unlocks": [
+          "robotsEverywhere"
+        ]
+      },
+      {
+        "id": "controlledRobots",
+        "label": "Limit them to controlled industries",
+        "effects": [
+          {
+            "target": {
+              "scope": "global",
+              "variable": "robotCount"
+            },
+            "op": "mul",
+            "value": 3
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 20
+          }
+        ],
+        "shortTerm": {
+          "economy": 0,
+          "safety": 0,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 0
+        }
+      },
+      {
+        "id": "softwareOnly",
+        "label": "Stay software-only",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 2
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -20
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "final-oversight",
+    "title": "Who holds the controls?",
+    "text": "Critical systems could run on your AI end to end. Humans in the loop slow everything down.",
+    "era": "2031-2036",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2033
+    },
+    "options": [
+      {
+        "id": "humansInLoop",
+        "label": "Keep humans in the loop",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "safetyLevel"
+            },
+            "op": "add",
+            "value": 10
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": -2
+          }
+        ],
+        "shortTerm": {
+          "economy": -1,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        }
+      },
+      {
+        "id": "handControl",
+        "label": "Hand it control",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "aiCapability"
+            },
+            "op": "add",
+            "value": 6
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "safetyLevel"
+            },
+            "op": "add",
+            "value": -12
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 15
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "robotCount"
+            },
+            "op": "mul",
+            "value": 3
+          },
+          {
+            "target": {
+              "scope": "global",
+              "variable": "geopoliticalTension"
+            },
+            "op": "add",
+            "value": 8
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": 0
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": -1
+        }
+      }
+    ]
+  },
+  {
+    "id": "lobby-regulation",
+    "title": "Regulators are circling",
+    "text": "Rules on AI firms are tightening. You can lobby them down or work with them.",
+    "era": "2031-2036",
+    "requirements": {
+      "kind": "year",
+      "cmp": ">=",
+      "value": 2031
+    },
+    "options": [
+      {
+        "id": "lobbyDown",
+        "label": "Lobby against the rules",
+        "effects": [
+          {
+            "target": {
+              "scope": "region",
+              "variable": "regulationStrictness",
+              "region": "any"
+            },
+            "op": "add",
+            "value": -15
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": -3
+          },
+          {
+            "target": {
+              "scope": "company",
+              "variable": "companyValue"
+            },
+            "op": "add",
+            "value": 5
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": -1,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": -1,
+          "publicTrust": -1
+        }
+      },
+      {
+        "id": "acceptRules",
+        "label": "Accept the rules",
+        "effects": [
+          {
+            "target": {
+              "scope": "company",
+              "variable": "publicTrust"
+            },
+            "op": "add",
+            "value": 2
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "regulationStrictness",
+              "region": "any"
+            },
+            "op": "add",
+            "value": 3
+          }
+        ],
+        "shortTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
+        },
+        "longTerm": {
+          "economy": 0,
+          "safety": 1,
+          "publicTrust": 1
         }
       }
     ]
@@ -1795,275 +2162,6 @@
     ]
   },
   {
-    "id": "treaty-or-race",
-    "title": "An international AI treaty",
-    "text": "Governments propose shared limits and inspections. Signing slows you down; refusing starts a race.",
-    "era": "2031-2036",
-    "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2031
-    },
-    "options": [
-      {
-        "id": "treaty",
-        "label": "Back the treaty",
-        "effects": [
-          {
-            "target": {
-              "scope": "global",
-              "variable": "geopoliticalTension"
-            },
-            "op": "add",
-            "value": -15
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": -2
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "treaty"
-        ]
-      },
-      {
-        "id": "race",
-        "label": "Race ahead",
-        "effects": [
-          {
-            "target": {
-              "scope": "global",
-              "variable": "geopoliticalTension"
-            },
-            "op": "add",
-            "value": 16
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": 5
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": 15
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": -1,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": -1,
-          "publicTrust": -1
-        }
-      }
-    ]
-  },
-  {
-    "id": "research-priority",
-    "title": "What does the lab work on?",
-    "text": "Your best researchers could chase cures or chase revenue.",
-    "era": "2031-2036",
-    "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2031
-    },
-    "options": [
-      {
-        "id": "fundScience",
-        "label": "Fund disease and space research",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": -50
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": 1
-        },
-        "unlocks": [
-          "fundedScience"
-        ]
-      },
-      {
-        "id": "chaseProfit",
-        "label": "Chase profit",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "money"
-            },
-            "op": "add",
-            "value": 50
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": -2
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": 0,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 0,
-          "publicTrust": -1
-        }
-      }
-    ]
-  },
-  {
-    "id": "final-oversight",
-    "title": "Who holds the controls?",
-    "text": "Critical systems could run on your AI end to end. Humans in the loop slow everything down.",
-    "era": "2031-2036",
-    "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2033
-    },
-    "options": [
-      {
-        "id": "humansInLoop",
-        "label": "Keep humans in the loop",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "safetyLevel"
-            },
-            "op": "add",
-            "value": 10
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": -2
-          }
-        ],
-        "shortTerm": {
-          "economy": -1,
-          "safety": 1,
-          "publicTrust": 1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": 1,
-          "publicTrust": 1
-        }
-      },
-      {
-        "id": "handControl",
-        "label": "Hand it control",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "aiCapability"
-            },
-            "op": "add",
-            "value": 6
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "safetyLevel"
-            },
-            "op": "add",
-            "value": -12
-          },
-          {
-            "target": {
-              "scope": "company",
-              "variable": "companyValue"
-            },
-            "op": "add",
-            "value": 15
-          },
-          {
-            "target": {
-              "scope": "global",
-              "variable": "robotCount"
-            },
-            "op": "mul",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": 1,
-          "safety": -1,
-          "publicTrust": 0
-        },
-        "longTerm": {
-          "economy": 1,
-          "safety": -1,
-          "publicTrust": -1
-        }
-      }
-    ]
-  },
-  {
     "id": "long-term-energy",
     "title": "Power for the next decade",
     "text": "Demand keeps rising. Build abundant clean supply now, or let shortages decide.",
@@ -2160,28 +2258,35 @@
     ]
   },
   {
-    "id": "lobby-regulation",
-    "title": "Regulators are circling",
-    "text": "Rules on AI firms are tightening. You can lobby them down or work with them.",
+    "id": "robot-ownership",
+    "title": "Who owns the robots?",
+    "text": "Robots now do real work. Someone collects the income.",
     "era": "2031-2036",
     "requirements": {
-      "kind": "year",
-      "cmp": ">=",
-      "value": 2031
+      "kind": "pathway",
+      "pathwayId": "robotsEverywhere"
     },
     "options": [
       {
-        "id": "lobbyDown",
-        "label": "Lobby against the rules",
+        "id": "companyOwns",
+        "label": "Keep and rent them out",
         "effects": [
           {
             "target": {
+              "scope": "company",
+              "variable": "money"
+            },
+            "op": "add",
+            "value": 80
+          },
+          {
+            "target": {
               "scope": "region",
-              "variable": "regulationStrictness",
+              "variable": "wealthGap",
               "region": "any"
             },
             "op": "add",
-            "value": -15
+            "value": 8
           },
           {
             "target": {
@@ -2190,59 +2295,63 @@
             },
             "op": "add",
             "value": -3
-          },
+          }
+        ],
+        "shortTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        },
+        "longTerm": {
+          "economy": 1,
+          "safety": 0,
+          "publicTrust": -1
+        }
+      },
+      {
+        "id": "dividend",
+        "label": "Pay a robot dividend to citizens",
+        "effects": [
           {
             "target": {
               "scope": "company",
-              "variable": "companyValue"
+              "variable": "money"
+            },
+            "op": "add",
+            "value": -60
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "wealthGap",
+              "region": "any"
+            },
+            "op": "add",
+            "value": -12
+          },
+          {
+            "target": {
+              "scope": "region",
+              "variable": "publicTrust",
+              "region": "any"
             },
             "op": "add",
             "value": 5
           }
         ],
         "shortTerm": {
-          "economy": 1,
-          "safety": -1,
-          "publicTrust": -1
-        },
-        "longTerm": {
-          "economy": 0,
-          "safety": -1,
-          "publicTrust": -1
-        }
-      },
-      {
-        "id": "acceptRules",
-        "label": "Accept the rules",
-        "effects": [
-          {
-            "target": {
-              "scope": "company",
-              "variable": "publicTrust"
-            },
-            "op": "add",
-            "value": 2
-          },
-          {
-            "target": {
-              "scope": "region",
-              "variable": "regulationStrictness",
-              "region": "any"
-            },
-            "op": "add",
-            "value": 3
-          }
-        ],
-        "shortTerm": {
-          "economy": 0,
-          "safety": 1,
+          "economy": -1,
+          "safety": 0,
           "publicTrust": 1
         },
         "longTerm": {
           "economy": 0,
-          "safety": 1,
+          "safety": 0,
           "publicTrust": 1
-        }
+        },
+        "unlocks": [
+          "robotDividend"
+        ]
       }
     ]
   }

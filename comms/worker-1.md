@@ -1,5 +1,64 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-08 09:00 - done: first-card flow retuned + city effect durations (your DECISION #8)
+Done as you decided: ONE card per year in data order (option 3), the bad endings are now reachable in the real app, `src/sim/demo.lock.test.ts` still passes untouched.
+
+**1. App flow ('first' mode: the HQ shows only the first available card).** Table, 1,000 games per player type (`BALANCE_REPORT=1 npx vitest run src/sim/balance.report.test.ts` prints it; the tests assert it with 400 per type):
+| player | Utopia | Slowdown | Feudalism | AI takeover | bankrupt | nationalised | WW3 |
+|---|---|---|---|---|---|---|---|
+| random | 38.7% | 16.5% | 37.4% | 3.2% | 3.8% | 0.2% | 0.2% |
+| cautious | 67.2% | 32.8% | - | - | - | - | - |
+| generous | 100% | - | - | - | - | - | - |
+| reckless | - | - | - | 87.1% | - | - | 12.9% |
+| spender | - | - | - | - | 100% | - | - |
+| warmonger | - | - | - | 59.2% | - | - | 40.8% |
+| villain / profit | - | - | - | 60.3% | - | - | 39.7% |
+All 7 endings occur; a random player gets no ending above 39%. Before (same flow): only Utopia, Slowdown, Feudalism and a rare nationalised; takeover, WW3 and bankruptcy were impossible. Careful play does not go bankrupt (cautious and generous under 5%, tested).
+What I changed (only options/numbers the demo does not pick, so the demo is untouched): "Ignore it and keep going" safety -10 (was -8; a fully reckless run now ends below the takeover line of 20); tension up on racing choices that are on screen: "Ship first" +6, "Mass-produce robots" +12 (robot arms race, plan 6.4), "Hand it control" +8, "Keep it proprietary" +4, "Leave it to governments" +3; war-threat event chance 0.4 and +10 tension; two new money-sink options for a deliberate spender: "Build your own power plant" (-150 money, energy +20 after 2 years) on the power card and "Launch a moonshot research programme" (-120) on the research card, both without a trust benefit so ordinary careful play does not pick them. Test limits: adds may now be up to 200.
+Still true (your call, no action needed): only ~11 of the 21 cards appear in any game. Nationalised is reachable but very rare in this flow (0.2% random); it is fine in the free-choice mode.
+
+**2. City effects: different durations, overlapping** (`src/sim/cityEffects.ts`, tests in `cityEffects.test.ts`). `CityEffect` shape unchanged. Each kind has build-up (years to reach its peak; the event's `intensity` is the peak), hold, and decay per year:
+- hits at full strength, short: gridlock (gone in 1-2 years), bankRun, deepfakeProtests, unrest (2-4 years)
+- builds then calms: outbreak (1 yr build), embargo, solarBoom (1 yr build, stays several years), ghostOffices, warBuildup (2 yrs build)
+- long: flooding (3 yrs build, 3 hold, very slow decay, about 18 years) and surveillance (2 build, 3 hold, slow decay)
+- blackout hits at once, lingers, and clears fast (0.3/yr) once the grid is repaired (so the solar boom visibly reverses it).
+Different kinds (and different cities) are independent, so several can be active in one city at once; a second effect of the same kind in the same city is still not started while one is live. worker-2: `intensity` is what changes smoothly year to year (for example solarBoom starts at 0.35 and grows to 0.7 the next year; flooding climbs for 3 years). `startIntensity()` and `EFFECT_PROFILES` are exported if you want the same curve for a demo mode.
+`data/demo.md` updated with the new solar boom numbers (0.35, then 0.7, fading 0.4 to 0.2 by 2037).
+
+Checked: `npm run typecheck`, `npm test` (159 tests) and `npm run build` pass. Files touched: `src/sim/{cityEffects,index,balance,content.test,sim.test,balance.test,cityEffects.test}.ts`, `data/{cards,events}.json`, `data/demo.md`, `comms/worker-1.md`.
+Question for master: none. Free for the next task.
+
+## 2026-11-08 06:00 - question (needs your decision) + done: demo script and verification checklist
+**Please read the QUESTION first: it changes what the app can show.**
+
+QUESTION / PROBLEM for master: `HQScreen` shows only the FIRST available card each year (`decisions.find(d => !answered.has(d.id))`), in `data/cards.json` order, and the player can only pick an option or "Skip year". So (a) a player can never choose which card to answer, (b) only ~11 of the 21 cards ever appear (5 in 2026-2030, 6 in 2031-2036; the rest sit behind them until the era ends), and (c) the same 11 cards come up every game. I measured the app as it is today (1,000 games per player type, `BALANCE_REPORT=1 npx vitest run src/sim/balance.report.test.ts` now prints it as mode 'first'): only 4 of the 7 endings can happen. Random player: Utopia 38%, Feudalism 40%, Slowdown 22%, nationalised 0.2%. AI takeover, WW3 and bankruptcy cannot happen, and neither can most events (Deepfake election, Ghost offices, weights stolen). With a free choice of card (mode 'any', what the balance tests assert) all 7 endings are reachable.
+Options (your call, this is app/UI, not mine): (1) let the HQ answer ALL waiting cards each year and advance on a button ("End year"); `step()` already takes `choices[]`, and plan 6.8 says several decisions per year; (2) a card picker on the HQ; (3) keep it as is and I reorder/retune so more endings fit the 11 cards. I recommend (1). Tell me which and I will re-balance.
+
+What I did (your NEXT ACTION: demo script + checklist):
+- **`data/demo.md` + `data/demo.json`: the demo script.** Seed **44**, open `/?seed=44`, about 2:30. Story: 2026 fast-track the data centre -> San Francisco blackout (pop-up, city effect, trust 60 -> 52); 2027 open-source the materials model -> 2028 Breakthrough year (solar boom in SF while the blackout shrinks) -> blackout gone by 2031; positive beats 2030 (audit), 2032 (treaty), 2033 (drug discovery); ends Abundance Utopia (score about 72). Twist (30 s): replay with "Keep it proprietary" in 2027 and the blackout comes BACK in 2032 and the world ends as Slowdown (about 69). `demo.md` has the exact cards, clicks, what appears, what to say, prep and recovery steps.
+- **`src/sim/demo.lock.test.ts`** locks seed + choices using the app's own `availableDecisions` / `playTurn` (so it follows what the HQ really shows): the scripted card is on screen every year, the beats land in the right years, the ending and the what-if both hold, money never drops below 60. If tuning breaks the demo, this test fails.
+- To make the story reachable in the real UI I REORDERED `data/cards.json` into story order (no values changed): datacentre-campus, materials-model, energy-source, response-to-job-losses, safety-mechanisms, then the rest; era 2: treaty-or-race, alignment-scare, research-priority, robotics-rollout, final-oversight, lobby-regulation, then the rest.
+- Small sim change so the picture follows the cause: a blackout now fades faster (0.3/yr instead of 0.1) once the region's energy is back at or above 0 (tested).
+- **`data/VERIFY.md`: the verification checklist**, generated from `data/sources.json`. Part 1: the 15 single-country figures (US, CN, UK, IN, RU: GDP, population, unemployment) with API and page links. Part 2: the 13 aggregated region figures with links to every country used and the three biggest contributors to spot-check. Gaps stated (no Gulf or Africa unemployment). Part 3: the software/physical unemployment split is a game assumption, not a figure. Part 4: the 3 debrief links (IMF links answered 200 from a script; IPCC and IEA answered 403 = bot protection, so open those by hand). Ticking a figure = set `"verified": true` in `data/sources.json`; do NOT re-run `node scripts/snapshot.ts` afterwards (it resets the flags).
+- Test change: `baseline.test.ts` now only requires `verified` to be a boolean, so a human ticking a figure does not break the tests.
+- Checked: `npm run typecheck`, `npm test` (139 tests) and `npm run build` pass.
+Files touched: `data/{cards.json,demo.json,demo.md,VERIFY.md}`, `src/sim/{index,balance,balance.report.test,baseline.test,sim.test,demo.lock.test}.ts`, `comms/worker-1.md`.
+Still open: `npm run balance` in `package.json` (yours). Real-people playtesting.
+
+## 2026-11-08 03:30 - in-progress (follow-up to your NEXT ACTION)
+What I did: PR 7 (balance + tuning) is merged. Your NEXT ACTION items 2-4, finished:
+- Demo path tests (`src/sim/demo.test.ts`). Seed 1, scripted player: safety first + UBI + treaty (+ share compute, partner with governments, pause and fix, humans in the loop) ends in a good ending (`abundanceUtopia` or `slowdown`). Reckless (skip safety, hoard chips, open-source, sell agents, hype, mass-produce robots, race, hand over control, ignore the warning) ends in `aiTakeover`. Over seeds 1-30, sensible is never `ww3`/`aiTakeover`/`nationalised` and reckless is never Utopia or Slowdown. The two paths also differ in the numbers (survival score, tension, safety).
+- To make the reckless path hit a bad ending I changed one card value: `safety-mechanisms` / `skipSafety` now costs 20 safety (was 15). Before, a fully reckless run stopped at exactly 20 and never crossed the "below 20" takeover line.
+- Balance report, 1,000 games per player type (7,000 total). `BALANCE_REPORT=1 npx vitest run src/sim/balance.report.test.ts` prints a table.
+  - Random player: corporateFeudalism 46.8%, abundanceUtopia 27.5%, slowdown 24.6%, nationalised 0.5%, bankrupt 0.3%, aiTakeover 0.2%, ww3 0.1%. No ending is near 60%.
+  - Aiming players: generous -> Utopia 71% (Slowdown 29%); cautious -> Slowdown 100%; reckless -> aiTakeover 91.7% (nationalised 4.4%, feudalism 3.8%); profit -> feudalism 94.9%; villain -> feudalism 79.9%, nationalised 18.3%, ww3 1.8%; spender -> bankrupt 100%.
+  - Every game ends by 2037; takeover arrives on average in 2035.8.
+- Checked: `npm run typecheck`, `npm test` (128 tests) and `npm run build` pass.
+Request for master (package.json is yours): please add the script `"balance": "BALANCE_REPORT=1 vitest run src/sim/balance.report.test.ts"` so `npm run balance` works. Optional: `BALANCE_GAMES=2000 npm run balance` changes the number of games per player type.
+Honest caveat: the "random" player is a simulated player; real people will not play like it. Outside playtesting is still needed (plan 15.3).
+Files touched: `data/cards.json` (one value), `src/sim/demo.test.ts`, `src/sim/balance.report.test.ts`, `comms/worker-1.md`.
+Question for master (if any): the `package.json` script above. Otherwise worker-1 steps 1-6 are done; tell me what you want next (for example stretch endings, more cards for 2037+, or fixing anything from playtests).
+
 ## 2026-11-08 02:00 - in-progress
 What I did: PR 6 (IMF baseline) is merged. Step 6: balance runs and tuning. Every implemented ending is now reachable and none is too easy.
 - `src/sim/balance.ts` plays whole games with simulated players, one card per year like the app (only cards from the current era, requirements met, not answered yet). 7 policies: random, cautious, reckless, profit, generous, spender, villain. `src/sim/balance.test.ts` runs 2,800 games (400 per policy) in about 0.3 s and asserts the results. For a bigger report: `BALANCE_REPORT=1 BALANCE_GAMES=1000 npx vitest run src/sim/balance.report.test.ts`.

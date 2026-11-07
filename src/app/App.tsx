@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import type { EventLogEntry, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { CityView, WorldMap } from '../world';
-import { Dashboard, EventModal, HQScreen, NewsTicker, ReportCard, UiRoot, A11yControls } from '../ui';
+import { Dashboard, EventModal, HQScreen, IntroScreen, HelpButton, HowToPlay, NewsTicker, TopBar, ReportCard, UiRoot, A11yControls } from '../ui';
+import './app.css';
 import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
@@ -20,6 +21,8 @@ export function App() {
   const [cityId, setCityId] = useState('sf');
   const [hqId, setHqId] = useState<string | undefined>(undefined);
   const [popups, setPopups] = useState<EventLogEntry[]>([]);
+  const [started, setStarted] = useState(false);
+  const [help, setHelp] = useState(false);
 
   const available = useMemo(() => availableDecisions(state), [state]);
 
@@ -34,7 +37,19 @@ export function App() {
     setState(newGame(seed));
     setPopups([]);
     setScreen('map');
+    setStarted(false);
   };
+
+  if (!started) {
+    return (
+      <UiRoot>
+        <IntroScreen onStart={() => {
+            setStarted(true);
+            setHelp(true);
+          }} />
+      </UiRoot>
+    );
+  }
 
   if (state.status.over) {
     return (
@@ -48,31 +63,22 @@ export function App() {
 
   return (
     <UiRoot>
-      <header style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 16px', flexWrap: 'wrap' }}>
-        <strong>AI 2126</strong>
-        <span>Year {state.year}</span>
-        <nav style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setScreen('map')}>World map</button>
-          <button onClick={() => setScreen('city')}>City</button>
-          <button
-            onClick={() => {
-              setHqId(undefined);
-              setScreen('hq');
-            }}
-          >
-            Your HQ
-          </button>
-          <button onClick={() => setScreen('dashboard')}>Dashboard</button>
-        </nav>
-        <button onClick={() => advance()} title="Let a year pass without answering a card">
-          {available.length ? `Skip year (${available.length} card${available.length > 1 ? 's' : ''} waiting)` : 'Next year'}
-        </button>
-        {screen !== 'hq' && ( // the HQ screen has its own copy of these controls
-          <span style={{ marginLeft: 'auto' }}>
-            <A11yControls />
-          </span>
-        )}
-      </header>
+      <div className="app-shell">
+      <TopBar
+        year={state.year}
+        screen={screen}
+        cardsWaiting={available.length}
+        onSkipYear={() => advance()}
+        onNavigate={(next) => {
+          if (next === 'hq') setHqId(undefined);
+          setScreen(next);
+        }}
+      >
+        <HelpButton onClick={() => setHelp(true)} />
+        {screen !== 'hq' && <A11yControls />}
+      </TopBar>
+
+      <div className={`app-screen${screen === 'map' ? ' is-map' : ''}`}>
 
       {screen === 'map' && (
         <WorldMap
@@ -110,7 +116,13 @@ export function App() {
       )}
       {screen === 'dashboard' && <Dashboard state={state} />}
 
+      </div>
+
       {screen !== 'hq' && <NewsTicker headlines={state.headlines.slice(-8)} />}
+
+      </div>
+
+      {help && <HowToPlay onClose={() => setHelp(false)} />}
 
       {popup && (
         <EventModal

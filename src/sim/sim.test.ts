@@ -5,6 +5,7 @@ import { createInitialState, createRng, createStep, defaultContent, rngForTurn, 
 import { computeScore, deriveTakeoverRisk } from './endings';
 import { TUNING, automation, companyEconomy, concentration, energyLimit, gdpGrowth, raceTension, riots, robotGrowth, tensionDrift, trustAndRegulation, unrest, type Rule } from './rules';
 import { END_YEAR, ENDING_THRESHOLDS, endingFit } from './endings';
+import { EFFECT_PROFILES } from './cityEffects';
 
 const NONE = createStep({ decisions: [], events: [] }); // rules only, no events or cards
 const fresh = (seed = 1): WorldState => createInitialState(seed, 'novacore');
@@ -114,6 +115,25 @@ function only(rule: Rule, s: WorldState): WorldState {
   rule.apply(c);
   return c;
 }
+
+describe('city effects follow their cause', () => {
+  const blackoutState = (energy: number): WorldState => {
+    const s = fresh();
+    s.regions.US.energy = energy;
+    s.activeCityEffects.push({ city: 'sf', kind: 'blackout', intensity: 0.9, sinceYear: 2026 });
+    s.activeCityEffects.push({ city: 'london', kind: 'warBuildup', intensity: 0.9, sinceYear: 2026 });
+    return s;
+  };
+  it('a blackout clears faster once the grid is repaired', () => {
+    const short = NONE(blackoutState(-5), [], createRng(1)).activeCityEffects.find((e) => e.kind === 'blackout')!;
+    const fixed = NONE(blackoutState(5), [], createRng(1)).activeCityEffects.find((e) => e.kind === 'blackout')!;
+    expect(fixed.intensity).toBeLessThan(short.intensity);
+  });
+  it('other effects follow their own profile whatever the grid does', () => {
+    const w = NONE(blackoutState(5), [], createRng(1)).activeCityEffects.find((e) => e.kind === 'warBuildup')!;
+    expect(w.intensity).toBeCloseTo(0.9 - EFFECT_PROFILES.warBuildup.decay, 6);
+  });
+});
 
 describe('rules (each in isolation)', () => {
   it('automation: capability raises software unemployment, scaled by outlook', () => {

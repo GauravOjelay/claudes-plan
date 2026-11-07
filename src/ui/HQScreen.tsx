@@ -5,6 +5,8 @@ import { ARCHETYPE_COLOR, ARCHETYPE_LABEL, CompanyLogo } from './CompanyLogo';
 import { DecisionCard, HintLegend } from './DecisionCard';
 import { cityName, formatCompact, levelLow, relevantHeadlines, THRESHOLDS } from './format';
 import { NewsPopups, NewsTicker } from './News';
+import { CITY_EFFECT_LABEL } from './Skyline';
+import { Boardroom } from './Boardroom';
 
 export interface HQScreenProps {
   state: WorldState;
@@ -35,19 +37,6 @@ function CompanyStats({ company }: { company: Company }) {
   );
 }
 
-function Skyline() {
-  // Decorative silhouette behind the HQ, tinted with the company colour.
-  return (
-    <svg viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M0 100V70h20V50h15v20h10V30h25v40h10V55h20V20h8V10h4v10h8v50h15V45h22v25h12V35h30v35h10V60h18V25h20v45h12V50h25v50Z
-           M270 100V40h25v60Z M300 100V58h40v42Z M345 100V30h20v70Z M370 100V62h30v38Z"
-      />
-    </svg>
-  );
-}
-
 /** Screen 3: company HQ (docs/plan.md 10.4). Decision cards are only available here. */
 export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack }: HQScreenProps) {
   const id = companyId ?? state.playerCompanyId;
@@ -61,10 +50,11 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
   const news = relevantHeadlines(state.headlines, company.id, company.homeCity);
   const city = cityName(cities, company.homeCity);
   const gameOver = state.status.over;
+  const effects = state.activeCityEffects.filter((e) => e.city === company.homeCity);
 
   return (
     <div className="ui-hq" style={{ ['--hq-color' as string]: ARCHETYPE_COLOR[company.archetype] }}>
-      <div className="ui-hq-bg"><Skyline /></div>
+      <div className="ui-hq-bg"><Boardroom company={company} effects={effects} /></div>
 
       <header className="ui-hq-header">
         {onBack && <button className="ui-btn" onClick={onBack}>← {city}</button>}
@@ -106,6 +96,13 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
       <aside>
         <NewsPopups key={company.id} headlines={news} />
       </aside>
+
+      {effects.length > 0 && (
+        <p className="ui-hq-effects" aria-label={`Happening in ${city}`}>
+          <span className="ui-muted">Now in {city}:</span>
+          {effects.map((e) => <span key={e.kind} className="ui-chip">{CITY_EFFECT_LABEL[e.kind] ?? e.kind}</span>)}
+        </p>
+      )}
 
       <div className="ui-hq-ticker">
         <NewsTicker headlines={news} label={city.toUpperCase()} />

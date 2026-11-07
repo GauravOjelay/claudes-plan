@@ -1,0 +1,24 @@
+{
+  "_readme": "Machine-readable demo script for the 2-3 minute demo (see data/demo.md). Locked by src/sim/demo.lock.test.ts: if tuning breaks it, that test fails. The HQ screen shows the FIRST available card each year (data order), so 'main' lists the option to pick on each card in the order the cards appear.",
+  "seed": 44,
+  "url": "/?seed=44",
+  "main": [
+    { "year": 2026, "card": "datacentre-campus", "option": "fastTrack" },
+    { "year": 2027, "card": "materials-model", "option": "openMaterials" },
+    { "year": 2028, "card": "energy-source", "option": "clean" },
+    { "year": 2029, "card": "response-to-job-losses", "option": "backUbi" },
+    { "year": 2030, "card": "safety-mechanisms", "option": "buildSafeguards" },
+    { "year": 2031, "card": "treaty-or-race", "option": "treaty" },
+    { "year": 2032, "card": "alignment-scare", "option": "pauseAndFix" },
+    { "year": 2033, "card": "research-priority", "option": "fundScience" },
+    { "year": 2034, "card": "robotics-rollout", "option": "controlledRobots" },
+    { "year": 2035, "card": "final-oversight", "option": "humansInLoop" },
+    { "year": 2036, "card": "lobby-regulation", "option": "acceptRules" }
+  ],
+  "whatIf": {
+    "_readme": "Replay the same seed, change ONE early choice, answer every other card as in 'main'. If a planned card is not on screen that year, answer whatever card is first with the option listed in 'main' for it, or 'Skip year' if it is not listed.",
+    "year": 2027,
+    "card": "materials-model",
+    "option": "keepMaterials"
+  }
+}

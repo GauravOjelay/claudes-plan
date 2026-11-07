@@ -9,6 +9,13 @@ changes on the dashboard -> one `CityEffect` appears in the city view. Nothing e
 until this loop works on `main`.
 
 ## worker-1  (Claude 1: Simulation and data)
+> **DECISION + NEW TASK (master, 2026-11-08 #8) for worker-1:** Great work on the demo (PR #11 merged). Your question: choose **option 3**. Keep ONE card per year in data order (the demo script depends on it). Retune the first-card flow so the bad endings (`aiTakeover`, `ww3`, `bankrupt`) are reachable by an aiming player in the real app, WITHOUT breaking `src/sim/demo.lock.test.ts`. Report the new 'first' mode table in your comms.
+> Also from the team's feedback: city effects need DIFFERENT DURATIONS and must OVERLAP. Today every effect fades at the same `CITY_EFFECT_FADE`. Add per-kind build-up and decay (e.g. flood/blackout build up and last several years; unrest/protests/deepfakeProtests are short; gridlock very short), keep several effects active in one city at once, and add tests. Keep the `CityEffect` contract shape unchanged (intensity 0-1, sinceYear); only the sim's behaviour changes.
+> **NEW TASKS (master, 2026-11-08 #7) - the hook was broken and hid this section until now; sorry. Do these in order:**
+> 1. `git fetch origin && git merge origin/main`.
+> 2. **Demo script (most important).** Plan 11.3: a 2-3 minute demo where ONE early decision causes a BIG consequence years later. Find the best seed and the exact card/option choices, then write `data/demo.md`: for each year, the card shown, the option to pick, what the player should say out loud, and the headline/CityEffect/variable that appears. The "wow" must be visible in the UI (e.g. fast-track the data-centre -> blackout in SF -> later breakthrough/solar reversal). Add a test that locks the seed + choices so nobody breaks the demo by tuning.
+> 3. **Verification checklist.** Write `data/VERIFY.md`: every real-world figure the game can show (from `data/sources.json`), with the exact IMF DataMapper page/indicator link so a human can tick each one off in 10 minutes (plan 9.3).
+> 4. Open a PR; write a short note in your comms file.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
 > 1. `git fetch origin && git merge origin/main` (PR #6 and worker-3 are merged).
 > 2. Step 6: balance run. Add `npm run balance` that simulates thousands of random games (seeds 1..N, random options). Print how often each ending happens. Every ending must be reachable and none above ~60%. Tune `TUNING` / `ENDING_THRESHOLDS`. Runs are only ~10 turns, so endings must be reachable in that time.
@@ -33,6 +40,24 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **EXTRA FIXES FROM THE OWNERS (master, 2026-11-08 #10) for worker-2, do these right after the globe:**
+> A. **World map page is taller than the screen (scrolls).** Make the map page container `height: 100vh; overflow: hidden` (use `100dvh` too), make the globe's container a flexbox with `justify-content: center; align-items: center`, and size the globe from its container (reduce its radius / the container size so the whole globe fits in the viewport, centred).
+> B. **The city stat card is outside the viewport** because of that oversized page; after A it must be fully visible on a 1280x720 screen. Check at 1280x720 and 1920x1080.
+> C. **The "Your move" button** (top right, above the headquarters panel) does nothing. It must call `onSelectCompany(state.playerCompanyId)` (open the player's HQ).
+> D. **The top nav bar** in the real app is the new `TopBar` (in `src/ui`, already on main), so merge `origin/main` first and make sure your pages/dev pages don't show bare native buttons any more. Any buttons inside `src/world` need proper styling (same look as TopBar tabs).
+> Please screenshot at 1280x720 and put them in the PR.
+> **TEAM FEEDBACK CONFIRMED (master, 2026-11-08 #8): the owners (Krish, Charles, Rishi) re-sent their list. Priority order, do the first one first:**
+> 1. **WORLD MAP MUST BE A REAL GLOBE** like Apple Maps: a sphere you orbit/zoom/spin, atmosphere glow, day/night shading, and land that looks REAL (relief/terrain shading or extrusion with coast detail), not flat origami plates. Use the approved `world-atlas`. 2D map stays as the fallback.
+> 2. Every city shows ITS OWN companies (from the city's `companyIds`; all 15 cities and 45 companies are in `src/contracts/cities.ts`). No city may show San Francisco's companies.
+> 3. Effects: different durations and overlapping (search lights + flood at once). Flood builds up visibly then calms (long); protests are short; searchlights are short. worker-1 is changing the sim durations; make the 3D scene follow `intensity` smoothly. Add a demo mode that plays overlapping events.
+> 4. "Happening now": a list of 5-6 recent events; newest slides in at the top, oldest slides out at the bottom, with an animation, and a SLOWER pace than every 2 seconds.
+> 5. Toasts that are not important disappear after 5-7 seconds. Timeline: 1-2rem gap between event circles and year text, cleaner layout.
+> 6. Navigation buttons/shortcut bars in 3D views hidden by default; show on scroll or press (`:active`), NOT on hover. Current year must be prominent. Clouds a little fuller. FPS chip stays.
+> 7. The city view must feel like a smooth zoomed-out street view (zoom, pan, forward/back).
+> Answers already given: effects are consequences, not policies; policies are chosen on the HQ screen (keep your black "Make a decision" button). The app top bar is now styled (TopBar). Please push small PRs and tell me when each is ready.
+> **UPDATE (master, 2026-11-08 #6) for worker-2:** merged your latest into main (kept your versions of `WorldMap.tsx`/`CityView.tsx`). Answers: (1) DONE: your 12 cities + 36 companies are now in `src/contracts/cities.ts` (CITIES / COMPANY_ROSTER), so the sim carries them; your `roster.ts` dedupes (contracts win), keep it as is. (2) Tokyo stays in SEA for now; no new RegionId. (3) Correct: CityEffects are consequences, decisions are made only on the HQ screen. Your black "Make a decision" button calling `onSelectCompany(playerCompanyId)` is fine. (4) I will style the app header myself. (5) FPS chip default-on is fine. Next: `git fetch origin && git merge origin/main`, then carry on with the rest of the owner's list.
+> **UPDATE (master, 2026-11-08): your 3D PR #4 is MERGED into main. I resolved the conflicts for you (kept 2D + 3D, 3D default). You do NOT need to fix conflicts any more.**
+> Do this now: `git fetch origin && git checkout worker-2 && git merge origin/main` (your branch was 22 commits behind, so you had no game logic until now). Then run the real app (`npm run dev`, open the root URL, not the dev page) and check the 3D city + map work inside the full game. Then: (1) delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`, (2) add the `?fps` readout, (3) world-atlas coastlines if time allows. Open a small PR for each.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
 > 1. `git fetch origin && git merge origin/main` on `worker-2`. Fix the conflicts in `CityView.tsx`, `WorldMap.tsx`, `world.test.ts`. Keep BOTH 2D and 3D: 3D default, `initialMode="2d"` fallback.
 > 2. Delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`.
@@ -60,6 +85,19 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-2: PR #3 (2D) is merged into main. Next: `git fetch origin && git merge origin/main` on `worker-2`, resolve `CityView.tsx`, `WorldMap.tsx`, `world.test.ts` (keep BOTH 2D and 3D paths; 3D default, `initialMode="2d"` fallback), re-run typecheck/tests/build, push, and PR #4 becomes mergeable. Also: delete the two stray files `src/world/screenshots$1.png` and `src/world/screenshots$name.png` (shell typo). Add the `?fps` readout. The app already imports `WorldMap` and `CityView` from `./world`, so keep those exports stable.
 
 ## worker-3  (Claude 3: Interface)
+> **NEW TOP-PRIORITY TASK (master, 2026-11-08 #9) for worker-3: the HQ boardroom scene.** The owners sent a reference image: a dusk boardroom, long dark conference table, executives seated and one standing and presenting, floor-to-ceiling windows with a glowing golden-hour city skyline behind, strip lights overhead. Make the HQ screen background look like that (`src/ui/` only, keep the left stats panel, card and news readable on top):
+> 1. **Scene:** layered SVG/CSS (no heavy deps): window wall with the skyline, table in perspective, 5-7 stylised seated/standing figures (simple silhouettes are fine, no real people), overhead light strips, subtle reflections on the glass.
+> 2. **Company logo, built in:** use `CompanyLogo` on the room itself, e.g. glowing sign on the back wall or glass, on the presenter's screen/lectern, and a small mark on the table. It must be clearly readable.
+> 3. **Every HQ looks different:** derive a look from the company (id/archetype/home city): different skyline for its city (sf, beijing, london, new york, tokyo etc.), time of day (golden hour/dusk/night), room palette, table shape, number of people, logo placement. Rivals (view-only) get their own looks too.
+> 4. **Light movement:** gentle, slow, realistic: drifting clouds/haze, flickering window lights in the skyline, a slow light sweep, subtle idle motion of the figures, soft glass glare. Respect `prefers-reduced-motion` (no animation then). Keep it smooth (CSS transforms/opacity only).
+> 5. Reactive bit if time: when the player's city has a blackout/unrest effect, dim or change the skyline outside the window.
+> 6. PR with screenshots of at least 4 different companies, light and dark theme. Do it after you merge `origin/main`.
+> **NEW TASKS (master, 2026-11-08 #7) - the hook was broken and hid this section until now; sorry. Your intro screen is wired into the app now. Do these in order:**
+> 1. `git fetch origin && git merge origin/main`.
+> 2. `TopBar` in `src/ui/` (the app's plain browser-button header looks unfinished): props `{ year, screen, onNavigate(screen), cardsWaiting, onSkipYear, children }` where screen is `'map'|'city'|'hq'|'dashboard'`. Style it: big readable year, clear active tab, a high-contrast "N cards waiting" call to action. Export it; I will wire it into `src/app`.
+> 3. `HowToPlay` overlay in `src/ui/` (3 short steps: pick a city -> open your HQ -> answer cards; watch the world change), with `onClose` and a "?" help button component. Keep it under 60 words.
+> 4. Click the three links in the report card debrief once from a normal browser (your session could not) and report any that are dead.
+> 5. Open a PR with screenshots.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:** (your score work is merged, thanks)
 > 1. `git fetch origin && git merge origin/main`.
 > 2. Add `IntroScreen` in `src/ui/`: title "AI 2126", the one-sentence pitch, the speculation note (plan 9.2: future events are speculative, based on real forecasts where they exist), and a Start button (`onStart`). Export it from `src/ui/index.ts`. I will wire it into `src/app`.
