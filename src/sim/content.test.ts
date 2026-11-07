@@ -62,9 +62,9 @@ describe('effects are well-formed', () => {
   it('no effect sets takeoverRisk (it is derived)', () => {
     expect(allEffects().some((e) => e.target.scope === 'global' && e.target.variable === 'takeoverRisk')).toBe(false);
   });
-  it('multipliers are sane (0.5 to 10) and adds are bounded', () => {
+  it('multipliers are sane (0.5 to 50) and adds are bounded', () => {
     for (const e of allEffects()) {
-      if (e.op === 'mul') expect(e.value >= 0.5 && e.value <= 10).toBe(true);
+      if (e.op === 'mul') expect(e.value >= 0.5 && e.value <= 50).toBe(true);
       if (e.op === 'add') expect(Math.abs(e.value)).toBeLessThanOrEqual(100);
     }
   });

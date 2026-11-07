@@ -1,5 +1,22 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-08 02:00 - in-progress
+What I did: PR 6 (IMF baseline) is merged. Step 6: balance runs and tuning. Every implemented ending is now reachable and none is too easy.
+- `src/sim/balance.ts` plays whole games with simulated players, one card per year like the app (only cards from the current era, requirements met, not answered yet). 7 policies: random, cautious, reckless, profit, generous, spender, villain. `src/sim/balance.test.ts` runs 2,800 games (400 per policy) in about 0.3 s and asserts the results. For a bigger report: `BALANCE_REPORT=1 BALANCE_GAMES=1000 npx vitest run src/sim/balance.report.test.ts`.
+- Result (1,000 games per policy). Random player: corporateFeudalism 46%, abundanceUtopia 29%, slowdown 25%, and rare early endings (nationalised, bankrupt, ww3, aiTakeover each 0.1-0.5%). Players who aim for something mostly get it: generous -> Utopia 71%, cautious -> Slowdown 100%, reckless -> aiTakeover 38% + nationalised 9%, profit -> Feudalism 95%, villain -> nationalised 18% + ww3 2%, spender -> bankrupt 100%.
+- Tuning (all in `TUNING`, `ENDING_THRESHOLDS` and the data files):
+  - AI capability grows 4/yr (was 2) and world capability follows the best lab; blackouts slow it by 25% (was 50%).
+  - Robots grow faster with capability; Mass-produce robots is x30 (was x5), the other robot cards x3 (were x1.5). Without this 1bn robots was impossible in 10 turns.
+  - New rule `raceTension`: capability raises tension. Tension card effects raised a little (hoard chips 14, race 16, offence 12, announce 10); war-threat chance 0.3.
+  - Company running cost raised (burn 12 + 0.4 x capability); nationalised at home-region regulation >= 80 (was 90); takeover risk threshold 40 (was 60).
+  - UBI / profit-sharing / robot dividend cut the wealth gap more (-12 / -6 / -12).
+  - AI takeover and the derived takeoverRisk now use the PLAYER company's safety (rivals' safety never changes, so the old all-company mean could never drop below 20).
+  - Horizon endings (Utopia / Feudalism / Slowdown) are scored with 0-1 ramps, each gated by its weakest ingredient, on half home region and half world (decisions act on the home region).
+- Checked: `npm run typecheck`, `npm test` (104 tests, 11 new balance tests) and `npm run build` pass. Only `src/sim/`, `data/` and `comms/worker-1.md` changed.
+Notes for others: card ids/options unchanged; only some effect values moved. A game still ends once the year passes 2036 and always has a score.
+Not done / caveats: balance depends on my simulated players, not real playtesting (plan 15.3 still needs people outside the team). Stretch endings (drowned world, immortal oligarchy, extinction) are not implemented.
+Question for master (if any): none. TASKS.md worker-1 steps 1-6 are now all done on my side.
+
 ## 2026-11-08 00:10 - in-progress
 What I did: PR 5 (cards and events) is merged. Step 5: real starting data from the IMF.
 - `scripts/fetch-imf.sh` downloads raw IMF DataMapper series (GDP `NGDPD`, population `LP`, unemployment `LUR`; WEO October 2026) into `data/raw/imf/`. `scripts/snapshot.ts` (`node scripts/snapshot.ts`) turns them into `data/baseline.json` (numbers the sim reads) and `data/sources.json` (28 entries: source, indicator, unit, year, projection flag, retrieval date, contributing countries, `verified: false`).

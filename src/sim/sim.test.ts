@@ -3,7 +3,7 @@ import type { PlayerChoice, WorldState } from '../contracts';
 import { COMPANY_ROSTER } from '../contracts/cities';
 import { createInitialState, createRng, createStep, defaultContent, rngForTurn, step } from './index';
 import { computeScore, deriveTakeoverRisk } from './endings';
-import { TUNING, automation, companyEconomy, concentration, energyLimit, gdpGrowth, riots, robotGrowth, tensionDrift, trustAndRegulation, unrest, type Rule } from './rules';
+import { TUNING, automation, companyEconomy, concentration, energyLimit, gdpGrowth, raceTension, riots, robotGrowth, tensionDrift, trustAndRegulation, unrest, type Rule } from './rules';
 import { END_YEAR, ENDING_THRESHOLDS, endingFit } from './endings';
 
 const NONE = createStep({ decisions: [], events: [] }); // rules only, no events or cards
@@ -179,9 +179,17 @@ describe('rules (each in isolation)', () => {
     smart.global.aiCapability = 80;
     expect(only(gdpGrowth, smart).regions.US.gdp / s.regions.US.gdp).toBeGreaterThan(base);
   });
-  it('robots multiply each year', () => {
+  it('robots multiply each year, faster when AI is more capable', () => {
     const s = fresh();
-    expect(only(robotGrowth, s).global.robotCount).toBeCloseTo(s.global.robotCount * TUNING.robotGrowth);
+    const f = only(robotGrowth, s).global.robotCount / s.global.robotCount;
+    expect(f).toBeCloseTo(TUNING.robotGrowthBase + TUNING.robotGrowthPerCapability * s.global.aiCapability);
+    s.global.aiCapability = 60;
+    expect(only(robotGrowth, s).global.robotCount / s.global.robotCount).toBeGreaterThan(f);
+  });
+  it('arms race: capability raises tension', () => {
+    const s = fresh();
+    s.global.aiCapability = 60;
+    expect(only(raceTension, s).global.geopoliticalTension).toBeGreaterThan(s.global.geopoliticalTension);
   });
   it('tension drifts back toward its home value from both sides', () => {
     const hi = fresh();

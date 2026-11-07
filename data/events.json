@@ -210,7 +210,7 @@
       "cmp": ">",
       "value": 80
     },
-    "chancePerTurn": 0.2,
+    "chancePerTurn": 0.3,
     "effects": [
       {
         "target": {
