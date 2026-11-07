@@ -7,8 +7,8 @@ import type { Decision, DecisionOption, EndingId, WorldState } from '../contract
 import { createInitialState, createRng, defaultContent, rngForTurn, step } from './index';
 import { evalCondition } from './vars';
 
-export type PolicyName = 'random' | 'cautious' | 'reckless' | 'profit' | 'generous' | 'spender' | 'villain';
-export const POLICIES: PolicyName[] = ['random', 'cautious', 'reckless', 'profit', 'generous', 'spender', 'villain'];
+export type PolicyName = 'random' | 'cautious' | 'reckless' | 'profit' | 'generous' | 'spender' | 'villain' | 'warmonger';
+export const POLICIES: PolicyName[] = ['random', 'cautious', 'reckless', 'profit', 'generous', 'spender', 'villain', 'warmonger'];
 
 const eraContains = (era: string, year: number): boolean => {
   const [a, b] = era.split('-').map(Number);
@@ -45,6 +45,8 @@ function appeal(policy: PolicyName, o: DecisionOption): number {
     case 'profit': return 2 * h.economy - h.trust;
     case 'spender': // always picks the most expensive option
       return h.safety + h.trust + byEffects(o, { 'company.money': -0.1 });
+    case 'warmonger': // chases every option that raises world tension, and the arms race with it
+      return byEffects(o, { 'global.geopoliticalTension': 1, 'global.aiCapability': 0.5, 'company.aiCapability': 0.5 }) - h.safety;
     case 'villain': return -2 * h.trust - h.safety + h.economy; // wants the public to hate it
     default: return 0;
   }

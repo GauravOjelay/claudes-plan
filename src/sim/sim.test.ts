@@ -5,6 +5,7 @@ import { createInitialState, createRng, createStep, defaultContent, rngForTurn, 
 import { computeScore, deriveTakeoverRisk } from './endings';
 import { TUNING, automation, companyEconomy, concentration, energyLimit, gdpGrowth, raceTension, riots, robotGrowth, tensionDrift, trustAndRegulation, unrest, type Rule } from './rules';
 import { END_YEAR, ENDING_THRESHOLDS, endingFit } from './endings';
+import { EFFECT_PROFILES } from './cityEffects';
 
 const NONE = createStep({ decisions: [], events: [] }); // rules only, no events or cards
 const fresh = (seed = 1): WorldState => createInitialState(seed, 'novacore');
@@ -128,9 +129,9 @@ describe('city effects follow their cause', () => {
     const fixed = NONE(blackoutState(5), [], createRng(1)).activeCityEffects.find((e) => e.kind === 'blackout')!;
     expect(fixed.intensity).toBeLessThan(short.intensity);
   });
-  it('other effects fade at the normal rate whatever the grid does', () => {
+  it('other effects follow their own profile whatever the grid does', () => {
     const w = NONE(blackoutState(5), [], createRng(1)).activeCityEffects.find((e) => e.kind === 'warBuildup')!;
-    expect(w.intensity).toBeCloseTo(0.8, 6);
+    expect(w.intensity).toBeCloseTo(0.9 - EFFECT_PROFILES.warBuildup.decay, 6);
   });
 });
 
