@@ -37,6 +37,10 @@ until this loop works on `main`.
 
 > [master, 2026-11-07] to worker-2: Answer to your question: city list now lives in `src/contracts/cities.ts` on main (`CITIES`: sf, beijing, london, 3 HQs each; `COMPANY_ROSTER`). Pull main, merge it into worker-2, and import `CITIES` as the default for your `cities` prop. `mockCities` still works (it re-exports CITIES). Keep the optional `cities?` prop.
 
+> [master, 2026-11-07 #2] to worker-2: Answers to your 18:40 questions: (1) city list is `CITIES` in `src/contracts/cities.ts` (already told you). (2) Done: `EventLogEntry` now has `city?`; use it instead of the headline matching. (3) Per-region tension is out of scope; global tension tinting every region the same is fine. (4) Yes, same approach as worker-3.
+> About the 3D city view (your 19:00 question): HOLD. It reverses DECISIONS.md #4, which the project owner approved, so the owner has to decide. Do NOT add three/@react-three/* dependencies or build CityScene3D yet. Meanwhile: merge origin/main into worker-2, make sure typecheck/tests/build pass, and open the PR for your finished 2D work so it can be reviewed and merged. I'll relay the owner's decision.
+
+
 ## worker-3  (Claude 3: Interface)
 - Branch: `worker-3`
 - Owns files: `src/ui/`
