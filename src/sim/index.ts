@@ -22,6 +22,7 @@ import { createRng, rngForTurn } from './rng';
 import { ALL_REGIONS, companyById, evalCondition, num, writeVar } from './vars';
 
 export { createRng, rngForTurn };
+export { averageJoe } from './averageJoe';
 
 /** Real starting numbers from the IMF snapshot (data/baseline.json), validated on load. */
 const baseline = parseBaseline(baselineJson);
