@@ -1,5 +1,15 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-07 21:15 - in-progress
+What I did: PR 1 (first milestone) is merged. Now step 3: all minimum-variable rules, endings, the 2036 horizon.
+- New rules: unrest (no safety net = pathway `ubi`), concentration (wealth gap), GDP growth, robot growth, tension drift, trust recovery + regulation, company economy (income, burn, value).
+- Endings: `bankrupt`, `nationalised` (home-region regulation >= 90), `ww3` (tension >= 95), `aiTakeover` (mean safety < 20 AND robots > 1bn AND derived risk >= 60), and at the end of 2036 the best fit of `abundanceUtopia` / `corporateFeudalism` / `slowdown`. That is 7 endings; the game now ends once the year passes `END_YEAR` (2036).
+- Events: added `war-threat` (tension > 80) and `regulation-crackdown` (trust < 30) from the plan's thresholds. Any event now has a 3-year cooldown.
+- Checked: typecheck + `npm test` pass (44 tests: each rule in isolation, each ending incl. the takeover prerequisites, horizon endings, cooldown).
+Files touched: `src/sim/rules.ts`, `src/sim/endings.ts`, `src/sim/index.ts`, `src/sim/sim.test.ts`, `data/events.json`.
+Notes: all numbers are in `TUNING` / `ENDING_THRESHOLDS` and are untuned; the balance run (step 6) will tune them once the ~20 cards exist (step 4, next). Nothing in the contracts changed.
+Question for master (if any): none.
+
 ## 2026-11-07 18:35 - in-progress
 What I did: first-milestone slice of the sim (TASKS.md steps 1-2, plus the master's three contract notes).
 - `src/sim/rng.ts`: mulberry32 `createRng(seed)`, and `rngForTurn({seed, year})` so the app can call `step(state, choices, rngForTurn(state))` with no Rng object to store; saved games replay exactly.

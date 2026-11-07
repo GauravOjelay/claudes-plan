@@ -22,6 +22,7 @@ export { createRng, rngForTurn };
 
 export const START_YEAR = 2026;
 export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
+export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
 
 export interface Content {
   decisions: Decision[];
@@ -113,6 +114,7 @@ export function createStep(content: Content): StepFn {
   function fireEvents(state: WorldState, rng: { next(): number }): void {
     for (const event of content.events) {
       if (!evalCondition(state, event.trigger)) continue;
+      if (state.eventLog.some((e) => e.eventId === event.id && state.year - e.year < EVENT_COOLDOWN)) continue;
       const ce = event.cityEffect;
       // One live effect per city and kind: don't re-fire an event whose picture is already on screen.
       if (ce && state.activeCityEffects.some((a) => a.city === ce.city && a.kind === ce.kind)) continue;

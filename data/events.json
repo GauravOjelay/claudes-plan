@@ -10,5 +10,30 @@
     "headline": "Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid",
     "cityEffect": { "city": "sf", "kind": "blackout", "intensity": 0.6 },
     "popup": true
+  },
+  {
+    "id": "war-threat",
+    "valence": "negative",
+    "trigger": { "kind": "var", "ref": { "scope": "global", "variable": "geopoliticalTension" }, "cmp": ">", "value": 80 },
+    "chancePerTurn": 0.2,
+    "effects": [
+      { "target": { "scope": "global", "variable": "geopoliticalTension" }, "op": "add", "value": 8 },
+      { "target": { "scope": "company", "variable": "companyValue" }, "op": "mul", "value": 0.9 }
+    ],
+    "headline": "Diplomats warn of open conflict as the AI race drives the blocs to the brink; markets fall",
+    "cityEffect": { "city": "london", "kind": "warBuildup", "intensity": 0.7 },
+    "popup": true
+  },
+  {
+    "id": "regulation-crackdown",
+    "valence": "negative",
+    "trigger": { "kind": "var", "ref": { "scope": "region", "region": "US", "variable": "publicTrust" }, "cmp": "<", "value": 30 },
+    "chancePerTurn": 0.5,
+    "effects": [
+      { "target": { "scope": "region", "region": "US", "variable": "regulationStrictness" }, "op": "add", "value": 25 },
+      { "target": { "scope": "company", "variable": "companyValue" }, "op": "mul", "value": 0.92 }
+    ],
+    "headline": "Lawmakers pass emergency limits on AI firms after public trust collapses",
+    "popup": true
   }
 ]
