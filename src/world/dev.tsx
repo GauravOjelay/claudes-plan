@@ -32,8 +32,8 @@ const devBase: WorldState = {
     { year: 2030, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'novacore' },
   ],
   eventLog: [
-    { year: 2027, eventId: 'blackout-belt', headline: 'Rolling blackouts spread across the Bay as campus demand spikes' },
-    { year: 2030, eventId: 'breakthrough-year', headline: 'Open materials model halves solar panel costs' },
+    { year: 2027, eventId: 'blackout-belt', headline: 'Rolling blackouts spread across the Bay as campus demand spikes', valence: 'negative', popup: true, city: 'sf' },
+    { year: 2030, eventId: 'breakthrough-year', headline: 'Open materials model halves solar panel costs', valence: 'positive', popup: true, city: 'sf' },
   ],
   headlines: [
     ...mockWorldState.headlines,

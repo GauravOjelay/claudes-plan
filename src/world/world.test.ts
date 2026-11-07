@@ -70,8 +70,9 @@ describe('cityTimelineItems', () => {
         { year: 2027, decisionId: 'd2', optionId: 'b', companyId: 'dragonmind' }, // Beijing: excluded
       ],
       eventLog: [
-        { year: 2027, eventId: 'e1', headline: 'Local thing' },
-        { year: 2027, eventId: 'e2', headline: 'Elsewhere thing' },
+        { year: 2027, eventId: 'e1', headline: 'Local thing', valence: 'negative' as const, popup: false },
+        { year: 2029, eventId: 'e3', headline: 'Tagged local', valence: 'positive' as const, popup: false, city: 'sf' },
+        { year: 2027, eventId: 'e2', headline: 'Elsewhere thing', valence: 'negative' as const, popup: false },
       ],
       headlines: [
         { year: 2027, text: 'Local thing', city: 'sf' },
@@ -79,6 +80,6 @@ describe('cityTimelineItems', () => {
       ],
     };
     const items = cityTimelineItems(state, mockCities[0]);
-    expect(items.map((i) => [i.year, i.type])).toEqual([[2026, 'effect'], [2027, 'event'], [2028, 'choice']]);
+    expect(items.map((i) => [i.year, i.type])).toEqual([[2026, 'effect'], [2027, 'event'], [2028, 'choice'], [2029, 'event']]);
   });
 });
