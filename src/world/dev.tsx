@@ -1,18 +1,23 @@
 /**
  * Dev page for src/world (not part of the game). Run `npm run dev` and open /src/world/dev.html
- *   #map[?metric=gdp|ai|tension&overlays=energy,water]
- *   #city[?effect=cycle|all|none|<kind>&i=0.8]   (default: cycle through every CityEffectKind)
- *   #timeline
+ *   #map                       live globe with the event demo
+ *   #city?city=lagos           live 3D city with the event demo (any city id)
+ *   #city?effect=<kind>&i=0.8  one effect, fixed intensity (for screenshots); effect=all | none | cycle | demo
+ *   #timeline?city=sf
+ *   add &mode=2d inside the hash for the 2D fallback, and ?fps=0 in the page URL to hide the fps chip.
  * Uses mockWorldState plus a few dev-only log entries so the timeline has something to show.
  */
-import { StrictMode, useEffect, useState } from 'react';
+import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { CityEffectKind, WorldState } from '../contracts';
 import { mockDecisions, mockWorldState } from '../contracts/mocks';
 import { CityTimeline } from './CityTimeline';
 import { CityView } from './CityView';
-import { WorldMap, type MapMetric, type MapOverlay } from './WorldMap';
+import { useEventDemo } from './demo';
+import { ALL_CITIES } from './roster';
 import { ALL_EFFECT_KINDS, EFFECT_INFO } from './util';
+import { WorldMap, type MapMetric, type MapOverlay } from './WorldMap';
+import './dev.css';
 
 const devBase: WorldState = {
   ...mockWorldState,
@@ -42,21 +47,15 @@ const devBase: WorldState = {
     { year: 2029, text: 'Office vacancy hits record as agents take over back-office work', city: 'sf' },
   ],
   unlockedPathways: ['ubi-pilot', 'fusion-bet'],
-  activeCityEffects: [
-    { city: 'sf', kind: 'blackout', intensity: 0.6, sinceYear: 2027 },
-    { city: 'sf', kind: 'solarBoom', intensity: 0.4, sinceYear: 2030 },
-    { city: 'beijing', kind: 'surveillance', intensity: 0.7, sinceYear: 2029 },
-  ],
+  activeCityEffects: [],
 };
 
 function parseHash() {
   const [route, query = ''] = location.hash.replace(/^#/, '').split('?');
-  return { route: route || 'city', params: new URLSearchParams(query) };
+  return { route: route || 'map', params: new URLSearchParams(query) };
 }
 
-function withEffects(kinds: CityEffectKind[], intensity: number): WorldState {
-  return { ...devBase, activeCityEffects: kinds.map((kind) => ({ city: 'sf', kind, intensity, sinceYear: 2029 })) };
-}
+const cityNames = Object.fromEntries(ALL_CITIES.map((c) => [c.id, c.name]));
 
 function Dev() {
   const [{ route, params }, setRoute] = useState(parseHash);
@@ -65,61 +64,91 @@ function Dev() {
     addEventListener('hashchange', on);
     return () => removeEventListener('hashchange', on);
   }, []);
-
-  const effectParam = params.get('effect') ?? 'cycle';
-  const [intensity, setIntensity] = useState(Number(params.get('i') ?? 0.8));
-  const [tick, setTick] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [log, setLog] = useState('');
-  useEffect(() => {
-    if (effectParam !== 'cycle' || paused) return;
-    const id = setInterval(() => setTick((t) => t + 1), 2500);
-    return () => clearInterval(id);
-  }, [effectParam, paused]);
-
-  const kinds: CityEffectKind[] =
-    effectParam === 'cycle' ? [ALL_EFFECT_KINDS[tick % ALL_EFFECT_KINDS.length]]
-    : effectParam === 'all' ? ALL_EFFECT_KINDS
-    : effectParam === 'none' ? []
-    : effectParam === 'demo' ? []
-    : [effectParam as CityEffectKind];
-  const state = effectParam === 'demo' ? devBase : withEffects(kinds, intensity);
   const nav = (h: string) => (location.hash = h);
 
+  const cityId = params.get('city') ?? 'sf';
+  const effectParam = params.get('effect') ?? 'live';
+  const [intensity, setIntensity] = useState(Number(params.get('i') ?? 0.8));
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (effectParam !== 'cycle') return;
+    const id = setInterval(() => setTick((t) => t + 1), 6000);
+    return () => clearInterval(id);
+  }, [effectParam]);
+
+  const live = effectParam === 'live';
+  const kindsKey =
+    effectParam === 'cycle' ? ALL_EFFECT_KINDS[tick % ALL_EFFECT_KINDS.length]
+    : effectParam === 'all' ? ALL_EFFECT_KINDS.join(',')
+    : ['none', 'live', 'demo'].includes(effectParam) ? ''
+    : effectParam;
+  const fixed = useMemo<WorldState>(() => {
+    if (effectParam === 'demo') {
+      return { ...devBase, activeCityEffects: [{ city: 'sf', kind: 'blackout', intensity: 0.6, sinceYear: 2027 }, { city: 'sf', kind: 'solarBoom', intensity: 0.4, sinceYear: 2030 }] };
+    }
+    const kinds = kindsKey ? (kindsKey.split(',') as CityEffectKind[]) : [];
+    return { ...devBase, activeCityEffects: kinds.map((kind) => ({ city: cityId, kind, intensity, sinceYear: 2029 })) };
+  }, [effectParam, kindsKey, intensity, cityId]);
+  const demo = useEventDemo(fixed, {
+    enabled: live,
+    cityIds: ALL_CITIES.map((c) => c.id),
+    cityNames,
+    focusCity: route === 'city' ? cityId : undefined,
+    seed: `dev:${route}:${cityId}`,
+  });
+  const state = live ? demo : fixed;
+  const mode = params.get('mode') === '2d' ? '2d' : '3d';
+
   return (
-    <div style={{ background: '#0b1220', minHeight: '100vh', color: '#e7ecf5', fontFamily: 'system-ui, sans-serif' }}>
-      <nav style={{ display: 'flex', gap: 8, padding: 10, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid #2a3a5c' }}>
-        <strong>src/world dev</strong>
-        <button onClick={() => nav('#map')}>Map</button>
-        <button onClick={() => nav('#city?effect=cycle')}>City: cycle effects</button>
-        <button onClick={() => nav('#city?effect=demo')}>City: demo state</button>
-        <button onClick={() => nav('#timeline')}>Timeline</button>
-        {route === 'city' && effectParam !== 'demo' && (
+    <div className="dev">
+      <header className="dev-bar">
+        <strong className="dev-brand">AI 2126 <span>world dev</span></strong>
+        <nav className="dev-tabs" aria-label="Screens">
+          <button aria-current={route === 'map'} onClick={() => nav('#map')}>Globe</button>
+          <button aria-current={route === 'city'} onClick={() => nav(`#city?city=${cityId}`)}>City</button>
+          <button aria-current={route === 'timeline'} onClick={() => nav(`#timeline?city=${cityId}`)}>Timeline</button>
+        </nav>
+        <label className="dev-field">
+          City
+          <select value={cityId} onChange={(e) => nav(`#${route === 'map' ? 'city' : route}?city=${e.target.value}`)}>
+            {ALL_CITIES.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </label>
+        {route === 'city' && (
           <>
-            <select value={effectParam} onChange={(e) => nav(`#city?effect=${e.target.value}&i=${intensity}`)}>
-              <option value="cycle">cycle</option>
-              <option value="all">all at once</option>
-              <option value="none">none</option>
-              {ALL_EFFECT_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
-            </select>
-            <label>intensity <input type="range" min={0} max={1} step={0.05} value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} /> {intensity.toFixed(2)}</label>
-            {effectParam === 'cycle' && <button onClick={() => setPaused((p) => !p)}>{paused ? 'play' : 'pause'}</button>}
-            <span style={{ color: '#ffb547' }}>{kinds.map((k) => EFFECT_INFO[k].label).join(', ')}</span>
+            <label className="dev-field">
+              Events
+              <select value={effectParam} onChange={(e) => nav(`#city?city=${cityId}&effect=${e.target.value}&i=${intensity}`)}>
+                <option value="live">Live demo</option>
+                <option value="cycle">Cycle kinds (6 s)</option>
+                <option value="all">All at once</option>
+                <option value="none">None</option>
+                {ALL_EFFECT_KINDS.map((k) => <option key={k} value={k}>{EFFECT_INFO[k].label}</option>)}
+              </select>
+            </label>
+            {!live && (
+              <label className="dev-field">
+                Intensity
+                <input type="range" min={0} max={1} step={0.05} value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} />
+                <output>{Math.round(intensity * 100)}%</output>
+              </label>
+            )}
           </>
         )}
-        <span style={{ marginLeft: 'auto', color: '#93a0ba' }}>{log}</span>
-      </nav>
+        <span className="dev-live" data-on={live}>{live ? 'Live event demo' : 'Fixed effects'}</span>
+      </header>
+
       {route === 'map' && (
-        <WorldMap state={devBase} onSelectCity={(id) => { setLog(`onSelectCity(${id})`); nav(`#city?effect=demo`); }}
-          initialMetric={(params.get('metric') as MapMetric) ?? 'gdp'}
-          initialOverlays={(params.get('overlays')?.split(',').filter(Boolean) as MapOverlay[]) ?? []} />
+        <WorldMap state={state} cities={ALL_CITIES} onSelectCity={(id) => nav(`#city?city=${id}`)}
+          onOpenHQ={() => nav(`#city?city=${devBase.companies.find((c) => c.id === devBase.playerCompanyId)?.homeCity ?? 'sf'}`)}
+          initialMetric={(params.get('metric') as MapMetric) ?? undefined}
+          initialOverlays={(params.get('overlays')?.split(',').filter(Boolean) as MapOverlay[]) ?? []} initialMode={mode} />
       )}
       {route === 'city' && (
-        <CityView state={state} cityId={params.get('city') ?? 'sf'} decisions={mockDecisions}
-          onSelectCompany={(id) => setLog(`onSelectCompany(${id})`)} onBack={() => nav('#map')}
-          initialMode={params.get('mode') === '2d' ? '2d' : '3d'} key={params.get('mode') ?? '3d'} />
+        <CityView key={`${cityId}:${mode}`} state={state} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions}
+          onSelectCompany={() => undefined} onBack={() => nav('#map')} initialMode={mode} />
       )}
-      {route === 'timeline' && <CityTimeline state={devBase} cityId="sf" decisions={mockDecisions} onScrub={(y) => setLog(`onScrub(${y})`)} />}
+      {route === 'timeline' && <CityTimeline state={devBase} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions} />}
     </div>
   );
 }

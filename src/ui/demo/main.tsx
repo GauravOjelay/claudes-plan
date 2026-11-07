@@ -1,6 +1,6 @@
 /**
  * Worker-3 demo harness. Open http://localhost:5173/src/ui/demo/index.html with `npm run dev`.
- * Views: #topbar  #topbar-done  #howto  #intro  #hq  #crisis  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
+ * Views: #rooms  #room-<companyId>  #topbar  #topbar-done  #howto  #intro  #hq  #crisis  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
  *
  * Built on mockWorldState plus the real cards/events in data/. The extra history, danger values
  * and score below are ILLUSTRATIVE DEMO NUMBERS ONLY (not real data, never shipped in the game).
@@ -9,6 +9,7 @@ import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Decision, EventLogEntry, GameEvent, WorldState } from '../../contracts';
 import { mockCities, mockWorldState } from '../../contracts/mocks';
+import { CITIES, COMPANY_ROSTER } from '../../contracts/cities';
 import cards from '../../../data/cards.json';
 import events from '../../../data/events.json';
 import { A11yControls, Dashboard, EventModal, HelpButton, HowToPlay, HQScreen, IntroScreen, ReportCard, TopBar, UiRoot, type GameScreen } from '../index';
@@ -79,6 +80,13 @@ const sunny: WorldState = {
   activeCityEffects: [{ city: 'sf', kind: 'solarBoom', intensity: 0.9, sinceYear: 2044 }],
 };
 
+/** Every roster company as a view-only HQ, to compare boardrooms (#room-<id>). Demo only. */
+const roster: WorldState = { ...base, companies: COMPANY_ROSTER.map((c) => ({ ...c })) };
+const blackoutCity = (city: string): WorldState => ({
+  ...roster,
+  activeCityEffects: [{ city, kind: 'blackout', intensity: 0.9, sinceYear: 2030 }, { city, kind: 'unrest', intensity: 0.7, sinceYear: 2030 }],
+});
+
 /** The event pop-up is driven by an EventLogEntry, exactly as src/app does it. */
 const popup: EventLogEntry | undefined = blackout && {
   year: 2026, eventId: blackout.id, headline: blackout.headline, valence: blackout.valence, popup: true, city: 'sf',
@@ -113,7 +121,7 @@ function Demo() {
   return (
     <UiRoot initial={{ ...(theme && { theme }), ...(scale && { textScale: scale }) }}>
       <nav style={{ display: 'flex', gap: 8, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
-        {['topbar', 'topbar-done', 'howto', 'intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
+        {['rooms', 'room-novacore', 'room-dragonmind', 'room-meridian', 'room-lumiere', 'room-blackout', 'topbar', 'topbar-done', 'howto', 'intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
           <a key={v} href={`#${v}`} style={{ color: 'var(--accent)', fontWeight: v === view ? 700 : 400 }}>{v}</a>
         ))}
         <span className="ui-small ui-muted" style={{ marginLeft: 'auto' }}>Demo data, not real figures</span>
@@ -134,6 +142,17 @@ function Demo() {
         </>
       )}
       {help && <HowToPlay onClose={() => setHelp(false)} />}
+      {view === 'rooms' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: 16 }}>
+          {COMPANY_ROSTER.map((c) => <a key={c.id} className="ui-btn" href={`#room-${c.id}`}>{c.name} · {c.homeCity}</a>)}
+        </div>
+      )}
+      {view.startsWith('room-') && view !== 'room-blackout' && (
+        <HQScreen state={roster} decisions={demoDecisions} onChoose={onChoose} cities={CITIES} companyId={view.slice(5)} />
+      )}
+      {view === 'room-blackout' && (
+        <HQScreen state={blackoutCity('sf')} decisions={demoDecisions} onChoose={onChoose} cities={CITIES} />
+      )}
       {view === 'intro' && <IntroScreen onStart={() => (location.hash = 'hq')} />}
       {view === 'crisis' && <HQScreen state={crisis} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}
       {view === 'sunny' && <HQScreen state={sunny} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}

@@ -5,7 +5,8 @@ import { ARCHETYPE_COLOR, ARCHETYPE_LABEL, CompanyLogo } from './CompanyLogo';
 import { DecisionCard, HintLegend } from './DecisionCard';
 import { cityName, formatCompact, levelLow, relevantHeadlines, THRESHOLDS } from './format';
 import { NewsPopups, NewsTicker } from './News';
-import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
+import { CITY_EFFECT_LABEL } from './Skyline';
+import { Boardroom } from './Boardroom';
 
 export interface HQScreenProps {
   state: WorldState;
@@ -53,7 +54,7 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
 
   return (
     <div className="ui-hq" style={{ ['--hq-color' as string]: ARCHETYPE_COLOR[company.archetype] }}>
-      <div className="ui-hq-bg"><Skyline effects={effects} /></div>
+      <div className="ui-hq-bg"><Boardroom company={company} effects={effects} /></div>
 
       <header className="ui-hq-header">
         {onBack && <button className="ui-btn" onClick={onBack}>← {city}</button>}

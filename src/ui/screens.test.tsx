@@ -7,6 +7,8 @@ import { ReportCard } from './ReportCard';
 import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
 import { HQScreen } from './HQScreen';
 import { TopBar } from './TopBar';
+import { Boardroom, boardroomLook } from './Boardroom';
+import { COMPANY_ROSTER } from '../contracts/cities';
 import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
 
 const ALL_KINDS = Object.keys(CITY_EFFECT_LABEL) as CityEffectKind[];
@@ -105,5 +107,47 @@ describe('HowToPlay', () => {
 
   it('help button has an accessible name', () => {
     expect(renderToStaticMarkup(<HelpButton onClick={() => {}} />)).toContain('aria-label="How to play"');
+  });
+});
+
+describe('Boardroom', () => {
+  it('derives the same look every time (deterministic)', () => {
+    const c = COMPANY_ROSTER[0];
+    expect(boardroomLook(c)).toEqual(boardroomLook({ ...c }));
+  });
+
+  it('gives the three HQs in every city different rooms', () => {
+    const byCity = new Map<string, string[]>();
+    for (const c of COMPANY_ROSTER) {
+      const l = boardroomLook(c);
+      const key = `${l.time}/${l.table}/${l.signStyle}/${l.palette}/${l.people}/${l.presenterSide}`;
+      byCity.set(c.homeCity, [...(byCity.get(c.homeCity) ?? []), key]);
+    }
+    for (const [city, keys] of byCity) expect(new Set(keys).size, city).toBe(keys.length);
+  });
+
+  it('uses every time of day, table shape and sign style across the roster, with 5-7 people', () => {
+    const looks = COMPANY_ROSTER.map(boardroomLook);
+    expect(new Set(looks.map((l) => l.time)).size).toBe(3);
+    expect(new Set(looks.map((l) => l.table)).size).toBe(3);
+    expect(new Set(looks.map((l) => l.signStyle)).size).toBe(3);
+    for (const l of looks) expect(l.people).toBeGreaterThanOrEqual(5), expect(l.people).toBeLessThanOrEqual(7);
+  });
+
+  it('shows the company logo and name, and draws the right number of people', () => {
+    const c = COMPANY_ROSTER.find((x) => x.id === 'meridian')!;
+    const html = renderToStaticMarkup(<Boardroom company={c} />);
+    expect(html).toContain('Meridian AI');
+    expect((html.match(/aria-label="Meridian AI logo"/g) ?? []).length).toBe(3); // sign, screen, table
+    expect((html.match(/ui-br-idle/g) ?? []).length).toBe(boardroomLook(c).people - 1);
+    expect(html).toContain('ui-br-presenter');
+  });
+
+  it('dims the skyline in a blackout', () => {
+    const c = COMPANY_ROSTER[0];
+    const lit = (h: string) => (h.match(/opacity="0.85"/g) ?? []).length;
+    const normal = renderToStaticMarkup(<Boardroom company={c} />);
+    const dark = renderToStaticMarkup(<Boardroom company={c} effects={[{ city: c.homeCity, kind: 'blackout', intensity: 1, sinceYear: 2030 }]} />);
+    expect(lit(dark)).toBeLessThan(lit(normal) / 3);
   });
 });

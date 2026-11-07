@@ -115,11 +115,37 @@
   overflow: hidden;
   isolation: isolate;
 }
-.ui-hq-bg {
-  position: absolute; inset: 0; z-index: -1;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--hq-color) 22%, var(--bg)) 0%, var(--bg) 70%);
+.ui-hq-bg { position: absolute; inset: 0; z-index: -1; background: #0b0d12; }
+.ui-hq-bg .ui-boardroom { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Text that sits straight on the boardroom picture gets its own backing so it reads in both themes. */
+.ui-hq-header > div, .ui-hq-header .ui-year, .ui-hq aside h3, .ui-hq aside .ui-popups > p {
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border-radius: 10px; padding: 0.3rem 0.7rem;
+  backdrop-filter: blur(4px);
 }
+.ui-hq aside h3, .ui-hq aside .ui-popups > p { align-self: flex-start; margin: 0; }
+
+/* Boardroom motion: slow, transform/opacity only. Turned off with reduced motion. */
+.ui-boardroom .ui-br-clouds { animation: ui-br-drift 90s linear infinite alternate; }
+.ui-boardroom .ui-br-flicker { animation: ui-br-flicker 7s steps(1) infinite; }
+.ui-boardroom .ui-br-f1 { animation-duration: 9s; } .ui-boardroom .ui-br-f2 { animation-duration: 11s; animation-delay: -3s; }
+.ui-boardroom .ui-br-f3 { animation-duration: 13s; animation-delay: -6s; } .ui-boardroom .ui-br-f4 { animation-duration: 8s; animation-delay: -2s; }
+.ui-boardroom .ui-br-f5 { animation-duration: 15s; animation-delay: -9s; }
+.ui-boardroom .ui-br-sweep { animation: ui-br-sweep 14s ease-in-out infinite; }
+.ui-boardroom .ui-br-glare { animation: ui-br-glare 8s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-strip { animation: ui-br-glare 6s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-idle { animation: ui-br-breathe 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+.ui-boardroom .ui-br-arm { animation: ui-br-gesture 4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 0% 50%; }
+.ui-boardroom .ui-br-twinkle { animation: ui-br-glare 3s ease-in-out infinite alternate; }
+.ui-boardroom .ui-br-smoke { animation: ui-br-smoke 10s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+@keyframes ui-br-drift { to { transform: translateX(120px); } }
+@keyframes ui-br-flicker { 0%, 100% { opacity: 0.85; } 40% { opacity: 0.15; } 55% { opacity: 0.85; } }
+@keyframes ui-br-sweep { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 60%, 100% { transform: translateX(2100px); opacity: 0; } }
+@keyframes ui-br-glare { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes ui-br-breathe { to { transform: translateY(-1.5px) scaleY(1.01); } }
+@keyframes ui-br-gesture { from { transform: rotate(-6deg); } to { transform: rotate(10deg); } }
+@keyframes ui-br-smoke { to { transform: translateX(30px) scaleY(1.2); opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .ui-boardroom * { animation: none !important; } }
+@media (max-width: 640px) { .ui-boardroom .ui-br-sign { display: none; } }
 .ui-hq-bg .ui-skyline { position: absolute; bottom: 4rem; left: 0; width: 100%; height: 60%; overflow: visible; color: var(--hq-color); }
 .ui-skyline .ui-drone { animation: ui-hover 3s ease-in-out infinite alternate; }
 .ui-skyline .ui-flood { animation: ui-tide 4s ease-in-out infinite alternate; }
