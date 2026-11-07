@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CityInfo, Decision, WorldState } from '../contracts';
-import { mockCities } from '../contracts/mocks';
+import { CITIES } from '../contracts/cities';
 import { EFFECT_INFO } from './util';
 import './world.css';
 
@@ -23,8 +23,8 @@ export interface TimelineItem {
 
 /**
  * Everything that happened to one city, oldest first.
- * EventLogEntry has no city in contracts v0.1, so an event counts for this city when a headline
- * with the same year and text is tagged with this city (or with its region and no city).
+ * An event counts for this city when its log entry names the city. Entries without a city fall back
+ * to a headline with the same year and text tagged with this city (or with its region and no city).
  */
 export function cityTimelineItems(state: WorldState, city: CityInfo, decisions: Decision[] = []): TimelineItem[] {
   const items: TimelineItem[] = [];
@@ -42,10 +42,12 @@ export function cityTimelineItems(state: WorldState, city: CityInfo, decisions: 
 
   for (const ev of state.eventLog) {
     const year = Number(ev.year);
-    const local = state.headlines.some(
-      (h) => Number(h.year) === year && h.text === ev.headline && (h.city === city.id || (!h.city && h.region === city.region)),
-    );
-    if (local) items.push({ year, type: 'event', text: ev.headline });
+    const local = ev.city
+      ? ev.city === city.id
+      : state.headlines.some(
+          (h) => Number(h.year) === year && h.text === ev.headline && (h.city === city.id || (!h.city && h.region === city.region)),
+        );
+    if (local) items.push({ year, type: 'event', text: ev.headline, good: ev.valence === 'positive' });
   }
 
   for (const fx of state.activeCityEffects) {
@@ -59,7 +61,7 @@ export function cityTimelineItems(state: WorldState, city: CityInfo, decisions: 
 
 const PAST_WIDTH = 78; // % of the track used for the past; the rest shows future branches
 
-export function CityTimeline({ state, cityId, cities = mockCities, decisions, onScrub }: CityTimelineProps) {
+export function CityTimeline({ state, cityId, cities = CITIES, decisions, onScrub }: CityTimelineProps) {
   const city = cities.find((c) => c.id === cityId);
   const [selected, setSelected] = useState<number | null>(null);
   if (!city) return null;

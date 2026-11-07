@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { CityInfo, RegionId, WorldState } from '../contracts';
-import { mockCities } from '../contracts/mocks';
+import { CITIES } from '../contracts/cities';
 import { MAP_H, MAP_W, OTHER_LAND_PATH, REGION_LABEL_POS, REGION_NAMES, REGION_PATHS } from './geo';
 import { EFFECT_INFO, clamp01, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
 import './world.css';
@@ -11,7 +11,7 @@ export type MapOverlay = 'energy' | 'water';
 export interface WorldMapProps {
   state: WorldState;
   onSelectCity: (cityId: string) => void;
-  /** City list. Defaults to the mock list until the real one lands (see comms/worker-2.md). */
+  /** City list. Defaults to CITIES from src/contracts/cities.ts. */
   cities?: CityInfo[];
   initialMetric?: MapMetric;
   initialOverlays?: MapOverlay[];
@@ -68,7 +68,7 @@ export function regionMetric(state: WorldState, metric: MapMetric): Record<Regio
   return out;
 }
 
-export function WorldMap({ state, onSelectCity, cities = mockCities, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
+export function WorldMap({ state, onSelectCity, cities = CITIES, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
   const [metric, setMetric] = useState<MapMetric>(initialMetric);
   const [overlays, setOverlays] = useState<MapOverlay[]>(initialOverlays);
   const [hover, setHover] = useState<string | null>(null);

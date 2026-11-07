@@ -1,6 +1,6 @@
 import { useMemo, type KeyboardEvent } from 'react';
 import type { CityEffect, CityEffectKind, CityInfo, Company, Decision, WorldState } from '../contracts';
-import { mockCities } from '../contracts/mocks';
+import { CITIES } from '../contracts/cities';
 import { CityTimeline } from './CityTimeline';
 import { EFFECT_RENDERERS } from './effects';
 import { REGION_NAMES } from './geo';
@@ -12,7 +12,7 @@ export interface CityViewProps {
   state: WorldState;
   cityId: string;
   onSelectCompany: (companyId: string) => void;
-  /** City list. Defaults to the mock list until the real one lands (see comms/worker-2.md). */
+  /** City list. Defaults to CITIES from src/contracts/cities.ts. */
   cities?: CityInfo[];
   /** Used by the timeline to show decision titles instead of ids. */
   decisions?: Decision[];
@@ -223,7 +223,7 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
   );
 }
 
-export function CityView({ state, cityId, onSelectCompany, cities = mockCities, decisions, onBack, showTimeline = true }: CityViewProps) {
+export function CityView({ state, cityId, onSelectCompany, cities = CITIES, decisions, onBack, showTimeline = true }: CityViewProps) {
   const city = cities.find((c) => c.id === cityId);
   if (!city) {
     return (
