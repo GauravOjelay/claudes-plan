@@ -5,7 +5,7 @@ jobs, wealth, climate and humanity's fate. Hackathon theme: "New Worlds".
 
 **Read `docs/plan.md` first. It is the single source of truth** (check its section 17 changelog before every task).
 If anything conflicts with it, the plan wins; report the conflict. `TASKS.md` and `DECISIONS.md`
-hold current assignments and decisions. Role prompts are in `roles/worker-N.md`.
+hold current assignments and decisions. Role prompts are in `roles/worker-N.md`. Reference images from the team are in `references/` (named `<who>-<screen>-<what>`; see `references/README.md`). Look at the ones for you or `all-` before visual work.
 
 ## Stack and commands
 React + TypeScript (Vite), Vitest. Simulation is pure TypeScript in the browser.

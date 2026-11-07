@@ -24,18 +24,25 @@ export function App() {
   const [started, setStarted] = useState(false);
   const [help, setHelp] = useState(false);
 
+  // One decision per year (DECISIONS: option 3). Answering a card does NOT end the year:
+  // the choice is held until the player presses "End year" in the top bar, so they can
+  // look around the city and globe first.
+  const [pending, setPending] = useState<{ decisionId: string; optionId: string } | null>(null);
   const available = useMemo(() => availableDecisions(state), [state]);
+  const openCards = pending ? [] : available.slice(0, 1);
 
-  const advance = (choice?: { decisionId: string; optionId: string }) => {
+  const advance = () => {
     const before = state.eventLog.length;
-    const next = playTurn(state, choice);
+    const next = playTurn(state, pending ?? undefined);
     setPopups((p) => [...p, ...next.eventLog.slice(before).filter((e) => e.popup)]);
+    setPending(null);
     setState(next);
   };
 
   const restart = () => {
     setState(newGame(seed));
     setPopups([]);
+    setPending(null);
     setScreen('map');
     setStarted(false);
   };
@@ -67,7 +74,7 @@ export function App() {
       <TopBar
         year={state.year}
         screen={screen}
-        cardsWaiting={available.length}
+        cardsWaiting={openCards.length}
         onSkipYear={() => advance()}
         onNavigate={(next) => {
           if (next === 'hq') setHqId(undefined);
@@ -104,12 +111,12 @@ export function App() {
       {screen === 'hq' && (
         <HQScreen
           state={state}
-          decisions={available}
+          decisions={openCards}
           companyId={hqId}
           cities={CITIES}
           onChoose={(decisionId, optionId) => {
             if (hqId && hqId !== state.playerCompanyId) return; // rivals are view-only
-            advance({ decisionId, optionId });
+            setPending({ decisionId, optionId });
           }}
           onBack={() => setScreen('city')}
         />

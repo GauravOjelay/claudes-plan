@@ -63,3 +63,17 @@ export const mockDecisions: Decision[] = [
     ],
   },
 ];
+
+import type { AverageJoe } from './index';
+/** Mock for building the Average Joe view before the sim implements it. */
+export const mockJoe: AverageJoe = {
+  cityId: 'sf',
+  name: 'Sam Rivera',
+  age: 34,
+  occupation: 'customer support agent',
+  job: 'lostSoftwareJob',
+  income: 21000,
+  mood: 38,
+  situation: 'blackout',
+  lines: ['Lost my support job to an AI agent in March.', 'Third blackout this month; the fridge is empty.'],
+};

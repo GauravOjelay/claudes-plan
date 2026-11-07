@@ -1,0 +1,1 @@
+From Gaurav: the text under "YOUR MOVE" (bottom left of the globe) is too dark to read. Make the subtitle white/near-white on the black button. Also: it is not obvious what to click to start; this button should be the obvious first step.

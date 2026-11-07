@@ -1,0 +1,1 @@
+From Gaurav: the TARGET look for every HQ. Realistic dusk boardroom: warm golden light, glass window wall with mullions and reflections, detailed skyline with haze/depth, long glossy table with reflections, real chairs, shaded people (not flat silhouettes), ceiling strip lights casting light. Logo built in. Every HQ different. Gentle realistic motion.
