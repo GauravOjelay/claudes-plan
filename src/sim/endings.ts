@@ -1,4 +1,4 @@
-import type { Score, WorldState } from '../contracts';
+import type { EndingId, Score, WorldState } from '../contracts';
 import { ALL_REGIONS, clamp, playerCompany } from './vars';
 
 /** Population-weighted mean of a per-region number. */
@@ -47,15 +47,67 @@ export function computeScore(state: WorldState): Score {
   return { total: r1(total), wellbeing: r1(wellbeing), company: r1(company), survival: r1(survival) };
 }
 
+/** Last year of the minimum version (plan 11.1). The game is over once the year passes this. */
+export const END_YEAR = 2036;
+
+export const ENDING_THRESHOLDS = {
+  ww3Tension: 95, // tension at or above this and the blocs go to war
+  nationalisedRegulation: 90, // home-region regulation at or above this and the state takes the company
+  takeoverSafety: 20, // plan section 3: takeover needs safety below 20 ...
+  takeoverRobots: 1e9, // ... AND more than 1 billion robots
+  takeoverRisk: 60, // ... and the derived risk has built up
+} as const;
+
+const meanSafety = (state: WorldState): number => state.companies.reduce((s, c) => s + c.vars.safetyLevel, 0) / state.companies.length;
+
 /**
- * Check whether the game is over. First slice: bankruptcy only. The remaining endings
- * (utopia, feudalism, WW3, slowdown, takeover, ...) are TASKS.md worker-1 step 3.
+ * How well the final world fits each horizon ending, 0-1. The best fit wins (plan section 3:
+ * "picks the best-fitting ending"). Ties go to the first in this list.
+ * - abundanceUtopia: low wealth gap, high trust, high safety, low unemployment.
+ * - corporateFeudalism: huge wealth gap and a very valuable company.
+ * - slowdown: safeguards kept, capability moderate, tension low.
  */
+export function endingFit(state: WorldState): { id: EndingId; fit: number }[] {
+  const gap = weighted(state, (r) => r.wealthGap) / 100;
+  const trust = weighted(state, (r) => r.publicTrust) / 100;
+  const jobs = 1 - weighted(state, (r) => (r.unemploymentSoftware + r.unemploymentPhysical) / 2) / 100;
+  const safety = meanSafety(state) / 100;
+  const cap = clamp(state.global.aiCapability / 100, 0, 1);
+  const calm = 1 - state.global.geopoliticalTension / 100;
+  const value = clamp(playerCompany(state).vars.companyValue / 300, 0, 1);
+  return [
+    { id: 'abundanceUtopia', fit: 0.35 * (1 - gap) + 0.25 * trust + 0.2 * safety + 0.2 * jobs },
+    { id: 'corporateFeudalism', fit: 0.55 * gap + 0.25 * value + 0.2 * (1 - trust) },
+    { id: 'slowdown', fit: 0.4 * safety + 0.4 * (1 - cap) + 0.2 * calm },
+  ];
+}
+
+/** Threshold endings that can end the game early, in priority order. Returns undefined if none apply. */
+function earlyEnding(state: WorldState): { ending: EndingId; reason: string } | undefined {
+  const me = playerCompany(state);
+  const T = ENDING_THRESHOLDS;
+  if (me.vars.money < 0 || me.vars.companyValue <= 0) return { ending: 'bankrupt', reason: `${me.name} ran out of money.` };
+  if (state.regions[me.homeRegion].regulationStrictness >= T.nationalisedRegulation) {
+    return { ending: 'nationalised', reason: `The government took ${me.name} into public ownership.` };
+  }
+  if (state.global.geopoliticalTension >= T.ww3Tension) return { ending: 'ww3', reason: 'Rivalry between the blocs spiralled into open war.' };
+  if (meanSafety(state) < T.takeoverSafety && state.global.robotCount > T.takeoverRobots && state.global.takeoverRisk >= T.takeoverRisk) {
+    return { ending: 'aiTakeover', reason: 'Unchecked AI systems with a vast robot workforce slipped out of human control.' };
+  }
+  return undefined;
+}
+
+/** Check whether the game is over: early threshold endings first, then the best-fitting ending once past END_YEAR. */
 export function checkEndings(state: WorldState): void {
   if (state.status.over) return;
-  const me = playerCompany(state);
-  if (me.vars.money < 0 || me.vars.companyValue <= 0) {
-    state.status = { over: true, ending: 'bankrupt', reason: `${me.name} ran out of money.` };
-    state.status.score = computeScore(state);
+  const early = earlyEnding(state);
+  if (early) {
+    state.status = { over: true, ending: early.ending, reason: early.reason };
+  } else if (state.year > END_YEAR) {
+    const best = endingFit(state).reduce((a, b) => (b.fit > a.fit ? b : a));
+    state.status = { over: true, ending: best.id, reason: `The world of ${END_YEAR} best fits: ${best.id}.` };
+  } else {
+    return;
   }
+  state.status.score = computeScore(state);
 }
