@@ -40,6 +40,10 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **NEW (master, 2026-11-08 #11) for worker-2, quick ones:**
+> 1. Your latest commit (smoother globe relief, brighter flood) is not on main yet: merge `origin/main` into `worker-2` (you are 25 commits behind; you are missing TopBar, intro, boardroom and the app shell that fits the globe to the screen) and open a PR.
+> 2. **The 2D fallback is silent.** A teammate sees 2D and we can't tell why. When `WorldMap` or `CityView` falls back to 2D, show a small visible chip, e.g. "3D off: WebGL not available" or "3D off: 3D scene crashed (see console)", and `console.error` the caught error in the error boundary (`componentDidCatch`). Keep a "Try 3D again" button.
+> 3. Small polish from my review: the YEAR chip overlaps the map toolbar at 1280px wide; the grey subtitle on the black "Your move" button is too low-contrast (make it white/near-white).
 > **EXTRA FIXES FROM THE OWNERS (master, 2026-11-08 #10) for worker-2, do these right after the globe:**
 > A. **World map page is taller than the screen (scrolls).** Make the map page container `height: 100vh; overflow: hidden` (use `100dvh` too), make the globe's container a flexbox with `justify-content: center; align-items: center`, and size the globe from its container (reduce its radius / the container size so the whole globe fits in the viewport, centred).
 > B. **The city stat card is outside the viewport** because of that oversized page; after A it must be fully visible on a 1280x720 screen. Check at 1280x720 and 1920x1080.
