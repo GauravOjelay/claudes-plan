@@ -1,4 +1,4 @@
-import { useMemo, type KeyboardEvent } from 'react';
+import { Component, Suspense, lazy, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { CityEffect, CityEffectKind, CityInfo, Company, Decision, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { CityTimeline } from './CityTimeline';
@@ -7,6 +7,30 @@ import { REGION_NAMES } from './geo';
 import { GROUND_Y, QUAY_BOTTOM, ROAD_BOTTOM, ROAD_TOP, SCENE_H, SCENE_W, buildScene, type Building, type Window } from './scene';
 import { ALL_EFFECT_KINDS, EFFECT_INFO, companiesInCity, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
 import './world.css';
+
+const CityScene3D = lazy(() => import('./city3d/CityScene3D'));
+
+export type CityRenderMode = '3d' | '2d';
+
+function hasWebGL(): boolean {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
+/** If the 3D scene throws (driver issue etc.), fall back to the 2D skyline instead of a blank screen. */
+class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 export interface CityViewProps {
   state: WorldState;
@@ -18,6 +42,8 @@ export interface CityViewProps {
   decisions?: Decision[];
   onBack?: () => void;
   showTimeline?: boolean;
+  /** 3D is the default (DECISIONS.md #4); 2D SVG skyline is the fallback. */
+  initialMode?: CityRenderMode;
 }
 
 type Fx = Map<CityEffectKind, CityEffect>;
@@ -223,7 +249,8 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
   );
 }
 
-export function CityView({ state, cityId, onSelectCompany, cities = CITIES, decisions, onBack, showTimeline = true }: CityViewProps) {
+export function CityView({ state, cityId, onSelectCompany, cities = CITIES, decisions, onBack, showTimeline = true, initialMode = '3d' }: CityViewProps) {
+  const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
   const city = cities.find((c) => c.id === cityId);
   if (!city) {
     return (
@@ -243,10 +270,22 @@ export function CityView({ state, cityId, onSelectCompany, cities = CITIES, deci
         {onBack && <button className="w-btn" onClick={onBack}>← World map</button>}
         <h2>{city.name}</h2>
         <span className="w-sub">{REGION_NAMES[city.region]} · {state.year}</span>
+        <div className="w-seg w-mode" role="group" aria-label="City view mode">
+          <button aria-pressed={mode === '3d'} onClick={() => setMode('3d')}>3D</button>
+          <button aria-pressed={mode === '2d'} onClick={() => setMode('2d')}>2D</button>
+        </div>
       </div>
       <div className="w-city-layout">
         <div className="w-scene-wrap">
-          <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />
+          {mode === '3d' ? (
+            <Fallback fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
+              <Suspense fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
+                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} />
+              </Suspense>
+            </Fallback>
+          ) : (
+            <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />
+          )}
         </div>
         <aside>
           <section className="w-panel">

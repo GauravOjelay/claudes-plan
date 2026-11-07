@@ -116,7 +116,8 @@ function Dev() {
       )}
       {route === 'city' && (
         <CityView state={state} cityId={params.get('city') ?? 'sf'} decisions={mockDecisions}
-          onSelectCompany={(id) => setLog(`onSelectCompany(${id})`)} onBack={() => nav('#map')} />
+          onSelectCompany={(id) => setLog(`onSelectCompany(${id})`)} onBack={() => nav('#map')}
+          initialMode={params.get('mode') === '2d' ? '2d' : '3d'} key={params.get('mode') ?? '3d'} />
       )}
       {route === 'timeline' && <CityTimeline state={devBase} cityId="sf" decisions={mockDecisions} onScrub={(y) => setLog(`onScrub(${y})`)} />}
     </div>
