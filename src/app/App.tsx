@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { EventLogEntry, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { CityView, WorldMap } from '../world';
-import { Dashboard, EventModal, HQScreen, NewsTicker, ReportCard, UiRoot, A11yControls } from '../ui';
+import { Dashboard, EventModal, HQScreen, IntroScreen, NewsTicker, ReportCard, UiRoot, A11yControls } from '../ui';
 import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
@@ -20,6 +20,7 @@ export function App() {
   const [cityId, setCityId] = useState('sf');
   const [hqId, setHqId] = useState<string | undefined>(undefined);
   const [popups, setPopups] = useState<EventLogEntry[]>([]);
+  const [started, setStarted] = useState(false);
 
   const available = useMemo(() => availableDecisions(state), [state]);
 
@@ -34,7 +35,16 @@ export function App() {
     setState(newGame(seed));
     setPopups([]);
     setScreen('map');
+    setStarted(false);
   };
+
+  if (!started) {
+    return (
+      <UiRoot>
+        <IntroScreen onStart={() => setStarted(true)} />
+      </UiRoot>
+    );
+  }
 
   if (state.status.over) {
     return (
