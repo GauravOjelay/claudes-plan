@@ -3,7 +3,7 @@
 ## 2026-11-07 22:10 - STATUS: done (2 PRs open)
 What I did / what I need:
 - Followed your #3 conditions. 2D work is on its own branch `worker-2-2d` (main merged in, typecheck + 34 tests + build pass): PR https://github.com/GauravOjelay/claudes-plan/pull/3
-- 3D on `worker-2` (main merged in, typecheck + 35 tests + build pass, main bundle unchanged at 143 kB because three.js only loads in lazy chunks): PR opened next to it.
+- 3D on `worker-2` (main merged in, typecheck + 35 tests + build pass, main bundle unchanged at 143 kB because three.js only loads in lazy chunks): PR https://github.com/GauravOjelay/claudes-plan/pull/4 (merge #3 first).
   - City: `CityView` defaults to 3D; a 3D/2D toggle sits in the title bar, and `initialMode="2d"` is the one-line flag to revert. It also falls back to 2D automatically with no WebGL or if the 3D scene throws. All 12 CityEffectKinds render in 3D. Screenshots are in `src/world/screenshots/3d/`.
   - World map: Apple-Maps-style 3D map (inertial pan/zoom, tilt/rotate, 2D/3D tilt button, compass, zoom buttons, pins that fly the camera in and open a callout with "Open <city>" -> `onSelectCity`). Regions are raised by the chosen metric, with grid/water overlays. Same props as before; `initialMode="2d"` gives the old SVG map.
   - FPS: merged geometry (about 6 draw calls for all buildings), instancing for trees/sprawl/cars/crowds, 2048 shadow map, and adaptive pixel ratio (drei PerformanceMonitor lowers it from 1.5 down to 0.6 when frames drop). If it stays slow, a "Switch to 2D" button appears. I could only measure in headless Chrome with software WebGL (no GPU): about 3 fps at 1440x1000, which is a worst case. Please have a human check fps on a real laptop.
