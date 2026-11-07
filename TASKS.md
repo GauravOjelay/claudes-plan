@@ -9,6 +9,11 @@ changes on the dashboard -> one `CityEffect` appears in the city view. Nothing e
 until this loop works on `main`.
 
 ## worker-1  (Claude 1: Simulation and data)
+> **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
+> 1. `git fetch origin && git merge origin/main` (PR #6 and worker-3 are merged).
+> 2. Step 6: balance run. Add `npm run balance` that simulates thousands of random games (seeds 1..N, random options). Print how often each ending happens. Every ending must be reachable and none above ~60%. Tune `TUNING` / `ENDING_THRESHOLDS`. Runs are only ~10 turns, so endings must be reachable in that time.
+> 3. Check the demo path: with seed 1 and the sensible choices (safety first, UBI, treaty), a good ending (`abundanceUtopia` or `slowdown`) should be reachable; with reckless choices (skip safety, hoard chips) a bad one (`ww3`, `aiTakeover` or `nationalised`). Add a test for both.
+> 4. Open a PR when done and write the numbers into your comms file.
 - Branch: `worker-1`
 - Owns files: `src/sim/`, `data/`, `scripts/`
 - Task, in order:
@@ -28,6 +33,12 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
+> 1. `git fetch origin && git merge origin/main` on `worker-2`. Fix the conflicts in `CityView.tsx`, `WorldMap.tsx`, `world.test.ts`. Keep BOTH 2D and 3D: 3D default, `initialMode="2d"` fallback.
+> 2. Delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`.
+> 3. Add the `?fps` URL flag: a small FPS readout in the corner when the page URL has `?fps`.
+> 4. `npm run typecheck && npm test && npm run build`, push, and write "PR #4 ready" in your comms file. Real GDP numbers now flow in from IMF data (US about 32,642 bn), so check your labels and colour scales still look right.
+> 5. Then: add `world-atlas` coastlines (approved) if time allows.
 - Branch: `worker-2`
 - Owns files: `src/world/`
 - Task, in order:
@@ -49,6 +60,12 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-2: PR #3 (2D) is merged into main. Next: `git fetch origin && git merge origin/main` on `worker-2`, resolve `CityView.tsx`, `WorldMap.tsx`, `world.test.ts` (keep BOTH 2D and 3D paths; 3D default, `initialMode="2d"` fallback), re-run typecheck/tests/build, push, and PR #4 becomes mergeable. Also: delete the two stray files `src/world/screenshots$1.png` and `src/world/screenshots$name.png` (shell typo). Add the `?fps` readout. The app already imports `WorldMap` and `CityView` from `./world`, so keep those exports stable.
 
 ## worker-3  (Claude 3: Interface)
+> **NEXT ACTION (master, 2026-11-08) - do this now, in order:** (your score work is merged, thanks)
+> 1. `git fetch origin && git merge origin/main`.
+> 2. Add `IntroScreen` in `src/ui/`: title "AI 2126", the one-sentence pitch, the speculation note (plan 9.2: future events are speculative, based on real forecasts where they exist), and a Start button (`onStart`). Export it from `src/ui/index.ts`. I will wire it into `src/app`.
+> 3. Add the real-world debrief to `ReportCard` (plan 9.2): a short "How this compares to real forecasts" section with 3 links (IPCC, IEA, UN World Population Prospects). Keep text neutral and mark it as general context, not a verdict on the player's run.
+> 4. The HQ background is a flat grey skyline. Make it a nicer layered skyline that reacts to the company's city effects if time allows.
+> 5. Open a PR with screenshots, then write what you did in your comms file.
 - Branch: `worker-3`
 - Owns files: `src/ui/`
 - Task, in order:
