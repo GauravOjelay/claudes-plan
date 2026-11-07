@@ -2,30 +2,20 @@
  * Worker-3 demo harness. Open http://localhost:5173/src/ui/demo/index.html with `npm run dev`.
  * Views: #hq  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
  *
- * Built on mockWorldState / mockDecisions. The extra history and danger values below are
- * ILLUSTRATIVE DEMO NUMBERS ONLY (not real data, never shipped in the game).
+ * Built on mockWorldState plus the real cards/events in data/. The extra history, danger values
+ * and score below are ILLUSTRATIVE DEMO NUMBERS ONLY (not real data, never shipped in the game).
  */
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Decision, WorldState } from '../../contracts';
-import { mockCities, mockDecisions, mockWorldState } from '../../contracts/mocks';
+import type { Decision, EventLogEntry, GameEvent, WorldState } from '../../contracts';
+import { mockCities, mockWorldState } from '../../contracts/mocks';
+import cards from '../../../data/cards.json';
+import events from '../../../data/events.json';
 import { Dashboard, EventModal, HQScreen, ReportCard, UiRoot } from '../index';
 
-const demoDecisions: Decision[] = [
-  ...mockDecisions,
-  {
-    id: 'demo-release', title: 'Release strategy', era: '2026-2030',
-    text: 'Your new model is ready. How do you put it into the world?',
-    options: [
-      { id: 'open', label: 'Open-source it', effects: [],
-        shortTerm: { economy: -1, safety: -1, publicTrust: 1 }, longTerm: { economy: 1, safety: -1, publicTrust: 0 } },
-      { id: 'closed', label: 'Keep it closed', effects: [],
-        shortTerm: { economy: 1, safety: 1, publicTrust: 0 }, longTerm: { economy: 1, safety: 0, publicTrust: -1 } },
-      { id: 'gov', label: 'Partner with government', effects: [],
-        shortTerm: { economy: 0, safety: 1, publicTrust: -1 }, longTerm: { economy: 0, safety: 1, publicTrust: 0 } },
-    ],
-  },
-];
+// Real cards and events from data/ (owned by worker-1). JSON may be loosely typed, so cast at the edge.
+const demoDecisions = cards as unknown as Decision[];
+const blackout = (events as unknown as GameEvent[]).find((e) => e.id === 'blackout-belt');
 
 /** Illustrative growth curve so the chart has lines to draw. Not a forecast. */
 function demoHistory(): WorldState['history'] {
@@ -64,10 +54,21 @@ const ended: WorldState = {
   ...base,
   year: 2036,
   choiceLog: [
-    { year: 2026, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'novacore' },
-    { year: 2027, decisionId: 'demo-release', optionId: 'gov', companyId: 'novacore' },
+    { year: 2026, decisionId: 'datacentre-campus', optionId: 'staged', companyId: 'novacore' },
+    { year: 2027, decisionId: 'release-strategy', optionId: 'partnerGov', companyId: 'novacore' },
+    { year: 2028, decisionId: 'safety-mechanisms', optionId: 'buildSafeguards', companyId: 'novacore' },
+    { year: 2031, decisionId: 'treaty-or-race', optionId: 'treaty', companyId: 'novacore' },
+    { year: 2033, decisionId: 'final-oversight', optionId: 'humansInLoop', companyId: 'novacore' },
   ],
-  status: { over: true, ending: 'slowdown', reason: 'Shared oversight held through 2036.' },
+  status: {
+    over: true, ending: 'slowdown', reason: 'Shared oversight held through 2036.',
+    score: { total: 68, wellbeing: 74, company: 52, survival: 81 },
+  },
+};
+
+/** The event pop-up is driven by an EventLogEntry, exactly as src/app does it. */
+const popup: EventLogEntry | undefined = blackout && {
+  year: 2026, eventId: blackout.id, headline: blackout.headline, valence: blackout.valence, popup: true, city: 'sf',
 };
 
 function Demo() {
@@ -97,7 +98,7 @@ function Demo() {
   return (
     <UiRoot initial={{ ...(theme && { theme }), ...(scale && { textScale: scale }) }}>
       <nav style={{ display: 'flex', gap: 8, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
-        {['hq', 'rival', 'dash', 'danger', 'event', 'report'].map((v) => (
+        {['hq', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
           <a key={v} href={`#${v}`} style={{ color: 'var(--accent)', fontWeight: v === view ? 700 : 400 }}>{v}</a>
         ))}
         <span className="ui-small ui-muted" style={{ marginLeft: 'auto' }}>Demo data, not real figures</span>
@@ -109,10 +110,11 @@ function Demo() {
       {view === 'dash' && <Dashboard state={state} />}
       {view === 'danger' && <Dashboard state={danger} />}
       {view === 'report' && <ReportCard state={ended} decisions={demoDecisions} onRestart={() => (location.hash = 'hq')} />}
-      {modal && (
-        <EventModal year={2026} valence="negative" title="Blackout belt"
-          headline="Data-centre campus fast-tracked; rolling blackouts hit surrounding districts"
-          onClose={() => setModal(false)} />
+      {view === 'report-noscore' && (
+        <ReportCard state={{ ...ended, status: { ...ended.status, score: undefined } }} decisions={demoDecisions} />
+      )}
+      {modal && popup && (
+        <EventModal year={popup.year} valence={popup.valence} headline={popup.headline} onClose={() => setModal(false)} />
       )}
     </UiRoot>
   );

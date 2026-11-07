@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mockWorldState } from '../contracts/mocks';
 import type { WorldState } from '../contracts';
 import {
-  ENDINGS, formatCompact, formatGdp, gdpRows, levelHigh, levelLow, relevantHeadlines, THRESHOLDS, weightedRegionAvg,
+  ENDINGS, formatCompact, scoreGrade, formatGdp, gdpRows, levelHigh, levelLow, relevantHeadlines, THRESHOLDS, weightedRegionAvg,
 } from './format';
 
 describe('danger levels', () => {
@@ -71,4 +71,13 @@ describe('relevantHeadlines', () => {
 
 it('has a title for every ending id', () => {
   for (const e of Object.values(ENDINGS)) expect(e.title.length).toBeGreaterThan(0);
+});
+
+describe('scoreGrade', () => {
+  it('labels score bands and ignores non-numbers', () => {
+    expect(scoreGrade(85)).toBe('A world worth inheriting');
+    expect(scoreGrade(50)).toBe('A mixed legacy');
+    expect(scoreGrade(5)).toBe('A world in ruins');
+    expect(scoreGrade(Number.NaN)).toBe('');
+  });
 });

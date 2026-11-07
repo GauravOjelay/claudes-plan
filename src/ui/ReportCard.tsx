@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import type { Decision, WorldState } from '../contracts';
-import { ENDINGS, formatCompact, formatGdp, weightedRegionAvg } from './format';
+import type { Decision, Score, WorldState } from '../contracts';
+import { A11yControls } from './a11y';
+import { clampPct, ENDINGS, formatCompact, formatGdp, scoreGrade, weightedRegionAvg } from './format';
 
 export interface ReportCardProps {
   state: WorldState;
@@ -9,13 +10,40 @@ export interface ReportCardProps {
   /** How many choices to list. */
   maxDecisions?: number;
   onRestart?: () => void;
+  /** Show text size / theme controls in the corner. Turn off if the app header already has them. */
+  showControls?: boolean;
+}
+
+const SCORE_PARTS: { key: keyof Omit<Score, 'total'>; label: string; hint: string }[] = [
+  { key: 'wellbeing', label: 'World wellbeing', hint: 'trust, jobs, fair shares' },
+  { key: 'company', label: 'Your company', hint: 'value and money' },
+  { key: 'survival', label: "Humanity's survival", hint: 'low takeover risk and tension' },
+];
+
+/** Big ring showing the 0-100 total. */
+function ScoreRing({ total }: { total: number }) {
+  const pct = clampPct(total);
+  const r = 52;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg className="ui-score-ring" viewBox="0 0 120 120" role="img" aria-label={`Score ${Math.round(pct)} out of 100`}>
+      <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="10" />
+      <circle cx="60" cy="60" r={r} fill="none" stroke="#fff" strokeWidth="10" strokeLinecap="round"
+        strokeDasharray={`${(pct / 100) * c} ${c}`} transform="rotate(-90 60 60)" />
+      <text x="60" y="62" textAnchor="middle" fontSize="36" fontWeight="800" fill="#fff">{Math.round(pct)}</text>
+      <text x="60" y="84" textAnchor="middle" fontSize="12" fill="#fff" opacity="0.85">/ 100</text>
+    </svg>
+  );
 }
 
 /** End-of-game "Your 2126" report card (docs/plan.md 10.6). Uses state.status.ending. */
-export function ReportCard({ state, decisions = [], maxDecisions = 6, onRestart }: ReportCardProps) {
+export function ReportCard({ state, decisions = [], maxDecisions = 10, onRestart, showControls = true }: ReportCardProps) {
   const [copied, setCopied] = useState(false);
   const ending = state.status.ending ? ENDINGS[state.status.ending] : undefined;
   const company = state.companies.find((c) => c.id === state.playerCompanyId);
+  // Set by the sim when the game ends (contracts GameStatus.score); may be missing.
+  const raw = state.status.score;
+  const score = raw && Number.isFinite(Number(raw.total)) ? raw : undefined;
 
   const choices = state.choiceLog
     .filter((c) => c.companyId === state.playerCompanyId)
@@ -38,6 +66,7 @@ export function ReportCard({ state, decisions = [], maxDecisions = 6, onRestart 
 
   const shareText = [
     `My ${state.year} in AI 2126: ${ending?.title ?? 'Unfinished'}`,
+    score ? `Score ${Math.round(score.total)}/100 (wellbeing ${Math.round(score.wellbeing)}, company ${Math.round(score.company)}, survival ${Math.round(score.survival)})` : '',
     company ? `I ran ${company.name}.` : '',
     ...choices.map((c) => `${c.year}: ${c.title} - ${c.option}`),
     `Seed ${state.seed}`,
@@ -54,11 +83,40 @@ export function ReportCard({ state, decisions = [], maxDecisions = 6, onRestart 
 
   return (
     <article className="ui-report" aria-label="Your 2126 report card">
+      {showControls && <div className="ui-report-controls"><A11yControls /></div>}
       <header className="ui-report-hero" data-tone={ending?.tone ?? 'mixed'}>
         <div style={{ letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.85em' }}>Your {state.year}</div>
         <h1>{ending?.title ?? 'The story isn\'t over'}</h1>
-        <p style={{ margin: 0 }}>{ending?.blurb ?? 'No ending has been reached yet.'}</p>
-        {state.status.reason && <p style={{ marginBottom: 0, opacity: 0.9 }}>{state.status.reason}</p>}
+        <p className="ui-report-blurb">{ending?.blurb ?? 'No ending has been reached yet.'}</p>
+        {state.status.reason && <p style={{ margin: '0.4rem 0 0', opacity: 0.9 }}>{state.status.reason}</p>}
+
+        {score ? (
+          <div className="ui-score">
+            <div className="ui-score-main">
+              <ScoreRing total={score.total} />
+              <div className="ui-score-grade">{scoreGrade(score.total)}</div>
+            </div>
+            <div className="ui-score-parts">
+              {SCORE_PARTS.map((p) => {
+                const v = clampPct(Number(score[p.key]) || 0);
+                return (
+                  <div key={p.key}>
+                    <div className="ui-score-part-head">
+                      <span>{p.label}<span className="ui-score-hint">{p.hint}</span></span>
+                      <strong>{Math.round(v)}</strong>
+                    </div>
+                    <div className="ui-score-track" role="meter" aria-label={p.label} aria-valuemin={0}
+                      aria-valuemax={100} aria-valuenow={Math.round(v)}>
+                      <div style={{ width: `${v}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <p className="ui-score-missing">Score not available for this run.</p>
+        )}
       </header>
 
       <section className="ui-panel" style={{ marginBottom: '1rem' }}>
