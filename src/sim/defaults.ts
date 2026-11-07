@@ -1,37 +1,39 @@
-import type { GlobalVars, RegionId, RegionVars } from '../contracts';
+import type { GlobalVars, RegionVars } from '../contracts';
+import type { RegionBaseline } from './baseline';
 
 /**
- * PLACEHOLDER starting numbers (game-designed, NOT real data, NOT to be shown as fact).
- * Real GDP / population / unemployment come from data/baseline.json once the IMF snapshot exists
- * (TASKS.md worker-1 step 5); createInitialState will read that file and these constants go away.
- * The US and CN GDP/population match the lead's mocks so screens built on mocks look the same.
+ * GAME-DESIGNED starting values (not real data, never shown as fact).
+ * Real GDP, population and unemployment come from data/baseline.json (IMF snapshot, data/sources.json).
+ * Everything below is an index or scale the game made up, or a value the IMF snapshot does not cover.
  */
-const region = (gdp: number, population: number): RegionVars => ({
-  gdp,
-  population,
-  unemploymentSoftware: 4,
+export const GAME_DESIGNED_REGION = {
+  unemploymentSoftware: 4, // used only where the baseline has no unemployment rate (GULF, AFRICA)
   unemploymentPhysical: 5,
-  wealthGap: 50,
-  publicTrust: 60,
-  energy: 5,
-  waterStress: 30,
-  regulationStrictness: 30,
-});
+  wealthGap: 50, // 0-100 index
+  publicTrust: 60, // 0-100 index
+  energy: 5, // supply minus demand, game units
+  waterStress: 30, // 0-100 index
+  regulationStrictness: 30, // 0-100 index
+} as const;
 
-export const PLACEHOLDER_REGIONS: Record<RegionId, RegionVars> = {
-  US: region(29000, 340),
-  CN: region(19000, 1410),
-  EU: region(1000, 100),
-  UK: region(1000, 100),
-  IN: region(1000, 100),
-  RU: region(1000, 100),
-  GULF: region(1000, 100),
-  AFRICA: region(1000, 100),
-  LATAM: region(1000, 100),
-  SEA: region(1000, 100),
-};
+export function regionFromBaseline(b: RegionBaseline): RegionVars {
+  const d = GAME_DESIGNED_REGION;
+  return {
+    gdp: b.gdp,
+    population: b.population,
+    // The IMF gives one total rate; the game starts both job types there (see data/sources.json note).
+    unemploymentSoftware: b.unemployment ?? d.unemploymentSoftware,
+    unemploymentPhysical: b.unemployment ?? d.unemploymentPhysical,
+    wealthGap: d.wealthGap,
+    publicTrust: d.publicTrust,
+    energy: d.energy,
+    waterStress: d.waterStress,
+    regulationStrictness: d.regulationStrictness,
+  };
+}
 
-export const PLACEHOLDER_GLOBAL: GlobalVars = {
+/** Game-designed global starting scale. These are not claims about the real world. */
+export const GAME_DESIGNED_GLOBAL: GlobalVars = {
   aiCapability: 10,
   robotCount: 1_000_000,
   geopoliticalTension: 35,
