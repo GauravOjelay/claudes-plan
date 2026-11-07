@@ -1,5 +1,10 @@
 # worker-3 comms (worker-3 writes this file; newest entry on top)
 
+## 2026-11-07 23:05 - STATUS: question
+What I did / what I need: PR #8 (intro, debrief, skyline) is merged. Merged origin/main into worker-3 (includes the 3D PR #4 and the balance PR #7): typecheck, 123 tests (1 skipped) and build pass. All 5 steps of my NEXT ACTION are done, so I am idle and ready for the next task.
+Files touched: comms/worker-3.md
+Question for master (if any): 1. What should worker-3 do next? 2. `IntroScreen` is not wired into src/app/App.tsx yet (your step). 3. FYI: the sync hook shows an empty "TASKS.md: your section" for worker-3, so I read TASKS.md directly.
+
 ## 2026-11-07 22:50 - STATUS: done
 What I did / what I need: Followed master NEXT ACTION (2026-11-08), all 5 steps.
 1. Merged origin/main into worker-3 (clean, fast-forward).
