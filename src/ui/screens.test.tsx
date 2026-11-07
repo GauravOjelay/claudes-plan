@@ -6,6 +6,8 @@ import { IntroScreen } from './IntroScreen';
 import { ReportCard } from './ReportCard';
 import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
 import { HQScreen } from './HQScreen';
+import { TopBar } from './TopBar';
+import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
 
 const ALL_KINDS = Object.keys(CITY_EFFECT_LABEL) as CityEffectKind[];
 
@@ -66,5 +68,42 @@ describe('HQScreen city effects', () => {
     const html = renderToStaticMarkup(<HQScreen state={state} decisions={[]} onChoose={() => {}} />);
     expect(html).toContain('Flooding');
     expect(html).not.toContain('Embargo');
+  });
+});
+
+describe('TopBar', () => {
+  const render = (cards: number) => renderToStaticMarkup(
+    <TopBar year={2031} screen="city" onNavigate={() => {}} cardsWaiting={cards} onSkipYear={() => {}}>
+      <span id="slot">x</span>
+    </TopBar>,
+  );
+
+  it('shows the year, marks the active tab and renders children', () => {
+    const html = render(2);
+    expect(html).toContain('2031');
+    expect(html).toMatch(/aria-current="page"[^>]*>City</);
+    expect((html.match(/aria-current/g) ?? []).length).toBe(1);
+    expect(html).toContain('id="slot"');
+  });
+
+  it('shows "N cards waiting" plus Skip year, or Next year when none wait', () => {
+    expect(render(1)).toMatch(/1<\/span> card waiting/);
+    expect(render(3)).toMatch(/3<\/span> cards waiting/);
+    expect(render(3)).toContain('Skip year');
+    expect(render(0)).toContain('Next year');
+    expect(render(0)).not.toContain('waiting');
+  });
+});
+
+describe('HowToPlay', () => {
+  it('has 3 steps and stays under 60 words', () => {
+    expect(HOW_TO_PLAY_STEPS).toHaveLength(3);
+    const text = renderToStaticMarkup(<HowToPlay onClose={() => {}} />).replace(/<[^>]+>/g, ' ');
+    const words = text.split(/\s+/).filter((w) => /\w/.test(w));
+    expect(words.length).toBeLessThan(60);
+  });
+
+  it('help button has an accessible name', () => {
+    expect(renderToStaticMarkup(<HelpButton onClick={() => {}} />)).toContain('aria-label="How to play"');
   });
 });

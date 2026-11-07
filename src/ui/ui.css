@@ -311,3 +311,43 @@
 /* ---------- Real-world debrief ---------- */
 .ui-debrief { margin-top: 1rem; }
 .ui-debrief ul { padding-left: 1.2rem; margin: 0; display: grid; gap: 0.6rem; }
+
+/* ---------- Top bar ---------- */
+.ui-topbar {
+  display: flex; align-items: center; gap: 0.75rem 1.25rem; flex-wrap: wrap;
+  padding: 0.6rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.ui-topbar-brand { display: flex; align-items: baseline; gap: 0.7rem; }
+.ui-topbar-title { font-weight: 800; letter-spacing: 0.04em; opacity: 0.75; }
+.ui-topbar-year { font-size: 1.9rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.ui-topbar-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; background: var(--surface-2); padding: 0.25rem; border-radius: 10px; }
+.ui-topbar-tab {
+  background: none; border: 0; border-radius: 8px; padding: 0.4rem 0.85rem; font: inherit; color: var(--muted); cursor: pointer;
+}
+.ui-topbar-tab:hover { color: var(--text); }
+.ui-topbar-tab[aria-current='page'] { background: var(--surface); color: var(--text); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.ui-topbar-tab:focus-visible, .ui-topbar-cta:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ui-topbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto; }
+.ui-topbar-cta {
+  display: inline-flex; align-items: center; gap: 0.45rem; border: 0; border-radius: 999px; cursor: pointer;
+  padding: 0.45rem 1rem 0.45rem 0.45rem; font: inherit; font-weight: 700; background: #f0e442; color: #1d1d1f;
+  box-shadow: 0 0 0 2px #1d1d1f inset;
+}
+.ui-topbar-count {
+  background: #1d1d1f; color: #f0e442; border-radius: 999px; min-width: 1.7em; height: 1.7em;
+  display: inline-grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+.ui-topbar-cta:hover { filter: brightness(1.05); }
+@media (max-width: 640px) {
+  .ui-topbar-actions { margin-left: 0; }
+  .ui-topbar-tabs { flex-wrap: nowrap; width: 100%; overflow-x: auto; }
+  .ui-topbar-tab { flex: 1 0 auto; padding: 0.4rem 0.55rem; font-size: 0.92em; }
+  .ui-topbar-year { font-size: 1.5rem; }
+}
+
+/* ---------- How to play ---------- */
+.ui-howto-steps { padding-left: 1.3rem; margin: 0 0 1rem; display: grid; gap: 0.6rem; line-height: 1.45; }
+.ui-howto h2 { margin-top: 0; }
+.ui-help-btn { width: 2.1rem; height: 2.1rem; padding: 0; border-radius: 999px; font-weight: 800; }
+

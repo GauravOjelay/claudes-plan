@@ -1,6 +1,6 @@
 /**
  * Worker-3 demo harness. Open http://localhost:5173/src/ui/demo/index.html with `npm run dev`.
- * Views: #intro  #hq  #crisis  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
+ * Views: #topbar  #topbar-done  #howto  #intro  #hq  #crisis  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
  *
  * Built on mockWorldState plus the real cards/events in data/. The extra history, danger values
  * and score below are ILLUSTRATIVE DEMO NUMBERS ONLY (not real data, never shipped in the game).
@@ -11,7 +11,7 @@ import type { Decision, EventLogEntry, GameEvent, WorldState } from '../../contr
 import { mockCities, mockWorldState } from '../../contracts/mocks';
 import cards from '../../../data/cards.json';
 import events from '../../../data/events.json';
-import { Dashboard, EventModal, HQScreen, IntroScreen, ReportCard, UiRoot } from '../index';
+import { A11yControls, Dashboard, EventModal, HelpButton, HowToPlay, HQScreen, IntroScreen, ReportCard, TopBar, UiRoot, type GameScreen } from '../index';
 
 // Real cards and events from data/ (owned by worker-1). JSON may be loosely typed, so cast at the edge.
 const demoDecisions = cards as unknown as Decision[];
@@ -88,8 +88,10 @@ function Demo() {
   const [view, setView] = useState(() => location.hash.slice(1) || 'hq');
   const [state, setState] = useState<WorldState>(base);
   const [modal, setModal] = useState(view === 'event');
+  const [tab, setTab] = useState<GameScreen>('hq');
+  const [help, setHelp] = useState(view === 'howto');
   useEffect(() => {
-    const on = () => { const v = location.hash.slice(1) || 'hq'; setView(v); setModal(v === 'event'); };
+    const on = () => { const v = location.hash.slice(1) || 'hq'; setView(v); setModal(v === 'event'); setHelp(v === 'howto'); };
     window.addEventListener('hashchange', on);
     return () => window.removeEventListener('hashchange', on);
   }, []);
@@ -111,7 +113,7 @@ function Demo() {
   return (
     <UiRoot initial={{ ...(theme && { theme }), ...(scale && { textScale: scale }) }}>
       <nav style={{ display: 'flex', gap: 8, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
-        {['intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
+        {['topbar', 'topbar-done', 'howto', 'intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
           <a key={v} href={`#${v}`} style={{ color: 'var(--accent)', fontWeight: v === view ? 700 : 400 }}>{v}</a>
         ))}
         <span className="ui-small ui-muted" style={{ marginLeft: 'auto' }}>Demo data, not real figures</span>
@@ -119,6 +121,19 @@ function Demo() {
       {(view === 'hq' || view === 'event') && (
         <HQScreen state={state} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />
       )}
+      {(view === 'topbar' || view === 'topbar-done' || view === 'howto') && (
+        <>
+          <TopBar year={state.year} screen={tab} onNavigate={setTab} cardsWaiting={view === 'topbar-done' ? 0 : 3}
+            onSkipYear={() => setState((s) => ({ ...s, year: s.year + 1 }))}>
+            <HelpButton onClick={() => setHelp(true)} />
+            <A11yControls />
+          </TopBar>
+          {tab === 'dashboard' ? <Dashboard state={state} /> : (
+            <div className="ui-panel" style={{ margin: '1rem' }}>Demo: the &quot;{tab}&quot; screen would show here.</div>
+          )}
+        </>
+      )}
+      {help && <HowToPlay onClose={() => setHelp(false)} />}
       {view === 'intro' && <IntroScreen onStart={() => (location.hash = 'hq')} />}
       {view === 'crisis' && <HQScreen state={crisis} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}
       {view === 'sunny' && <HQScreen state={sunny} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}
