@@ -5,14 +5,14 @@ master has decided so workers don't have to ask. If this file and the plan disag
 the plan wins unless an entry here is newer than the plan's changelog (plan section 17).
 
 ## Interfaces
-- Shared types live in `src/contracts/index.ts` (DRAFT v0.1). Mock data for building
+- Shared types live in `src/contracts/index.ts` (v0.1, approved). Mock data for building
   screens before the sim exists: `src/contracts/mocks.ts`. Do NOT edit either; request changes in your comms file.
 - Main function: `step(state, choices, rng) => WorldState` (pure, deterministic).
 - Screens receive `WorldState` as props and report player actions through callbacks.
   They never import from `src/sim/`.
 
 ## Provisional answers to plan section 16 (open decisions)
-Work with these; the human team can overrule them.
+Approved by the project owner on 2026-11-07. Work with these.
 1. Company names/logos: FICTIONAL archetypes (NovaCore, Silicara, Helix Labs, DragonMind; see mocks).
 2. Random shocks: allowed, but likelihood/severity depend on variables (tension, trust).
 3. Minimum-version variables (Claude 1 may propose changes): money, gdp, unemploymentSoftware,

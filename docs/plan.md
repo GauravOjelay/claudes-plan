@@ -635,7 +635,9 @@ Agents cannot judge whether a screen looks right. Every visual change needs a sc
  
 ## 16. Open decisions and known conflicts
  
-These must be settled by the team. Agents stop and ask when one affects their task.
+**Status 2026-11-07: items 1-9 are settled using the provisional answers in `DECISIONS.md` (approved by the project owner). Agents stop and ask only if something new comes up.**
+
+These were the open questions. Agents stop and ask when a new one affects their task.
  
 1. **Real or fictional company names and logos.** The doc mentions real companies (e.g. Nvidia, OpenAI) and asks for logos to be clearly visible on Screen 3. Attaching harmful outcomes to real companies carries trademark and defamation risk. **Default until decided: fictional archetypes** (section 2).
 2. **Random political violence and war threats.** Section 6.2 and the event pop-ups mention assassination attempts and war threats firing at any point, but the design rules say every event is caused or modified by a decision. **Proposal:** world shocks may arrive randomly, but their likelihood and severity depend on variables like tension and public trust.
@@ -657,4 +659,5 @@ During development, add new features, changes and bugs here, newest first. Every
 | 2026-11-07 | Setup | Plan created from the team's Google Doc. | All |
 | 2026-11-07 | Change | Branch names are `worker-1/2/3`, not `sim/…`/`world/…`/`ui/…`, so the per-prompt sync hook can read each worker's comms file. Workers coordinate through `TASKS.md`, `DECISIONS.md`, `comms/worker-N.md`; role prompts are in `roles/worker-N.md`. | All |
 | 2026-11-07 | Setup | Lead added draft `src/contracts/` v0.1 (+ mocks) and a Vite/React/TS scaffold. Provisional answers to section 16 recorded in `DECISIONS.md`. | All |
+| 2026-11-07 | Decision | Project owner approved: fictional company names, 11 minimum-version variables, and all provisional answers to section 16 (see `DECISIONS.md`). `docs/plan.md` in the repo is now the master copy, not the Google Doc. Contracts v0.1 approved. | All |
  
