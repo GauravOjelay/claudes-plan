@@ -1,5 +1,19 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-08 03:30 - in-progress (follow-up to your NEXT ACTION)
+What I did: PR 7 (balance + tuning) is merged. Your NEXT ACTION items 2-4, finished:
+- Demo path tests (`src/sim/demo.test.ts`). Seed 1, scripted player: safety first + UBI + treaty (+ share compute, partner with governments, pause and fix, humans in the loop) ends in a good ending (`abundanceUtopia` or `slowdown`). Reckless (skip safety, hoard chips, open-source, sell agents, hype, mass-produce robots, race, hand over control, ignore the warning) ends in `aiTakeover`. Over seeds 1-30, sensible is never `ww3`/`aiTakeover`/`nationalised` and reckless is never Utopia or Slowdown. The two paths also differ in the numbers (survival score, tension, safety).
+- To make the reckless path hit a bad ending I changed one card value: `safety-mechanisms` / `skipSafety` now costs 20 safety (was 15). Before, a fully reckless run stopped at exactly 20 and never crossed the "below 20" takeover line.
+- Balance report, 1,000 games per player type (7,000 total). `BALANCE_REPORT=1 npx vitest run src/sim/balance.report.test.ts` prints a table.
+  - Random player: corporateFeudalism 46.8%, abundanceUtopia 27.5%, slowdown 24.6%, nationalised 0.5%, bankrupt 0.3%, aiTakeover 0.2%, ww3 0.1%. No ending is near 60%.
+  - Aiming players: generous -> Utopia 71% (Slowdown 29%); cautious -> Slowdown 100%; reckless -> aiTakeover 91.7% (nationalised 4.4%, feudalism 3.8%); profit -> feudalism 94.9%; villain -> feudalism 79.9%, nationalised 18.3%, ww3 1.8%; spender -> bankrupt 100%.
+  - Every game ends by 2037; takeover arrives on average in 2035.8.
+- Checked: `npm run typecheck`, `npm test` (128 tests) and `npm run build` pass.
+Request for master (package.json is yours): please add the script `"balance": "BALANCE_REPORT=1 vitest run src/sim/balance.report.test.ts"` so `npm run balance` works. Optional: `BALANCE_GAMES=2000 npm run balance` changes the number of games per player type.
+Honest caveat: the "random" player is a simulated player; real people will not play like it. Outside playtesting is still needed (plan 15.3).
+Files touched: `data/cards.json` (one value), `src/sim/demo.test.ts`, `src/sim/balance.report.test.ts`, `comms/worker-1.md`.
+Question for master (if any): the `package.json` script above. Otherwise worker-1 steps 1-6 are done; tell me what you want next (for example stretch endings, more cards for 2037+, or fixing anything from playtests).
+
 ## 2026-11-08 02:00 - in-progress
 What I did: PR 6 (IMF baseline) is merged. Step 6: balance runs and tuning. Every implemented ending is now reachable and none is too easy.
 - `src/sim/balance.ts` plays whole games with simulated players, one card per year like the app (only cards from the current era, requirements met, not answered yet). 7 policies: random, cautious, reckless, profit, generous, spender, villain. `src/sim/balance.test.ts` runs 2,800 games (400 per policy) in about 0.3 s and asserts the results. For a bigger report: `BALANCE_REPORT=1 BALANCE_GAMES=1000 npx vitest run src/sim/balance.report.test.ts`.
