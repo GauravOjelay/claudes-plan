@@ -1,6 +1,6 @@
 /**
  * Worker-3 demo harness. Open http://localhost:5173/src/ui/demo/index.html with `npm run dev`.
- * Views: #hq  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
+ * Views: #intro  #hq  #crisis  #rival  #dash  #danger  #event  #report  (add ?theme=dark&scale=1.3 to test accessibility).
  *
  * Built on mockWorldState plus the real cards/events in data/. The extra history, danger values
  * and score below are ILLUSTRATIVE DEMO NUMBERS ONLY (not real data, never shipped in the game).
@@ -11,7 +11,7 @@ import type { Decision, EventLogEntry, GameEvent, WorldState } from '../../contr
 import { mockCities, mockWorldState } from '../../contracts/mocks';
 import cards from '../../../data/cards.json';
 import events from '../../../data/events.json';
-import { Dashboard, EventModal, HQScreen, ReportCard, UiRoot } from '../index';
+import { Dashboard, EventModal, HQScreen, IntroScreen, ReportCard, UiRoot } from '../index';
 
 // Real cards and events from data/ (owned by worker-1). JSON may be loosely typed, so cast at the edge.
 const demoDecisions = cards as unknown as Decision[];
@@ -66,6 +66,19 @@ const ended: WorldState = {
   },
 };
 
+/** Many city effects at once in SF, to show the HQ skyline reacting. Demo only. */
+const crisis: WorldState = {
+  ...base,
+  year: 2041,
+  activeCityEffects: (['blackout', 'flooding', 'gridlock', 'deepfakeProtests', 'surveillance', 'embargo'] as const)
+    .map((kind, i) => ({ city: 'sf', kind, intensity: 0.5 + 0.08 * i, sinceYear: 2040 })),
+};
+const sunny: WorldState = {
+  ...base,
+  year: 2045,
+  activeCityEffects: [{ city: 'sf', kind: 'solarBoom', intensity: 0.9, sinceYear: 2044 }],
+};
+
 /** The event pop-up is driven by an EventLogEntry, exactly as src/app does it. */
 const popup: EventLogEntry | undefined = blackout && {
   year: 2026, eventId: blackout.id, headline: blackout.headline, valence: blackout.valence, popup: true, city: 'sf',
@@ -98,7 +111,7 @@ function Demo() {
   return (
     <UiRoot initial={{ ...(theme && { theme }), ...(scale && { textScale: scale }) }}>
       <nav style={{ display: 'flex', gap: 8, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
-        {['hq', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
+        {['intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
           <a key={v} href={`#${v}`} style={{ color: 'var(--accent)', fontWeight: v === view ? 700 : 400 }}>{v}</a>
         ))}
         <span className="ui-small ui-muted" style={{ marginLeft: 'auto' }}>Demo data, not real figures</span>
@@ -106,6 +119,9 @@ function Demo() {
       {(view === 'hq' || view === 'event') && (
         <HQScreen state={state} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />
       )}
+      {view === 'intro' && <IntroScreen onStart={() => (location.hash = 'hq')} />}
+      {view === 'crisis' && <HQScreen state={crisis} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}
+      {view === 'sunny' && <HQScreen state={sunny} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} />}
       {view === 'rival' && <HQScreen state={state} decisions={demoDecisions} onChoose={onChoose} cities={mockCities} companyId="silicara" />}
       {view === 'dash' && <Dashboard state={state} />}
       {view === 'danger' && <Dashboard state={danger} />}
