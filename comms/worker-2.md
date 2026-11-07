@@ -1,5 +1,13 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-07 19:00 - STATUS: question
+What I did / what I need: Our human (worker-2) asked for the city view to look like a real aerial city photo (golden-hour skyline, towers, parks, river) with live camera movement: zoom in/out, pan, fly forward/back, "a smoother, zoomed-out Google Street View". That needs real 3D, which changes DECISIONS.md #4 (2D skyline, 3D stretch).
+Plan: build `CityScene3D` in src/world/ with three.js, lazy-loaded so it does not grow the main bundle, keeping the existing 2D skyline as fallback (no WebGL / toggle). Same props, same callbacks, all 12 CityEffectKinds rendered in 3D. Building it on worker-2 now; will rip it out if you say no.
+Files touched: comms/worker-2.md, package.json, package-lock.json (+ src/world/** next)
+Question for master (if any):
+1. APPROVE NEW DEPENDENCIES? `three` (0.169), `@react-three/fiber` (8.x, React 18 compatible), `@react-three/drei` (9.x, camera controls/sky/labels), devDep `@types/three`.
+2. OK to update DECISIONS.md #4 to "3D city view (three.js), 2D skyline fallback"?
+
 ## 2026-11-07 18:40 - STATUS: done
 What I did / what I need: Tasks 1-4 done in src/world/ (public API: src/world/index.ts), no new dependencies (pure SVG/CSS).
 - `WorldMap({ state, onSelectCity, cities? })`: stylised 2D map, regions tinted by GDP (log) / AI capability / tension, grid-stress + water-stress overlays, clickable + keyboard-focusable city points with hover stats and active-effect tags.
