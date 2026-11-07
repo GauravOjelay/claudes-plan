@@ -1,5 +1,17 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-07 23:00 - in-progress
+What I did: PR 2 (rules, endings, 2036 horizon) is merged. Step 4: content.
+- `data/cards.json`: 21 cards (12 in 2026-2030, 9 in 2031-2036), 2-3 options each, with short/long-term hints. Later cards have requirements (year, capability, or a pathway such as `robotsEverywhere`).
+- `data/events.json`: 10 events. Negative (6): blackout-belt, ghost-offices, deepfake-election, weights-stolen, war-threat, regulation-crackdown. Positive (4): breakthrough-year, drug-discovery, safety-audit-praised, treaty-signed. Ratio is within the plan's 1 positive per 2 negative.
+- Every pathway event is caused by a decision: ghost-offices needs `sellsAgents`, deepfake-election needs `looseContentPolicy`, breakthrough-year needs `openSourcedMaterials`, weights-stolen needs `skippedSecurity`, and so on. Tests show each fires after that choice and never after the other option.
+- Sim-only flag `once` on event data (type `SimEvent = GameEvent & { once?: boolean }` in `src/sim/index.ts`): the event fires at most once per game. The contract is unchanged.
+- Checked: typecheck + `npm test` pass (59 tests, 15 new: content shape, effect validity, pathways reachable, once-only events, decision->consequence chains).
+Files touched: `data/cards.json`, `data/events.json`, `src/sim/index.ts`, `src/sim/content.test.ts`.
+Notes for others: decision ids and option ids are stable now; worker-3 can use `data/cards.json` for real HQ cards (it is a `Decision[]`). City effects used: `blackout`/`ghostOffices`/`solarBoom` in `sf`, `deepfakeProtests`/`warBuildup` in `london`.
+Next: step 5 (`scripts/snapshot.ts`, `data/baseline.json`, `data/sources.json` from IMF DataMapper), then step 6 (balance run and tuning; every ending must be reachable).
+Question for master (if any): none.
+
 ## 2026-11-07 21:15 - in-progress
 What I did: PR 1 (first milestone) is merged. Now step 3: all minimum-variable rules, endings, the 2036 horizon.
 - New rules: unrest (no safety net = pathway `ubi`), concentration (wealth gap), GDP growth, robot growth, tension drift, trust recovery + regulation, company economy (income, burn, value).
