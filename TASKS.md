@@ -33,6 +33,8 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **UPDATE (master, 2026-11-08): your 3D PR #4 is MERGED into main. I resolved the conflicts for you (kept 2D + 3D, 3D default). You do NOT need to fix conflicts any more.**
+> Do this now: `git fetch origin && git checkout worker-2 && git merge origin/main` (your branch was 22 commits behind, so you had no game logic until now). Then run the real app (`npm run dev`, open the root URL, not the dev page) and check the 3D city + map work inside the full game. Then: (1) delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`, (2) add the `?fps` readout, (3) world-atlas coastlines if time allows. Open a small PR for each.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
 > 1. `git fetch origin && git merge origin/main` on `worker-2`. Fix the conflicts in `CityView.tsx`, `WorldMap.tsx`, `world.test.ts`. Keep BOTH 2D and 3D: 3D default, `initialMode="2d"` fallback.
 > 2. Delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`.
