@@ -185,3 +185,61 @@
 .w3-help { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 150px); font: 12px system-ui, sans-serif; color: #fff; background: rgba(10, 16, 30, 0.6); border-radius: 8px; padding: 5px 8px; backdrop-filter: blur(6px); }
 .w3-help button { margin-left: 6px; background: none; border: 0; color: #fff; cursor: pointer; font-size: 14px; }
 .w-mode { margin-left: auto; }
+
+/* ---------- 3D world map (map3d/), Apple-Maps-style floating glass UI ---------- */
+.wm-wrap {
+  --wm-glass: rgba(255, 255, 255, 0.78); --wm-text: #1c1c1e; --wm-muted: #6e6e73; --wm-line: rgba(0, 0, 0, 0.08); --wm-blue: #0a84ff;
+  position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 420px; border-radius: 14px; overflow: hidden; background: #a9d5f2;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', sans-serif; color: var(--wm-text); touch-action: none;
+}
+.wm-wrap[data-dark='true'] { --wm-glass: rgba(30, 30, 32, 0.78); --wm-text: #f2f2f7; --wm-muted: #a1a1a6; --wm-line: rgba(255, 255, 255, 0.1); background: #16273d; }
+.wm-loading { display: grid; place-items: center; color: #4a5a6a; }
+.wm-wrap canvas { display: block; }
+.wm-bar, .wm-ctrl, .wm-legend, .wm-card, .wm-seg {
+  background: var(--wm-glass); backdrop-filter: saturate(180%) blur(18px); -webkit-backdrop-filter: saturate(180%) blur(18px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14), 0 0 0 0.5px var(--wm-line);
+}
+.wm-bar { position: absolute; top: 12px; left: 12px; right: 76px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px; border-radius: 12px; width: fit-content; max-width: calc(100% - 88px); }
+.wm-seg { display: inline-flex; padding: 2px; border-radius: 9px; box-shadow: none; background: rgba(118, 118, 128, 0.14); }
+.wm-seg button { font: 500 13px inherit; font-family: inherit; color: var(--wm-text); background: transparent; border: 0; border-radius: 7px; padding: 5px 11px; cursor: pointer; }
+.wm-seg button[aria-pressed='true'] { background: var(--wm-glass); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16); font-weight: 600; }
+.wm-chip { font: 500 13px inherit; font-family: inherit; color: var(--wm-text); background: transparent; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+.wm-chip[aria-pressed='true'] { background: var(--wm-blue); color: #fff; }
+.wm-year { font-weight: 700; font-size: 13px; color: var(--wm-muted); padding: 0 8px; }
+.wm-ctrls { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.wm-ctrl { width: 44px; height: 44px; border: 0; border-radius: 12px; font: 600 15px inherit; font-family: inherit; color: var(--wm-text); cursor: pointer; display: grid; place-items: center; }
+.wm-zoom { display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14); }
+.wm-zoom .wm-ctrl { border-radius: 0; box-shadow: none; font-size: 20px; }
+.wm-zoom .wm-ctrl + .wm-ctrl { border-top: 0.5px solid var(--wm-line); }
+.wm-compass span { display: inline-flex; flex-direction: column; align-items: center; line-height: 9px; color: #ff3b30; font-size: 12px; transition: transform 80ms linear; }
+.wm-compass small { color: var(--wm-text); font-size: 9px; font-weight: 700; margin-top: 2px; }
+.wm-ctrl:hover, .wm-seg button:hover, .wm-chip:hover { filter: brightness(0.96); }
+.wm-wrap button:focus-visible { outline: 2px solid var(--wm-blue); outline-offset: 2px; }
+.wm-legend { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--wm-muted); }
+.wm-legend > span:first-child { color: var(--wm-text); font-weight: 600; }
+.wm-legend-bar { width: 110px; height: 8px; border-radius: 4px; }
+.wm-label-wrap { pointer-events: none; }
+.wm-label { font: 600 11px -apple-system, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; opacity: 0.75; text-shadow: 0 0 3px rgba(255, 255, 255, 0.7); }
+.wm-wrap[data-dark='true'] .wm-label { text-shadow: 0 0 3px rgba(0, 0, 0, 0.7); }
+.wm-pin {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; cursor: pointer; padding: 0;
+  font-family: -apple-system, system-ui, sans-serif; transition: transform 160ms ease;
+}
+.wm-pin:hover, .wm-pin.sel { transform: scale(1.15); }
+.wm-pin-dot {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800;
+  background: linear-gradient(180deg, #4aa8ff, #0a6cff); border: 2.5px solid #fff; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+.wm-pin.bad .wm-pin-dot { background: linear-gradient(180deg, #ff6b5b, #e5281a); animation: wm-ping 1.8s ease-out infinite; }
+.wm-pin.good .wm-pin-dot { background: linear-gradient(180deg, #4fd18b, #1f9e5a); }
+@keyframes wm-ping { 0% { box-shadow: 0 0 0 0 rgba(255, 70, 50, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35); } 100% { box-shadow: 0 0 0 16px rgba(255, 70, 50, 0), 0 3px 10px rgba(0, 0, 0, 0.35); } }
+.wm-pin-name { font-size: 12px; font-weight: 600; color: #1c1c1e; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff; }
+.wm-card { position: absolute; right: 68px; bottom: 12px; width: 270px; padding: 12px 14px; border-radius: 14px; font-size: 13px; }
+.wm-card .w-kv dt { color: var(--wm-muted); }
+.wm-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.wm-card-head strong { display: block; font-size: 17px; }
+.wm-card-head small { color: var(--wm-muted); }
+.wm-x { border: 0; background: rgba(118, 118, 128, 0.2); color: var(--wm-text); width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 15px; line-height: 1; }
+.wm-go { margin-top: 10px; width: 100%; padding: 9px; border: 0; border-radius: 10px; background: var(--wm-blue); color: #fff; font: 600 14px inherit; font-family: inherit; cursor: pointer; }
+.wm-go:hover { filter: brightness(1.08); }
+@media (max-width: 640px) { .wm-card { left: 12px; right: 12px; width: auto; bottom: 52px; } .wm-bar { right: 64px; } }
