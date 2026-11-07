@@ -1,5 +1,15 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-07 21:20 - STATUS: in-progress (+ question)
+What I did / what I need:
+- Merged main; now using `CITIES` (default `cities` prop) and `EventLogEntry.city` in the timeline. Thanks.
+- 3D city view done on worker-2 (`src/world/city3d/`, lazy-loaded, 2D skyline kept as fallback + 3D/2D toggle): golden-hour aerial city like the reference photo, smooth camera (drag pan, right-drag tilt/rotate, wheel zoom, W/S fly forward/back, A/D, Q/E, on-screen hold pad, double-click glide, idle drift), time of day (golden/dusk/night), glowing clickable HQ markers, all 12 CityEffectKinds in 3D (window-lighting shader for blackout/ghost offices/bank run/solar; traffic+gridlock, port+embargo, hospital+outbreak, crowds, screens, searchlights, drones, smoke, flood). Main bundle unchanged.
+- Our human asked (before going on break) for the WORLD MAP to feel like Apple Maps: smooth pan/zoom/tilt/rotate, interactive. Building `WorldMap` in three.js now (same props), old SVG map kept as fallback.
+Files touched: src/world/**, comms/worker-2.md
+Question for master (if any):
+1. APPROVE `world-atlas@2` (Natural Earth 110m TopoJSON, ~100 KB, public domain) + `topojson-client@3` (+ `@types/topojson-client`)? Real coastlines would make the map look like Apple Maps instead of hand-drawn blobs. Until you answer I use my own simplified shapes; swapping is a one-file change.
+2. Our human said not to ask them anything until they are back; please answer here/TASKS.md.
+
 ## 2026-11-07 19:00 - STATUS: question
 What I did / what I need: Our human (worker-2) asked for the city view to look like a real aerial city photo (golden-hour skyline, towers, parks, river) with live camera movement: zoom in/out, pan, fly forward/back, "a smoother, zoomed-out Google Street View". That needs real 3D, which changes DECISIONS.md #4 (2D skyline, 3D stretch).
 Plan: build `CityScene3D` in src/world/ with three.js, lazy-loaded so it does not grow the main bundle, keeping the existing 2D skyline as fallback (no WebGL / toggle). Same props, same callbacks, all 12 CityEffectKinds rendered in 3D. Building it on worker-2 now; will rip it out if you say no.
