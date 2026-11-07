@@ -12,7 +12,9 @@ import type {
 } from '../contracts';
 import cardsJson from '../../data/cards.json';
 import eventsJson from '../../data/events.json';
-import { PLACEHOLDER_GLOBAL, PLACEHOLDER_REGIONS } from './defaults';
+import baselineJson from '../../data/baseline.json';
+import { parseBaseline } from './baseline';
+import { GAME_DESIGNED_GLOBAL, regionFromBaseline } from './defaults';
 import { checkEndings, deriveTakeoverRisk } from './endings';
 import { RULES } from './rules';
 import { createRng, rngForTurn } from './rng';
@@ -20,7 +22,10 @@ import { ALL_REGIONS, companyById, evalCondition, num, writeVar } from './vars';
 
 export { createRng, rngForTurn };
 
-export const START_YEAR = 2026;
+/** Real starting numbers from the IMF snapshot (data/baseline.json), validated on load. */
+const baseline = parseBaseline(baselineJson);
+
+export const START_YEAR = baseline.startYear;
 export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
 export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
 
@@ -48,8 +53,8 @@ export function createInitialState(seed: number, playerCompanyId: string): World
   if (!player.playable) throw new Error(`${player.name} is not playable (only NovaCore is, for now)`);
 
   const outlook = OUTLOOKS[Math.floor(createRng(s).next() * OUTLOOKS.length)];
-  const regions = structuredClone(PLACEHOLDER_REGIONS);
-  const global = structuredClone(PLACEHOLDER_GLOBAL);
+  const regions = Object.fromEntries(ALL_REGIONS.map((r) => [r, regionFromBaseline(baseline.regions[r])])) as WorldState['regions'];
+  const global = structuredClone(GAME_DESIGNED_GLOBAL);
   const state: WorldState = {
     year: START_YEAR,
     seed: s,

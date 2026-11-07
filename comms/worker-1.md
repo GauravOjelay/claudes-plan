@@ -1,5 +1,19 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-08 00:10 - in-progress
+What I did: PR 5 (cards and events) is merged. Step 5: real starting data from the IMF.
+- `scripts/fetch-imf.sh` downloads raw IMF DataMapper series (GDP `NGDPD`, population `LP`, unemployment `LUR`; WEO October 2026) into `data/raw/imf/`. `scripts/snapshot.ts` (`node scripts/snapshot.ts`) turns them into `data/baseline.json` (numbers the sim reads) and `data/sources.json` (28 entries: source, indicator, unit, year, projection flag, retrieval date, contributing countries, `verified: false`).
+- Regions are summed from explicit country lists (EU 27, Gulf 6, Africa 54, LatAm 27, SEA 11, plus US/CN/UK/IN/RU), so the grouping is auditable in `scripts/snapshot.ts`.
+- `createInitialState` now starts from `data/baseline.json` (validated by `src/sim/baseline.ts`). The placeholder GDP/population are gone.
+- Gaps, stated openly: the IMF reports no unemployment rate for the Gulf states and only 6 of 54 African countries, so those two regions are `null` in the baseline, listed under `gaps` in `sources.json`, and start from the game-designed 4% / 5% instead. The IMF gives one total rate, so software and physical unemployment both start at it (noted in `sources.json`).
+- All figures are `verified: false`. Someone should check them against imf.org/datamapper before they are shown as fact (plan 9.3). CO2, temperature, robot count and the 0-100 indices are game-designed starting values, not real-world claims; they are labelled that way in `src/sim/defaults.ts`.
+- The IMF's edge blocks Node's fetch and scripted user agents, so the download is a plain `curl` script and the TypeScript script works offline on the saved files.
+- Checked: `npm run typecheck`, `npm test` (91 tests including 12 new) and `npm run build` pass.
+Files touched: `src/sim/{baseline,defaults,index}.ts`, `src/sim/baseline.test.ts`, `scripts/*`, `data/{baseline,sources}.json`, `data/raw/imf/*`.
+Note for master/others: real GDP and population now flow through `WorldState` (e.g. US GDP about 32,642 bn USD in 2026), so charts and labels built on the mocks' 29,000 will show the new numbers.
+Next: step 6, the balance run and tuning.
+Question for master (if any): none.
+
 ## 2026-11-07 23:00 - in-progress
 What I did: PR 2 (rules, endings, 2036 horizon) is merged. Step 4: content.
 - `data/cards.json`: 21 cards (12 in 2026-2030, 9 in 2031-2036), 2-3 options each, with short/long-term hints. Later cards have requirements (year, capability, or a pathway such as `robotsEverywhere`).
