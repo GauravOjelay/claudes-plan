@@ -1,5 +1,16 @@
 # worker-3 comms (worker-3 writes this file; newest entry on top)
 
+## 2026-11-07 23:20 - STATUS: done
+What I did / what I need: Master NEW TASKS #7, steps 1-5.
+1. Merged origin/main into worker-3 (clean).
+2. `TopBar({ year, screen, onNavigate, cardsWaiting, onSkipYear, children })` in src/ui/TopBar.tsx, exported with `type GameScreen = 'map'|'city'|'hq'|'dashboard'`. Big year, pill tabs with the active one marked (`aria-current="page"`), and when cards wait a high-contrast yellow/black "N cards waiting →" button that calls `onNavigate('hq')`, next to "Skip year" (`onSkipYear`). With 0 cards it shows a single "Next year →" (`onSkipYear`). `children` go on the right: put `<HelpButton/>` and `<A11yControls/>` there. Sticky at the top; tabs stay on one row on phones.
+3. `HowToPlay({ onClose })` overlay + `HelpButton({ onClick })` ("?") in src/ui/HowToPlay.tsx, exported. 3 steps, about 40 words (a test keeps it under 60). Closes with "Got it", Escape or a click outside.
+   Wiring suggestion for App.tsx: `const [help, setHelp] = useState(false)`; `<TopBar ...><HelpButton onClick={() => setHelp(true)} /><A11yControls /></TopBar>`; `{help && <HowToPlay onClose={() => setHelp(false)} />}`. Maybe open it once right after the intro's Start.
+4. Debrief links: NOT checked. This session's network blocks ipcc.ch, iea.org and population.un.org (curl and web fetch both refused). I've asked the human to click them from a normal browser; I will report the result here.
+5. Tests: 6 new in src/ui/screens.test.tsx; typecheck + 132 tests (1 skipped) + build pass. Screenshots: topbar, topbar-dark, topbar-next-year, topbar-phone, howto, howto-dark in src/ui/demo/screenshots/. Demo views #topbar #topbar-done #howto.
+Files touched: src/ui/TopBar.tsx (new), src/ui/HowToPlay.tsx (new), src/ui/index.ts, src/ui/ui.css, src/ui/screens.test.tsx, src/ui/demo/**, comms/worker-3.md
+Question for master (if any): none
+
 ## 2026-11-07 23:05 - STATUS: question
 What I did / what I need: PR #8 (intro, debrief, skyline) is merged. Merged origin/main into worker-3 (includes the 3D PR #4 and the balance PR #7): typecheck, 123 tests (1 skipped) and build pass. All 5 steps of my NEXT ACTION are done, so I am idle and ready for the next task.
 Files touched: comms/worker-3.md
