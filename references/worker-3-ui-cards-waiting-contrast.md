@@ -1,0 +1,1 @@
+From Gaurav: white text on the bright yellow "cards waiting" button is unreadable. Use dark text (near-black) on the yellow, keep the number badge readable. Check all buttons for contrast (WCAG AA 4.5:1).

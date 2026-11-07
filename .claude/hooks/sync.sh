@@ -23,6 +23,8 @@ else
   git show origin/main:TASKS.md 2>/dev/null | awk -v h="## worker-$ID" 'index($0,h)==1 && substr($0,length(h)+1,1) !~ /[0-9]/ {p=1;print;next} /^## /{p=0} p'
   echo "--- DECISIONS.md ---"
   git show origin/main:DECISIONS.md 2>/dev/null
+  REFS=$(git ls-tree --name-only origin/main references/ 2>/dev/null | grep -E "references/(worker-$ID|all)-")
+  if [ -n "$REFS" ]; then echo "--- Reference images for you (open them with your file-reading tool; read the matching .md notes) ---"; echo "$REFS"; fi
   echo "Follow your task. Update comms/worker-$ID.md and push your branch worker-$ID."
 fi
 echo "=== END TEAM SYNC ==="

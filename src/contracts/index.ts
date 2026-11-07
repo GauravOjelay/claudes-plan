@@ -250,3 +250,33 @@ export interface CityInfo {
   mapPos: { x: number; y: number };
   companyIds: string[]; // at least 3 HQs per city (rivals viewable only)
 }
+
+// ---------- Average Joe (plan 10.5; owner request 2026-11-08) ----------
+/** What an average citizen of a city is doing this year. Game-designed, NOT a real-world claim. */
+export type JoeJob = 'employed' | 'lostSoftwareJob' | 'lostPhysicalJob' | 'retraining' | 'onUbi';
+/** The main thing happening around them; drives the street-level scene. */
+export type JoeSituation =
+  | 'prosperous'
+  | 'normal'
+  | 'struggling'
+  | 'blackout'
+  | 'protests'
+  | 'flood'
+  | 'war'
+  | 'surveillance'
+  | 'outbreak';
+
+export interface AverageJoe {
+  cityId: string;
+  name: string; // fictional, stable per city
+  age: number;
+  occupation: string; // e.g. "warehouse worker"
+  job: JoeJob;
+  income: number; // USD per year, game scale
+  mood: number; // 0-100
+  situation: JoeSituation;
+  lines: string[]; // 1-3 short sentences about life this year, caused by the world state
+}
+
+/** Implemented by Claude 1 in src/sim (`averageJoe`). Pure and deterministic. The app passes the result to CityView. */
+export type AverageJoeFn = (state: WorldState, cityId: string) => AverageJoe;
