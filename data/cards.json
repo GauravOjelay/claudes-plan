@@ -263,7 +263,7 @@
               "variable": "geopoliticalTension"
             },
             "op": "add",
-            "value": 10
+            "value": 14
           },
           {
             "target": {
@@ -1002,7 +1002,7 @@
               "region": "any"
             },
             "op": "add",
-            "value": -8
+            "value": -12
           },
           {
             "target": {
@@ -1047,7 +1047,7 @@
               "region": "any"
             },
             "op": "add",
-            "value": -4
+            "value": -6
           },
           {
             "target": {
@@ -1209,7 +1209,7 @@
               "variable": "geopoliticalTension"
             },
             "op": "add",
-            "value": 8
+            "value": 10
           },
           {
             "target": {
@@ -1330,7 +1330,7 @@
               "variable": "robotCount"
             },
             "op": "mul",
-            "value": 5
+            "value": 30
           },
           {
             "target": {
@@ -1383,7 +1383,7 @@
               "variable": "robotCount"
             },
             "op": "mul",
-            "value": 1.5
+            "value": 3
           },
           {
             "target": {
@@ -1509,7 +1509,7 @@
               "region": "any"
             },
             "op": "add",
-            "value": -8
+            "value": -12
           },
           {
             "target": {
@@ -1746,7 +1746,7 @@
               "variable": "geopoliticalTension"
             },
             "op": "add",
-            "value": 8
+            "value": 12
           },
           {
             "target": {
@@ -1858,7 +1858,7 @@
               "variable": "geopoliticalTension"
             },
             "op": "add",
-            "value": 12
+            "value": 16
           },
           {
             "target": {
@@ -2047,7 +2047,7 @@
               "variable": "robotCount"
             },
             "op": "mul",
-            "value": 1.5
+            "value": 3
           }
         ],
         "shortTerm": {

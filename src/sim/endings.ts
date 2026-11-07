@@ -16,10 +16,10 @@ function weighted(state: WorldState, f: (r: WorldState['regions'][keyof WorldSta
 /**
  * Takeover risk is DERIVED, never set by an effect (plan section 3):
  * risk = capability (0-100) x (1 - safety) x robot readiness (0 at no robots, 1 at 1 billion).
- * Safety is the mean across companies, so one careless lab raises the world's risk.
+ * Safety is the PLAYER company's safety level: it is the lab the player controls (rivals' safeguards are static for now).
  */
 export function deriveTakeoverRisk(state: WorldState): number {
-  const safety = state.companies.reduce((s, c) => s + c.vars.safetyLevel, 0) / state.companies.length;
+  const safety = playerCompany(state).vars.safetyLevel;
   const cap = clamp(state.global.aiCapability, 0, 100) / 100;
   const robots = clamp(state.global.robotCount / 1e9, 0, 1);
   return clamp(100 * cap * (1 - safety / 100) * robots, 0, 100);
@@ -52,33 +52,47 @@ export const END_YEAR = 2036;
 
 export const ENDING_THRESHOLDS = {
   ww3Tension: 95, // tension at or above this and the blocs go to war
-  nationalisedRegulation: 90, // home-region regulation at or above this and the state takes the company
+  nationalisedRegulation: 80, // home-region regulation at or above this and the state takes the company
   takeoverSafety: 20, // plan section 3: takeover needs safety below 20 ...
   takeoverRobots: 1e9, // ... AND more than 1 billion robots
-  takeoverRisk: 60, // ... and the derived risk has built up
+  takeoverRisk: 40, // ... and the derived risk has built up (capability stays under ~60 by 2036, so this is below 60)
 } as const;
 
-const meanSafety = (state: WorldState): number => state.companies.reduce((s, c) => s + c.vars.safetyLevel, 0) / state.companies.length;
+const playerSafety = (state: WorldState): number => playerCompany(state).vars.safetyLevel;
+
+/** Linear ramp: 0 at or below `lo`, 1 at or above `hi`. */
+const ramp = (x: number, lo: number, hi: number): number => clamp((x - lo) / (hi - lo), 0, 1);
+const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 /**
  * How well the final world fits each horizon ending, 0-1. The best fit wins (plan section 3:
- * "picks the best-fitting ending"). Ties go to the first in this list.
- * - abundanceUtopia: low wealth gap, high trust, high safety, low unemployment.
- * - corporateFeudalism: huge wealth gap and a very valuable company.
- * - slowdown: safeguards kept, capability moderate, tension low.
+ * "picks the best-fitting ending"). Ties go to the first in this list. Each indicator is a 0-1 ramp
+ * over the range the game actually reaches, so the endings occupy different corners of the world:
+ * - abundanceUtopia: low wealth gap, high trust, high safety and capable AI to make the abundance (jobs are not required: a safety net can carry them).
+ * - corporateFeudalism: huge wealth gap, a very valuable company, low trust, capable AI.
+ * - slowdown: safeguards kept, AI held back (counted twice), tension low.
  */
 export function endingFit(state: WorldState): { id: EndingId; fit: number }[] {
-  const gap = weighted(state, (r) => r.wealthGap) / 100;
-  const trust = weighted(state, (r) => r.publicTrust) / 100;
-  const jobs = 1 - weighted(state, (r) => (r.unemploymentSoftware + r.unemploymentPhysical) / 2) / 100;
-  const safety = meanSafety(state) / 100;
-  const cap = clamp(state.global.aiCapability / 100, 0, 1);
-  const calm = 1 - state.global.geopoliticalTension / 100;
-  const value = clamp(playerCompany(state).vars.companyValue / 300, 0, 1);
+  // The player's decisions act mainly on their home region, so the ending reads half home region, half world.
+  const home = state.regions[playerCompany(state).homeRegion];
+  const wGap = 0.5 * home.wealthGap + 0.5 * weighted(state, (r) => r.wealthGap);
+  const wTrust = 0.5 * home.publicTrust + 0.5 * weighted(state, (r) => r.publicTrust);
+  const gap = ramp(wGap, 45, 75); // inequality, for feudalism
+  const fair = 1 - ramp(wGap, 35, 60); // equality, for utopia (a stricter bar)
+  const trust = ramp(wTrust, 30, 80);
+  const goodTrust = ramp(wTrust, 40, 75);
+  const safety = ramp(playerSafety(state), 30, 80);
+  const goodSafety = ramp(playerSafety(state), 40, 85);
+  const cap = ramp(state.global.aiCapability, 30, 75);
+  const capUtopia = ramp(state.global.aiCapability, 25, 60); // abundance needs capable AI, but not the extreme
+  const calm = ramp(100 - state.global.geopoliticalTension, 40, 90);
+  const value = ramp(playerCompany(state).vars.companyValue, 100, 300);
+  // The weakest ingredient gates each ending, so a world that is only middling at everything fits none of them well.
+  const gate = (xs: number[]): number => 0.4 + 0.6 * Math.min(...xs);
   return [
-    { id: 'abundanceUtopia', fit: 0.35 * (1 - gap) + 0.25 * trust + 0.2 * safety + 0.2 * jobs },
-    { id: 'corporateFeudalism', fit: 0.55 * gap + 0.25 * value + 0.2 * (1 - trust) },
-    { id: 'slowdown', fit: 0.4 * safety + 0.4 * (1 - cap) + 0.2 * calm },
+    { id: 'abundanceUtopia', fit: mean([fair, goodTrust, goodSafety, capUtopia]) * gate([fair, goodTrust, goodSafety]) },
+    { id: 'corporateFeudalism', fit: mean([gap, value, 1 - trust, cap]) * gate([gap, value]) },
+    { id: 'slowdown', fit: mean([safety, 1 - cap, 1 - cap, calm]) * gate([safety, 1 - cap]) },
   ];
 }
 
@@ -91,7 +105,7 @@ function earlyEnding(state: WorldState): { ending: EndingId; reason: string } | 
     return { ending: 'nationalised', reason: `The government took ${me.name} into public ownership.` };
   }
   if (state.global.geopoliticalTension >= T.ww3Tension) return { ending: 'ww3', reason: 'Rivalry between the blocs spiralled into open war.' };
-  if (meanSafety(state) < T.takeoverSafety && state.global.robotCount > T.takeoverRobots && state.global.takeoverRisk >= T.takeoverRisk) {
+  if (playerSafety(state) < T.takeoverSafety && state.global.robotCount > T.takeoverRobots && state.global.takeoverRisk >= T.takeoverRisk) {
     return { ending: 'aiTakeover', reason: 'Unchecked AI systems with a vast robot workforce slipped out of human control.' };
   }
   return undefined;

@@ -11,8 +11,8 @@ export interface Rule {
 export const OUTLOOK_AUTOMATION: Record<ExpertOutlook, number> = { severeShock: 1.5, middle: 1, overblown: 0.5 };
 
 export const TUNING = {
-  baseCapabilityGrowth: 2, // AI capability points per year
-  blackoutSlowdown: 0.5, // multiplier on growth while the grid is short
+  baseCapabilityGrowth: 4, // AI capability points per year
+  blackoutSlowdown: 0.75, // multiplier on growth while the grid is short
   automationPerCapability: 0.05, // software-unemployment points per capability point per year
   robotsForPhysicalJobs: 1e8, // physical automation only starts at this many robots (plan section 3)
   physicalPerBillionRobots: 3, // physical-unemployment points per year at 1bn robots
@@ -24,20 +24,22 @@ export const TUNING = {
   gdpPerCapability: 0.0004, // extra growth per global capability point
   gdpUnemploymentDrag: 0.0003, // growth lost per point of average unemployment
   gdpBlackoutDrag: 0.01,
-  robotGrowth: 1.1, // robots multiply by this each year on their own
+  robotGrowthBase: 1.1, // robots multiply by this each year on their own ...
+  robotGrowthPerCapability: 0.006, // ... plus this per capability point (smarter AI builds robots faster)
+  raceTensionPerCapability: 0.03, // arms-race pressure: tension points added per capability point per year
   tensionHome: 35, // tension drifts back toward this
-  tensionRecovery: 0.05,
+  tensionRecovery: 0.04,
   unrestUnemployment: 12, // average unemployment above this (software + physical)/2 causes unrest
   unrestTrustHit: 2, // per year, with no safety net
   unrestWealthGap: 1.5,
   safetyNetFactor: 0.2, // unrest is scaled by this once the 'ubi' pathway is unlocked
   trustRecovery: 0.08, // share of the gap to trustHome closed each year
   trustHome: 60,
-  regulationPull: 0.1, // share of the gap to (100 - trust) closed each year
+  regulationPull: 0.15, // share of the gap to (100 - trust) closed each year
   concentrationPerCapability: 0.01, // wealth-gap points per capability point per year (x outlook)
   incomeRate: 0.1, // company income per year as a share of company value (x trust/60)
-  burnBase: 8,
-  burnPerCapability: 0.15,
+  burnBase: 12,
+  burnPerCapability: 0.4,
   valueGrowth: 0.03, // company value growth per year
   valueTrust: 0.001, // extra growth per trust point above 50
   valueBlackout: 0.03,
@@ -72,6 +74,8 @@ export const energyLimit: Rule = {
     const growth = TUNING.baseCapabilityGrowth * (short ? TUNING.blackoutSlowdown : 1);
     state.global.aiCapability += growth;
     for (const c of state.companies) c.vars.aiCapability += growth;
+    // World capability is at least as high as the best lab's (a breakthrough anywhere lifts the frontier).
+    state.global.aiCapability = Math.max(state.global.aiCapability, ...state.companies.map((c) => c.vars.aiCapability));
   },
 };
 
@@ -131,7 +135,16 @@ export const gdpGrowth: Rule = {
 export const robotGrowth: Rule = {
   id: 'robotGrowth',
   apply(state) {
-    state.global.robotCount *= TUNING.robotGrowth;
+    state.global.robotCount *= TUNING.robotGrowthBase + TUNING.robotGrowthPerCapability * state.global.aiCapability;
+  },
+};
+
+/** Arms race: the more capable AI gets, the more the blocs strain against each other. */
+export const raceTension: Rule = {
+  id: 'raceTension',
+  apply(state) {
+    const g = state.global;
+    g.geopoliticalTension = clamp(g.geopoliticalTension + TUNING.raceTensionPerCapability * g.aiCapability, 0, 100);
   },
 };
 
@@ -172,5 +185,5 @@ export const companyEconomy: Rule = {
 };
 
 export const RULES: Rule[] = [
-  automation, concentration, energyLimit, unrest, riots, gdpGrowth, robotGrowth, tensionDrift, trustAndRegulation, companyEconomy,
+  automation, concentration, energyLimit, unrest, riots, gdpGrowth, robotGrowth, raceTension, tensionDrift, trustAndRegulation, companyEconomy,
 ];

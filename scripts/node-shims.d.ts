@@ -10,4 +10,4 @@ declare module 'node:path' {
 declare module 'node:url' {
   export function fileURLToPath(url: string): string;
 }
-declare const process: { argv: string[]; exit(code?: number): never };
+declare const process: { argv: string[]; env: Record<string, string | undefined>; exit(code?: number): never };
