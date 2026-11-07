@@ -469,7 +469,7 @@ function Flood({ k }: { k: number }) {
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[3000, 3000]} />
-      <meshStandardMaterial color="#4f6f7d" transparent opacity={0.82} roughness={0.12} metalness={0.4} />
+      <meshStandardMaterial color="#6f9fb8" emissive="#1d4a66" emissiveIntensity={0.55} transparent opacity={0.86} roughness={0.15} metalness={0.3} />
     </mesh>
   );
 }

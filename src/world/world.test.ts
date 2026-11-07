@@ -95,3 +95,33 @@ describe('3D layout', () => {
     for (const b of a.buildings) for (const p of b.parts) expect(p.x - p.w / 2).toBeGreaterThan(riverX(p.z) + RIVER_W / 2);
   });
 });
+
+describe('event demo envelopes', () => {
+  it('floods build up, hold and recede, and outlast protests; searchlights (war) stay short', async () => {
+    const { ENVELOPES, envelopeAt } = await import('./demo');
+    const f = ENVELOPES.flooding;
+    expect(f.dur).toBeGreaterThan(ENVELOPES.deepfakeProtests.dur * 2);
+    expect(ENVELOPES.warBuildup.dur).toBeLessThan(40);
+    expect(envelopeAt(f, 1, 0)).toBe(0);
+    expect(envelopeAt(f, 1, f.dur * f.attack * 0.5)).toBeGreaterThan(0);
+    expect(envelopeAt(f, 1, f.dur * f.attack * 0.5)).toBeLessThan(1); // still building up
+    expect(envelopeAt(f, 1, f.dur * 0.5)).toBe(1); // peak
+    expect(envelopeAt(f, 1, f.dur * 0.95)).toBeLessThan(0.5); // calming down
+    expect(envelopeAt(f, 1, f.dur + 1)).toBe(0);
+  });
+});
+
+describe('city roster', () => {
+  it('gives every extra city 3 companies of its own, with a spread of good and weak firms', async () => {
+    const { EXTRA_CITIES, EXTRA_COMPANIES, ALL_CITIES } = await import('./roster');
+    expect(ALL_CITIES.length).toBeGreaterThanOrEqual(15);
+    for (const c of EXTRA_CITIES) {
+      expect(c.companyIds).toHaveLength(3);
+      for (const id of c.companyIds) expect(EXTRA_COMPANIES.find((k) => k.id === id)?.homeCity).toBe(c.id);
+    }
+    const ids = EXTRA_COMPANIES.map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(EXTRA_COMPANIES.some((c) => c.vars.safetyLevel >= 75 && c.vars.publicTrust >= 65)).toBe(true);
+    expect(EXTRA_COMPANIES.some((c) => c.vars.safetyLevel <= 35 && c.vars.publicTrust <= 45)).toBe(true);
+  });
+});
