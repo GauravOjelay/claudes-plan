@@ -243,3 +243,6 @@
 .wm-go { margin-top: 10px; width: 100%; padding: 9px; border: 0; border-radius: 10px; background: var(--wm-blue); color: #fff; font: 600 14px inherit; font-family: inherit; cursor: pointer; }
 .wm-go:hover { filter: brightness(1.08); }
 @media (max-width: 640px) { .wm-card { left: 12px; right: 12px; width: auto; bottom: 52px; } .wm-bar { right: 64px; } }
+.w3-slow { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; font: 600 12px system-ui, sans-serif; color: #fff; background: rgba(20, 10, 0, 0.8); border: 1px solid #ffb547; border-radius: 10px; padding: 6px 10px; }
+.w3-slow button { font: inherit; border: 0; border-radius: 7px; padding: 4px 9px; cursor: pointer; background: #ffb547; color: #2a1600; }
+.w3-slow button[aria-label='Dismiss'] { background: transparent; color: #fff; }

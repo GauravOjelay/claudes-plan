@@ -4,7 +4,7 @@
  * by the chosen metric. Lazy-loaded by WorldMap so three.js stays out of the main bundle.
  */
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, MapControls } from '@react-three/drei';
+import { Html, MapControls, PerformanceMonitor } from '@react-three/drei';
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { CityInfo, RegionId, WorldState } from '../../contracts';
@@ -330,6 +330,7 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric 
   const [heading, setHeading] = useState(0);
   const [flat, setFlat] = useState(false);
   const [dark, setDark] = useState(false);
+  const [dpr, setDpr] = useState(1.75);
   const wrap = useRef<HTMLDivElement>(null);
   const api = useRef<MapApi>({ flyTo: null, tilt: null, north: false, zoom: 1 });
 
@@ -346,8 +347,9 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric 
 
   return (
     <div className="wm-wrap" ref={wrap} data-dark={dark}>
-      <Canvas flat shadows dpr={[1, 2]} camera={{ fov: 35, near: 1, far: 8000, position: [START.target.x, Math.cos(START.tilt) * START.dist, START.target.z + Math.sin(START.tilt) * START.dist] }}
+      <Canvas flat shadows dpr={dpr} camera={{ fov: 35, near: 1, far: 8000, position: [START.target.x, Math.cos(START.tilt) * START.dist, START.target.z + Math.sin(START.tilt) * START.dist] }}
         onPointerMissed={() => setSelected(null)}>
+        <PerformanceMonitor flipflops={4} onIncline={() => setDpr((d) => Math.min(2, d + 0.25))} onDecline={() => setDpr((d) => Math.max(0.75, d - 0.3))} />
         <Scene state={state} cities={cities} metric={metric} overlays={overlays} pal={pal} api={api} selected={selected}
           onPin={setSelected} hover={hover} setHover={setHover} onHeading={setHeading} />
       </Canvas>

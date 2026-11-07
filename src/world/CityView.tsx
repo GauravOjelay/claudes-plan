@@ -280,7 +280,7 @@ export function CityView({ state, cityId, onSelectCompany, cities = CITIES, deci
           {mode === '3d' ? (
             <Fallback fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
               <Suspense fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
-                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} />
+                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} onRequest2D={() => setMode('2d')} />
               </Suspense>
             </Fallback>
           ) : (

@@ -4,7 +4,7 @@
  * (shader uniforms for window lighting, scene layers for the rest).
  */
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, MapControls, Sky } from '@react-three/drei';
+import { Html, MapControls, PerformanceMonitor, Sky } from '@react-three/drei';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { CityEffectKind, CityInfo, Company, WorldState } from '../../contracts';
@@ -252,7 +252,7 @@ function SceneContents({ state, city, onSelectCompany, time, api }: {
         color={look.sun}
         intensity={look.sunI}
         castShadow
-        shadow-mapSize={[4096, 4096]}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-420}
         shadow-camera-right={420}
         shadow-camera-top={420}
@@ -302,9 +302,14 @@ export interface CityScene3DProps {
   city: CityInfo;
   onSelectCompany: (companyId: string) => void;
   initialTime?: TimeOfDay;
+  /** Shown as a button when the frame rate stays low even at reduced quality. */
+  onRequest2D?: () => void;
 }
 
-export default function CityScene3D({ state, city, onSelectCompany, initialTime = 'golden' }: CityScene3DProps) {
+export default function CityScene3D({ state, city, onSelectCompany, initialTime = 'golden', onRequest2D }: CityScene3DProps) {
+  // Adaptive quality: drop the pixel ratio when frames stall; offer the 2D view if it is still slow.
+  const [dpr, setDpr] = useState(1.5);
+  const [slow, setSlow] = useState(false);
   const api = useRef<RigApi>(makeRigApi());
   const wrap = useRef<HTMLDivElement | null>(null);
   const [time, setTime] = useState<TimeOfDay>(initialTime);
@@ -320,12 +325,14 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
     <div className="w3-wrap" ref={wrap} tabIndex={0} aria-label={`${city.name} 3D city. Drag to pan, right-drag to rotate, scroll to zoom, W/S to fly forward and back.`}>
       <Canvas
         shadows
-        dpr={[1, 1.75]}
+        dpr={dpr}
         camera={{ position: HOME.pos.toArray(), fov: 42, near: 1, far: 6000 }}
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onPointerDown={() => { api.current.lastInput = performance.now(); wrap.current?.focus(); }}
       >
         <MapControls makeDefault target={HOME.target.toArray()} enableDamping dampingFactor={0.07} maxPolarAngle={1.45} minDistance={25} maxDistance={1100} zoomSpeed={0.8} panSpeed={1.1} />
+        <PerformanceMonitor flipflops={4} onIncline={() => setDpr((d) => Math.min(1.75, d + 0.25))}
+          onDecline={() => setDpr((d) => Math.max(0.6, d - 0.3))} onFallback={() => { setDpr(0.6); setSlow(true); }} />
         <CameraRig api={api} container={wrap} />
         <SceneContents state={state} city={city} onSelectCompany={onSelectCompany} time={time} api={api} />
       </Canvas>
@@ -354,6 +361,14 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
         ))}
         <button className="w3-pad-reset" title="Reset view" aria-label="Reset view" onClick={() => (api.current.reset = true)}>⌂</button>
       </div>
+
+      {slow && onRequest2D && (
+        <div className="w3-slow" role="status">
+          3D is running slowly on this device.
+          <button onClick={onRequest2D}>Switch to 2D</button>
+          <button aria-label="Dismiss" onClick={() => setSlow(false)}>×</button>
+        </div>
+      )}
 
       {help && (
         <div className="w3-help">
