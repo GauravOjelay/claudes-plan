@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { CityInfo, RegionId, WorldState } from '../contracts';
-import { CITIES } from '../contracts/cities';
+import { ALL_CITIES } from './roster';
 import { MAP_H, MAP_W, OTHER_LAND_PATH, REGION_LABEL_POS, REGION_NAMES, REGION_PATHS } from './geo';
 import { EFFECT_INFO, clamp01, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
 import { METRIC_LABEL, RAMPS, rampColor, regionMetric, type MapMetric, type MapOverlay } from './mapMetrics';
@@ -34,7 +34,7 @@ import './world.css';
 export interface WorldMapProps {
   state: WorldState;
   onSelectCity: (cityId: string) => void;
-  /** City list. Defaults to CITIES from src/contracts/cities.ts. */
+  /** City list. Defaults to ALL_CITIES (contract CITIES + proposed extras in roster.ts). */
   cities?: CityInfo[];
   initialMetric?: MapMetric;
   initialOverlays?: MapOverlay[];
@@ -43,7 +43,7 @@ export interface WorldMapProps {
 }
 
 export function WorldMap(props: WorldMapProps) {
-  const { cities = CITIES, initialMode = '3d' } = props;
+  const { cities = ALL_CITIES, initialMode = '3d' } = props;
   const [mode] = useState(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
   const flat = <WorldMap2D {...props} />;
   if (mode === '2d') return flat;
@@ -58,7 +58,7 @@ export function WorldMap(props: WorldMapProps) {
   );
 }
 
-export function WorldMap2D({ state, onSelectCity, cities = CITIES, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
+export function WorldMap2D({ state, onSelectCity, cities = ALL_CITIES, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
   const [metric, setMetric] = useState<MapMetric>(initialMetric);
   const [overlays, setOverlays] = useState<MapOverlay[]>(initialOverlays);
   const [hover, setHover] = useState<string | null>(null);

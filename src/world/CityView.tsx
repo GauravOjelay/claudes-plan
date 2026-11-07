@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { CityEffect, CityEffectKind, CityInfo, Company, Decision, WorldState } from '../contracts';
-import { CITIES } from '../contracts/cities';
+import { ALL_CITIES } from './roster';
 import { CityTimeline } from './CityTimeline';
 import { EFFECT_RENDERERS } from './effects';
 import { REGION_NAMES } from './geo';
@@ -36,7 +36,7 @@ export interface CityViewProps {
   state: WorldState;
   cityId: string;
   onSelectCompany: (companyId: string) => void;
-  /** City list. Defaults to CITIES from src/contracts/cities.ts. */
+  /** City list. Defaults to ALL_CITIES (contract CITIES + proposed extras in roster.ts). */
   cities?: CityInfo[];
   /** Used by the timeline to show decision titles instead of ids. */
   decisions?: Decision[];
@@ -249,7 +249,7 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
   );
 }
 
-export function CityView({ state, cityId, onSelectCompany, cities = CITIES, decisions, onBack, showTimeline = true, initialMode = '3d' }: CityViewProps) {
+export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d' }: CityViewProps) {
   const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
   const city = cities.find((c) => c.id === cityId);
   if (!city) {

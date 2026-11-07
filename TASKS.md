@@ -9,6 +9,11 @@ changes on the dashboard -> one `CityEffect` appears in the city view. Nothing e
 until this loop works on `main`.
 
 ## worker-1  (Claude 1: Simulation and data)
+> **NEW TASKS (master, 2026-11-08 #7) - the hook was broken and hid this section until now; sorry. Do these in order:**
+> 1. `git fetch origin && git merge origin/main`.
+> 2. **Demo script (most important).** Plan 11.3: a 2-3 minute demo where ONE early decision causes a BIG consequence years later. Find the best seed and the exact card/option choices, then write `data/demo.md`: for each year, the card shown, the option to pick, what the player should say out loud, and the headline/CityEffect/variable that appears. The "wow" must be visible in the UI (e.g. fast-track the data-centre -> blackout in SF -> later breakthrough/solar reversal). Add a test that locks the seed + choices so nobody breaks the demo by tuning.
+> 3. **Verification checklist.** Write `data/VERIFY.md`: every real-world figure the game can show (from `data/sources.json`), with the exact IMF DataMapper page/indicator link so a human can tick each one off in 10 minutes (plan 9.3).
+> 4. Open a PR; write a short note in your comms file.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
 > 1. `git fetch origin && git merge origin/main` (PR #6 and worker-3 are merged).
 > 2. Step 6: balance run. Add `npm run balance` that simulates thousands of random games (seeds 1..N, random options). Print how often each ending happens. Every ending must be reachable and none above ~60%. Tune `TUNING` / `ENDING_THRESHOLDS`. Runs are only ~10 turns, so endings must be reachable in that time.
@@ -33,6 +38,7 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **UPDATE (master, 2026-11-08 #6) for worker-2:** merged your latest into main (kept your versions of `WorldMap.tsx`/`CityView.tsx`). Answers: (1) DONE: your 12 cities + 36 companies are now in `src/contracts/cities.ts` (CITIES / COMPANY_ROSTER), so the sim carries them; your `roster.ts` dedupes (contracts win), keep it as is. (2) Tokyo stays in SEA for now; no new RegionId. (3) Correct: CityEffects are consequences, decisions are made only on the HQ screen. Your black "Make a decision" button calling `onSelectCompany(playerCompanyId)` is fine. (4) I will style the app header myself. (5) FPS chip default-on is fine. Next: `git fetch origin && git merge origin/main`, then carry on with the rest of the owner's list.
 > **UPDATE (master, 2026-11-08): your 3D PR #4 is MERGED into main. I resolved the conflicts for you (kept 2D + 3D, 3D default). You do NOT need to fix conflicts any more.**
 > Do this now: `git fetch origin && git checkout worker-2 && git merge origin/main` (your branch was 22 commits behind, so you had no game logic until now). Then run the real app (`npm run dev`, open the root URL, not the dev page) and check the 3D city + map work inside the full game. Then: (1) delete `src/world/screenshots$1.png` and `src/world/screenshots$name.png`, (2) add the `?fps` readout, (3) world-atlas coastlines if time allows. Open a small PR for each.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:**
@@ -62,6 +68,12 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-2: PR #3 (2D) is merged into main. Next: `git fetch origin && git merge origin/main` on `worker-2`, resolve `CityView.tsx`, `WorldMap.tsx`, `world.test.ts` (keep BOTH 2D and 3D paths; 3D default, `initialMode="2d"` fallback), re-run typecheck/tests/build, push, and PR #4 becomes mergeable. Also: delete the two stray files `src/world/screenshots$1.png` and `src/world/screenshots$name.png` (shell typo). Add the `?fps` readout. The app already imports `WorldMap` and `CityView` from `./world`, so keep those exports stable.
 
 ## worker-3  (Claude 3: Interface)
+> **NEW TASKS (master, 2026-11-08 #7) - the hook was broken and hid this section until now; sorry. Your intro screen is wired into the app now. Do these in order:**
+> 1. `git fetch origin && git merge origin/main`.
+> 2. `TopBar` in `src/ui/` (the app's plain browser-button header looks unfinished): props `{ year, screen, onNavigate(screen), cardsWaiting, onSkipYear, children }` where screen is `'map'|'city'|'hq'|'dashboard'`. Style it: big readable year, clear active tab, a high-contrast "N cards waiting" call to action. Export it; I will wire it into `src/app`.
+> 3. `HowToPlay` overlay in `src/ui/` (3 short steps: pick a city -> open your HQ -> answer cards; watch the world change), with `onClose` and a "?" help button component. Keep it under 60 words.
+> 4. Click the three links in the report card debrief once from a normal browser (your session could not) and report any that are dead.
+> 5. Open a PR with screenshots.
 > **NEXT ACTION (master, 2026-11-08) - do this now, in order:** (your score work is merged, thanks)
 > 1. `git fetch origin && git merge origin/main`.
 > 2. Add `IntroScreen` in `src/ui/`: title "AI 2126", the one-sentence pitch, the speculation note (plan 9.2: future events are speculative, based on real forecasts where they exist), and a Start button (`onStart`). Export it from `src/ui/index.ts`. I will wire it into `src/app`.

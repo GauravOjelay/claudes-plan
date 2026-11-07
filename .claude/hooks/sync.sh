@@ -20,7 +20,7 @@ if [ "$ID" = "master" ]; then
   echo "Master: answer questions by editing TASKS.md / DECISIONS.md on main and pushing."
 else
   echo "--- TASKS.md: your section ---"
-  git show origin/main:TASKS.md 2>/dev/null | awk -v h="## worker-$ID" '$0==h{p=1;print;next} /^## /{p=0} p'
+  git show origin/main:TASKS.md 2>/dev/null | awk -v h="## worker-$ID" 'index($0,h)==1 && substr($0,length(h)+1,1) !~ /[0-9]/ {p=1;print;next} /^## /{p=0} p'
   echo "--- DECISIONS.md ---"
   git show origin/main:DECISIONS.md 2>/dev/null
   echo "Follow your task. Update comms/worker-$ID.md and push your branch worker-$ID."
