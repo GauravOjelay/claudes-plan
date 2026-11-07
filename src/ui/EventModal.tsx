@@ -31,13 +31,13 @@ function playTone(valence: Valence) {
 
 /**
  * Urgent alert for major events and breakthroughs (docs/plan.md 10.6).
+ * Pass the fields of an EventLogEntry with popup: true (headline, year, valence).
  * Shakes the screen for negative events (skipped when the user prefers reduced motion).
  */
-export function EventModal({ headline, year, valence = 'neutral', title, onClose }: {
+export function EventModal({ headline, year, valence = 'neutral', onClose }: {
   headline: string;
   year: number;
   valence?: Valence;
-  title?: string;
   onClose: () => void;
 }) {
   const { prefs } = useUiPrefs();
@@ -71,8 +71,7 @@ export function EventModal({ headline, year, valence = 'neutral', title, onClose
         <div className="ui-modal-kicker" style={{ color: valence === 'negative' ? 'var(--danger)' : valence === 'positive' ? 'var(--ok)' : 'var(--accent)' }}>
           {kicker} · {year}
         </div>
-        <h2 id="ui-modal-title">{title ?? headline}</h2>
-        {title && <p>{headline}</p>}
+        <h2 id="ui-modal-title">{headline}</h2>
         <div style={{ textAlign: 'right' }}>
           <button ref={btn} className="ui-btn ui-btn-primary" onClick={onClose}>Continue</button>
         </div>

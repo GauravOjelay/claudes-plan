@@ -128,3 +128,14 @@ export const ENDINGS: Record<EndingId, { title: string; blurb: string; tone: 'go
   extinction: { title: 'Extinction', tone: 'bad',
     blurb: 'Humanity did not make it.' },
 };
+
+/** Short verdict for a 0-100 score, shown under the score ring. */
+export function scoreGrade(total: number): string {
+  const t = Number(total);
+  if (!Number.isFinite(t)) return '';
+  if (t >= 80) return 'A world worth inheriting';
+  if (t >= 60) return 'Better than it might have been';
+  if (t >= 40) return 'A mixed legacy';
+  if (t >= 20) return 'A hard century';
+  return 'A world in ruins';
+}

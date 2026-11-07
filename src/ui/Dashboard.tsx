@@ -79,8 +79,11 @@ function Tile({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Stats dashboard (docs/plan.md 4 and 10.5). Reads WorldState only. */
-export function Dashboard({ state, showControls = true }: { state: WorldState; showControls?: boolean }) {
+/**
+ * Stats dashboard (docs/plan.md 4 and 10.5). Reads WorldState only.
+ * `showControls` is off by default: the app header already has the display controls.
+ */
+export function Dashboard({ state, showControls = false }: { state: WorldState; showControls?: boolean }) {
   const g = state.global;
   const trust = weightedRegionAvg(state, 'publicTrust');
   const gap = weightedRegionAvg(state, 'wealthGap');
