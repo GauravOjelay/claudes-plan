@@ -3,6 +3,7 @@ import type { EventLogEntry, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { CityView, WorldMap } from '../world';
 import { Dashboard, EventModal, HQScreen, IntroScreen, HelpButton, HowToPlay, NewsTicker, TopBar, ReportCard, UiRoot, A11yControls } from '../ui';
+import './app.css';
 import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
@@ -62,6 +63,7 @@ export function App() {
 
   return (
     <UiRoot>
+      <div className="app-shell">
       <TopBar
         year={state.year}
         screen={screen}
@@ -75,6 +77,8 @@ export function App() {
         <HelpButton onClick={() => setHelp(true)} />
         {screen !== 'hq' && <A11yControls />}
       </TopBar>
+
+      <div className={`app-screen${screen === 'map' ? ' is-map' : ''}`}>
 
       {screen === 'map' && (
         <WorldMap
@@ -112,7 +116,11 @@ export function App() {
       )}
       {screen === 'dashboard' && <Dashboard state={state} />}
 
+      </div>
+
       {screen !== 'hq' && <NewsTicker headlines={state.headlines.slice(-8)} />}
+
+      </div>
 
       {help && <HowToPlay onClose={() => setHelp(false)} />}
 

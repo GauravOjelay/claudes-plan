@@ -36,6 +36,12 @@ export const EFFECT_INFO: Record<CityEffectKind, { label: string; icon: string; 
   unrest: { label: 'Civil unrest', icon: '✊', blurb: 'Barricades and crowds in the streets.' },
 };
 
+/** Colour per effect (rings on the globe, feed accents). Positive effects are green. */
+export const EFFECT_COLOR: Record<CityEffectKind, string> = {
+  blackout: '#ffb547', ghostOffices: '#9aa6b8', deepfakeProtests: '#ff4fa0', gridlock: '#ff5a3c', bankRun: '#e8c547', warBuildup: '#ff3b30',
+  outbreak: '#4fe0a0', embargo: '#6ea8ff', surveillance: '#c86bff', solarBoom: '#4fd18b', flooding: '#3fa9ff', unrest: '#ff8a3c',
+};
+
 /** Strongest active effect of each kind for one city. */
 export function effectsForCity(state: WorldState, cityId: string): Map<CityEffectKind, CityEffect> {
   const out = new Map<CityEffectKind, CityEffect>();

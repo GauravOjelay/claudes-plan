@@ -8,7 +8,10 @@ import { Html, MapControls, PerformanceMonitor, Sky } from '@react-three/drei';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { CityEffectKind, CityInfo, Company, WorldState } from '../../contracts';
-import { ALL_EFFECT_KINDS, EFFECT_INFO, companiesInCity, effectsForCity } from '../util';
+import { ALL_EFFECT_KINDS, companiesInCity, effectsForCity } from '../util';
+import { Toasts } from '../EventFeed';
+import { FpsMeter, useFpsVisible } from '../FpsMeter';
+import { ALL_CITIES } from '../roster';
 import { buildCityGeometries, makeBuildingMaterial, makeUniforms, type CityUniforms } from './buildingMaterial';
 import { CameraRig, HOME, makeRigApi, type RigAction, type RigApi } from './CameraRig';
 import { EffectLayer3D, HospitalMarks, Port, Traffic, softTexture } from './effects3d';
@@ -148,28 +151,34 @@ function Ground({ layout, onDoubleClick }: { layout: Layout3D; onDoubleClick: (p
 
 function Clouds({ tex }: { tex: THREE.Texture }) {
   const group = useRef<THREE.Group>(null);
+  // Each cloud = a shaded base layer (darker, wider, lower) + bright billowing tops, for a bit of volume.
   const puffs = useMemo(() => {
-    const out: { x: number; y: number; z: number; s: number }[] = [];
+    const out: { x: number; y: number; z: number; sx: number; sy: number; c: string; o: number }[] = [];
     let seed = 7;
     const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    for (let c = 0; c < 14; c++) {
-      const cx = -900 + r() * 1800;
-      const cz = -1500 + r() * 1100;
-      const cy = 260 + r() * 160;
-      for (let i = 0; i < 7; i++) out.push({ x: cx + (r() - 0.5) * 180, y: cy + (r() - 0.5) * 30, z: cz + (r() - 0.5) * 80, s: 90 + r() * 120 });
+    for (let c = 0; c < 16; c++) {
+      const cx = -1000 + r() * 2000;
+      const cz = -1700 + r() * 1300;
+      const cy = 250 + r() * 170;
+      const size = 0.7 + r() * 0.7;
+      for (let i = 0; i < 6; i++) out.push({ x: cx + (r() - 0.5) * 260 * size, y: cy - 8 + r() * 6, z: cz + (r() - 0.5) * 90, sx: (150 + r() * 120) * size, sy: (45 + r() * 25) * size, c: '#cdb9a6', o: 0.55 });
+      for (let i = 0; i < 9; i++) {
+        const lift = r();
+        out.push({ x: cx + (r() - 0.5) * 210 * size, y: cy + 10 + lift * 45 * size, z: cz + (r() - 0.5) * 80 + 5, sx: (70 + r() * 90) * size, sy: (55 + r() * 60) * size, c: lift > 0.5 ? '#fff6ea' : '#f1e3d2', o: 0.8 });
+      }
     }
     return out;
   }, []);
   useFrame((_, dt) => {
     if (!group.current) return;
     group.current.position.x += dt * 3; // clouds drift
-    if (group.current.position.x > 600) group.current.position.x = -600;
+    if (group.current.position.x > 700) group.current.position.x = -700;
   });
   return (
     <group ref={group}>
       {puffs.map((p, i) => (
-        <sprite key={i} position={[p.x, p.y, p.z]} scale={[p.s * 1.6, p.s * 0.7, 1]}>
-          <spriteMaterial map={tex} color="#fff3e2" transparent opacity={0.75} depthWrite={false} fog={false} />
+        <sprite key={i} position={[p.x, p.y, p.z]} scale={[p.sx, p.sy, 1]}>
+          <spriteMaterial map={tex} color={p.c} transparent opacity={p.o} depthWrite={false} fog={false} />
         </sprite>
       ))}
     </group>
@@ -314,15 +323,37 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
   const wrap = useRef<HTMLDivElement | null>(null);
   const [time, setTime] = useState<TimeOfDay>(initialTime);
   const [help, setHelp] = useState(true);
-  const fx = [...effectsForCity(state, city.id).values()];
+  const fpsVisible = useFpsVisible();
+  const fpsEl = useRef<HTMLSpanElement>(null);
+  // Camera pad + shortcut help are hidden until the user scrolls or presses (not on hover), then fade out.
+  const [controlsOn, setControlsOn] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout>>();
+  const pokeControls = () => {
+    setControlsOn(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => { if (!api.current.held.size) setControlsOn(false); }, 2800);
+  };
+  useEffect(() => () => clearTimeout(hideTimer.current), []);
+  const [bump, setBump] = useState(false);
+  const lastYear = useRef(state.year);
+  useEffect(() => {
+    if (lastYear.current !== state.year) {
+      lastYear.current = state.year;
+      setBump(true);
+      const t = setTimeout(() => setBump(false), 950);
+      return () => clearTimeout(t);
+    }
+  }, [state.year]);
   const hold = (a: RigAction, on: boolean) => {
     if (on) api.current.held.add(a);
     else api.current.held.delete(a);
     api.current.lastInput = performance.now();
+    pokeControls();
   };
 
   return (
-    <div className="w3-wrap" ref={wrap} tabIndex={0} aria-label={`${city.name} 3D city. Drag to pan, right-drag to rotate, scroll to zoom, W/S to fly forward and back.`}>
+    <div className="w3-wrap" ref={wrap} tabIndex={0} data-controls={controlsOn ? 'on' : 'off'}
+      onWheel={pokeControls} onPointerDown={pokeControls} onKeyDown={pokeControls} onTouchStart={pokeControls} aria-label={`${city.name} 3D city. Drag to pan, right-drag to rotate, scroll to zoom, W/S to fly forward and back.`}>
       <Canvas
         shadows
         dpr={dpr}
@@ -334,16 +365,13 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
         <PerformanceMonitor flipflops={4} onIncline={() => setDpr((d) => Math.min(1.75, d + 0.25))}
           onDecline={() => setDpr((d) => Math.max(0.6, d - 0.3))} onFallback={() => { setDpr(0.6); setSlow(true); }} />
         <CameraRig api={api} container={wrap} />
+        {fpsVisible && <FpsMeter target={fpsEl} />}
         <SceneContents state={state} city={city} onSelectCompany={onSelectCompany} time={time} api={api} />
       </Canvas>
 
-      <div className="w3-banners">
-        {fx.map((e) => (
-          <div key={e.kind} className={`w3-banner${EFFECT_INFO[e.kind].positive ? ' good' : ''}`}>
-            {EFFECT_INFO[e.kind].icon} {EFFECT_INFO[e.kind].label} · {Math.round(e.intensity * 100)}%
-          </div>
-        ))}
-      </div>
+      <Toasts state={state} cities={ALL_CITIES} cityId={city.id} />
+      <div className={`w-year-badge${bump ? ' bump' : ''}`} aria-label={`Year ${state.year}`}><small>YEAR</small>{state.year}</div>
+      {fpsVisible && <div className="w-fps"><span ref={fpsEl}>–</span> fps</div>}
 
       <div className="w3-time" role="group" aria-label="Time of day">
         {(['golden', 'dusk', 'night'] as TimeOfDay[]).map((t) => (

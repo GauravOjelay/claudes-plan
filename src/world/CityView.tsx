@@ -6,6 +6,7 @@ import { EFFECT_RENDERERS } from './effects';
 import { REGION_NAMES } from './geo';
 import { GROUND_Y, QUAY_BOTTOM, ROAD_BOTTOM, ROAD_TOP, SCENE_H, SCENE_W, buildScene, type Building, type Window } from './scene';
 import { ALL_EFFECT_KINDS, EFFECT_INFO, companiesInCity, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
+import { EventFeed } from './EventFeed';
 import './world.css';
 
 const CityScene3D = lazy(() => import('./city3d/CityScene3D'));
@@ -261,8 +262,8 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
     );
   }
   const region = state.regions[city.region];
-  const fx = [...effectsForCity(state, city.id).values()];
   const companies = companiesInCity(state, city);
+  const player = state.companies.find((c) => c.id === state.playerCompanyId);
 
   return (
     <div className="w-root">
@@ -288,6 +289,12 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
           )}
         </div>
         <aside>
+          {player && (
+            <button className="w-cta" style={{ marginTop: 0, marginBottom: 12 }} onClick={() => onSelectCompany(player.id)}>
+              <span className="w-cta-kicker">Your move</span>
+              Make a decision at {player.name} HQ →
+            </button>
+          )}
           <section className="w-panel">
             <h3>Headquarters</h3>
             <div className="w-hq-list">
@@ -301,22 +308,7 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
             </div>
           </section>
           <section className="w-panel">
-            <h3>Happening now</h3>
-            {fx.length === 0 && <div style={{ color: 'var(--w-muted)' }}>Quiet streets.</div>}
-            {fx.map((e) => {
-              const info = EFFECT_INFO[e.kind];
-              return (
-                <div key={e.kind} title={info.blurb}>
-                  <div className="w-effect-row">
-                    <span aria-hidden>{info.icon}</span>
-                    <span>{info.label}<br /><small style={{ color: 'var(--w-muted)' }}>since {e.sinceYear}</small></span>
-                    <span className={`w-meter${info.positive ? ' good' : ''}`} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(e.intensity * 100)} aria-label={`${info.label} intensity`}>
-                      <i style={{ width: `${e.intensity * 100}%` }} />
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+            <EventFeed state={state} cities={cities} cityId={city.id} max={6} />
           </section>
           {region && (
             <section className="w-panel">
