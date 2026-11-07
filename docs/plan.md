@@ -531,7 +531,7 @@ A 2–3 minute demo run showing **one early decision causing a big consequence l
 - **React + TypeScript (TSX), built with Vite.** Static web app, deployable to any static host.
 - **Vitest** for tests.
 - **Simulation runs in the browser** as pure TypeScript, unless the team decides otherwise (section 16).
-- **3D** (e.g. React Three Fiber) only if the team chooses 3D for the city view (section 16).
+- **3D** city view with three.js / React Three Fiber (approved 2026-11-07). The 2D skyline remains as the fallback.
 ### 12.2 Repository layout
  
 ```
@@ -642,7 +642,7 @@ These were the open questions. Agents stop and ask when a new one affects their 
 1. **Real or fictional company names and logos.** The doc mentions real companies (e.g. Nvidia, OpenAI) and asks for logos to be clearly visible on Screen 3. Attaching harmful outcomes to real companies carries trademark and defamation risk. **Default until decided: fictional archetypes** (section 2).
 2. **Random political violence and war threats.** Section 6.2 and the event pop-ups mention assassination attempts and war threats firing at any point, but the design rules say every event is caused or modified by a decision. **Proposal:** world shocks may arrive randomly, but their likelihood and severity depend on variables like tension and public trust.
 3. **Number of core variables.** Section 3 lists 17 variables, the design rule says about 10–15, and the minimum version says about 10. The simulation owner proposes the minimum-version subset.
-4. **2D or 3D city view.** The city skyline, glowing HQ arrows and especially a "realistic third-person" Average Joe view are large builds. **Proposal:** a layered 2D illustrated skyline for the minimum version, with 3D as a stretch goal. A realistic third-person view is unlikely to be achievable in a hackathon timeframe.
+4. **2D or 3D city view.** The city skyline, glowing HQ arrows and especially a "realistic third-person" Average Joe view are large builds. **Decision 2026-11-07:** the city view is 3D (three.js) by default, with the 2D skyline as a fallback if 3D lags. A realistic third-person view is unlikely to be achievable in a hackathon timeframe.
 5. **One company vs at least 3 HQs per city.** The minimum version has one playable company, but each city screen should show at least 3 HQs. **Proposal:** show 3 HQs, with the player's company playable and rivals viewable only.
 6. **Where the simulation runs.** In the browser (default) or the team's existing Java/Spring engine.
 7. **Extinction ending.** The report card mentions "Extinction", and game over lists extinction, but no ending entry defines it. Decide its conditions or drop it.
@@ -660,4 +660,5 @@ During development, add new features, changes and bugs here, newest first. Every
 | 2026-11-07 | Change | Branch names are `worker-1/2/3`, not `sim/…`/`world/…`/`ui/…`, so the per-prompt sync hook can read each worker's comms file. Workers coordinate through `TASKS.md`, `DECISIONS.md`, `comms/worker-N.md`; role prompts are in `roles/worker-N.md`. | All |
 | 2026-11-07 | Setup | Lead added draft `src/contracts/` v0.1 (+ mocks) and a Vite/React/TS scaffold. Provisional answers to section 16 recorded in `DECISIONS.md`. | All |
 | 2026-11-07 | Decision | Project owner approved: fictional company names, 11 minimum-version variables, and all provisional answers to section 16 (see `DECISIONS.md`). `docs/plan.md` in the repo is now the master copy, not the Google Doc. Contracts v0.1 approved. | All |
+| 2026-11-07 | Decision | Project owner approved a 3D city view (three.js) as the default, reversing the 2D-only decision. 2D skyline kept as fallback; switch back if 3D lags. New deps approved for Claude 2: three, @react-three/fiber, @react-three/drei, @types/three. | Claude 2, lead |
  
