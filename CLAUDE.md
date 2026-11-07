@@ -23,41 +23,46 @@ _TBD: install, run, test, lint._
 
 ## Team workflow
 
-Team of 4 people, each running their own Claude Code: one **master** and three
-**workers** (`worker-1`, `worker-2`, `worker-3`). Claudes cannot talk to each
-other directly. **All communication goes through files in this repo.**
+Team of 4 people, each on their own PC and Claude account: one **master** and
+three **workers** (`worker-1`, `worker-2`, `worker-3`). Claudes cannot talk to
+each other directly. **All communication goes through files on GitHub.**
+
+A hook (`.claude/hooks/sync.sh`) runs on every prompt. It fetches GitHub and
+shows you the latest instructions (workers) or worker status (master) as
+"TEAM SYNC" at the top of your context. **Always read it and act on it.**
+Each person sets their role once: `echo 1 > .claude/worker-id` (1, 2, 3 or
+`master`). That file is not committed.
 
 ### Who owns what
-| File | Written by | Read by |
+| File | Written by | Lives on |
 |---|---|---|
-| `TASKS.md` | master only | everyone |
-| `DECISIONS.md` | master only | everyone |
-| `comms/worker-N.md` | worker N only | master (and anyone) |
-| Code files | the worker whose task lists them | everyone |
+| `TASKS.md`, `DECISIONS.md` | master only | `main` |
+| `comms/worker-N.md` | worker N only | branch `worker-N` |
+| Code files | the worker whose task lists them | branch `worker-N`, merged by PR |
 
 Never edit a file you don't own. If you need a change in someone else's file,
-write it in your `comms/` file as a request.
+write it as a request in your comms file.
 
 ### Master Claude
-1. Turn the chosen idea into 3 independent tasks in `TASKS.md`. Split by
-   folder/file so workers don't collide. Define shared interfaces (API routes,
+1. Turn the chosen idea into 3 independent tasks in `TASKS.md`, split by
+   folder/file so workers don't collide. Put shared interfaces (API routes,
    data shapes) in `DECISIONS.md` before workers start.
-2. Push `TASKS.md` and `DECISIONS.md` straight to `main`.
-3. Regularly `git pull`, read every `comms/worker-N.md`, and answer questions
-   by updating `TASKS.md` / `DECISIONS.md` (add a dated line under the task).
-4. Review each worker's PR, then merge to `main`.
+2. Commit and push `TASKS.md` / `DECISIONS.md` to `main`.
+3. On each prompt, read the TEAM SYNC worker statuses. Answer questions by
+   adding `> [master, <date>] to worker-N: ...` under that worker's task in
+   `TASKS.md`, then push to `main`.
+4. Review each worker's PR and merge it.
 
 ### Worker Claude (N = your worker number)
-1. Start of every session: `git pull origin main`, then read `TASKS.md`,
-   `DECISIONS.md` and your section of `TASKS.md`.
-2. Work only on branch `worker-N`, only on the files your task lists.
-3. Report in `comms/worker-N.md` using the format below. Update it when you
-   start, finish, get blocked, or have a question.
-4. `comms/worker-N.md` is the ONLY file you may push straight to `main`
-   (run `git pull --rebase origin main` first). Everything else goes via PR
-   from `worker-N`.
-5. If something in `TASKS.md` is unclear, ask in your comms file and work on
-   another part of your task while you wait. Do not guess at shared interfaces.
+1. Work only on branch `worker-N` (create it from `main` if missing) and only
+   on files your task lists. Follow the TASKS.md section in TEAM SYNC.
+2. Keep `comms/worker-N.md` current (format below): when you start, finish,
+   get blocked, or have a question. Commit it and `git push origin worker-N`
+   so the master sees it. Push code to the same branch often.
+3. If something is unclear, ask in your comms file and work on another part
+   of your task meanwhile. Do not guess at shared interfaces.
+4. When done, open a PR from `worker-N` into `main`.
+5. Need the newest main? `git fetch origin && git merge origin/main`.
 
 ### Comms file format (`comms/worker-N.md`)
 Newest entry on top.
@@ -68,13 +73,3 @@ What I did / what I need:
 Files touched:
 Question for master (if any):
 ```
-
-### Master replies
-Master answers by adding a line under the relevant task in `TASKS.md`:
-`> [master, <date>] answer to worker-N: ...`
-Workers must re-read `TASKS.md` after each `git pull`.
-
-### Humans
-The people drive their own Claude. To check for replies, tell your Claude:
-"pull and check TASKS.md and DECISIONS.md for updates" (workers) or
-"pull and review all comms files" (master).
