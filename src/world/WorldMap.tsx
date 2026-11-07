@@ -1,12 +1,35 @@
-import { useState, type KeyboardEvent } from 'react';
+import { Component, Suspense, lazy, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { CityInfo, RegionId, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { MAP_H, MAP_W, OTHER_LAND_PATH, REGION_LABEL_POS, REGION_NAMES, REGION_PATHS } from './geo';
 import { EFFECT_INFO, clamp01, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
+import { METRIC_LABEL, RAMPS, rampColor, regionMetric, type MapMetric, type MapOverlay } from './mapMetrics';
+
+export type { MapMetric, MapOverlay } from './mapMetrics';
+export { rampColor, regionMetric } from './mapMetrics';
+
+const WorldMap3D = lazy(() => import('./map3d/WorldMap3D'));
+
+function hasWebGL(): boolean {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
+class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 import './world.css';
 
-export type MapMetric = 'gdp' | 'ai' | 'tension';
-export type MapOverlay = 'energy' | 'water';
 
 export interface WorldMapProps {
   state: WorldState;
@@ -15,60 +38,27 @@ export interface WorldMapProps {
   cities?: CityInfo[];
   initialMetric?: MapMetric;
   initialOverlays?: MapOverlay[];
+  /** '3d' (default): Apple-Maps-style interactive map. '2d': the SVG map (also the fallback without WebGL). */
+  initialMode?: '3d' | '2d';
 }
 
-// Colour-blind-safe sequential ramps (viridis / plasma / inferno samples).
-const RAMPS: Record<MapMetric, string[]> = {
-  gdp: ['#3b2a5c', '#3b528b', '#21918c', '#5ec962', '#fde725'],
-  ai: ['#2a1c6b', '#7e03a8', '#cc4778', '#f89540', '#f0f921'],
-  tension: ['#2a1a3a', '#57106e', '#bc3754', '#f98e09', '#fcffa4'],
-};
-
-const METRIC_LABEL: Record<MapMetric, string> = { gdp: 'GDP', ai: 'AI capability', tension: 'Tension' };
-
-function hexToRgb(h: string): [number, number, number] {
-  const n = parseInt(h.slice(1), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+export function WorldMap(props: WorldMapProps) {
+  const { cities = CITIES, initialMode = '3d' } = props;
+  const [mode] = useState(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
+  const flat = <WorldMap2D {...props} />;
+  if (mode === '2d') return flat;
+  return (
+    <div className="w-root" style={{ padding: 12 }}>
+      <Fallback fallback={flat}>
+        <Suspense fallback={<div className="wm-wrap wm-loading">Loading map…</div>}>
+          <WorldMap3D state={props.state} onSelectCity={props.onSelectCity} cities={cities} initialMetric={props.initialMetric} initialOverlays={props.initialOverlays} />
+        </Suspense>
+      </Fallback>
+    </div>
+  );
 }
 
-export function rampColor(ramp: string[], t: number): string {
-  const x = clamp01(t) * (ramp.length - 1);
-  const i = Math.min(ramp.length - 2, Math.floor(x));
-  const f = x - i;
-  const a = hexToRgb(ramp[i]);
-  const b = hexToRgb(ramp[i + 1]);
-  const c = a.map((v, k) => Math.round(v + (b[k] - v) * f));
-  return `rgb(${c[0]},${c[1]},${c[2]})`;
-}
-
-/** 0-1 value per region for the chosen metric, or null when there is no data. */
-export function regionMetric(state: WorldState, metric: MapMetric): Record<RegionId, number | null> {
-  const ids = Object.keys(state.regions) as RegionId[];
-  const out = {} as Record<RegionId, number | null>;
-  if (metric === 'gdp') {
-    // Log scale so the US and a grouped region are both readable.
-    const lo = Math.log10(300);
-    const hi = Math.log10(40000);
-    for (const r of ids) {
-      const g = state.regions[r].gdp;
-      out[r] = g > 0 ? (Math.log10(g) - lo) / (hi - lo) : 0;
-    }
-  } else if (metric === 'ai') {
-    // No per-region capability in contracts v0.1: use the strongest lab headquartered there.
-    const max = Math.max(1e-9, ...state.companies.map((c) => c.vars.aiCapability));
-    for (const r of ids) {
-      const caps = state.companies.filter((c) => c.homeRegion === r).map((c) => c.vars.aiCapability);
-      out[r] = caps.length ? Math.max(...caps) / max : null;
-    }
-  } else {
-    // Tension is a single global number in v0.1, so every region shares it.
-    const t = state.global.geopoliticalTension / 100;
-    for (const r of ids) out[r] = t;
-  }
-  return out;
-}
-
-export function WorldMap({ state, onSelectCity, cities = CITIES, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
+export function WorldMap2D({ state, onSelectCity, cities = CITIES, initialMetric = 'gdp', initialOverlays = [] }: WorldMapProps) {
   const [metric, setMetric] = useState<MapMetric>(initialMetric);
   const [overlays, setOverlays] = useState<MapOverlay[]>(initialOverlays);
   const [hover, setHover] = useState<string | null>(null);

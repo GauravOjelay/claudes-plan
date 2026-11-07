@@ -83,3 +83,15 @@ describe('cityTimelineItems', () => {
     expect(items.map((i) => [i.year, i.type])).toEqual([[2026, 'effect'], [2027, 'event'], [2028, 'choice'], [2029, 'event']]);
   });
 });
+
+describe('3D layout', () => {
+  it('is deterministic, has 3 HQs, a bank and a hospital, and keeps buildings out of the river', async () => {
+    const { buildLayout3D, riverX, RIVER_W } = await import('./city3d/layout3d');
+    const a = buildLayout3D('sf');
+    expect(buildLayout3D('sf')).toEqual(a);
+    expect(a.hq).toHaveLength(3);
+    expect(a.buildings.filter((b) => b.kind === 4)).toHaveLength(1);
+    expect(a.buildings.filter((b) => b.kind === 3)).toHaveLength(1);
+    for (const b of a.buildings) for (const p of b.parts) expect(p.x - p.w / 2).toBeGreaterThan(riverX(p.z) + RIVER_W / 2);
+  });
+});

@@ -13,7 +13,7 @@ export function mapPosFromLonLat(lon: number, lat: number): { x: number; y: numb
   return { x: (lon + 170) / 360, y: (93 - lat) / 150 };
 }
 
-type LonLat = [number, number];
+export type LonLat = [number, number];
 
 function toPath(rings: LonLat[][]): string {
   return rings
@@ -27,7 +27,7 @@ function toPath(rings: LonLat[][]): string {
     .join('');
 }
 
-const REGION_RINGS: Record<RegionId, LonLat[][]> = {
+export const REGION_RINGS: Record<RegionId, LonLat[][]> = {
   US: [
     [[-125, 49], [-95, 49], [-83, 46], [-67, 47], [-70, 41], [-76, 35], [-81, 31], [-80, 25], [-83, 29], [-90, 30], [-97, 26], [-106, 31], [-117, 32], [-121, 36], [-124, 42]],
     [[-168, 66], [-141, 70], [-141, 60], [-150, 59], [-158, 56], [-165, 60]],
@@ -63,7 +63,7 @@ const REGION_RINGS: Record<RegionId, LonLat[][]> = {
 };
 
 /** Land that is not one of the game's regions. Drawn neutral. */
-const OTHER_LAND: LonLat[][] = [
+export const OTHER_LAND: LonLat[][] = [
   // Canada
   [[-141, 70], [-141, 60], [-130, 55], [-125, 49], [-95, 49], [-83, 46], [-67, 47], [-64, 45], [-60, 47], [-55.5, 51.5], [-61, 56], [-65, 60], [-78, 62.5], [-77, 58], [-80, 54], [-90, 57], [-94.5, 59], [-90, 64], [-82, 66], [-87, 68.5], [-97, 68], [-110, 68.5], [-125, 69.5], [-136, 69]],
   // Greenland
