@@ -1,0 +1,14 @@
+[
+  {
+    "id": "blackout-belt",
+    "valence": "negative",
+    "trigger": { "kind": "var", "ref": { "scope": "region", "region": "US", "variable": "energy" }, "cmp": "<", "value": 0 },
+    "chancePerTurn": 0.6,
+    "effects": [
+      { "target": { "scope": "region", "region": "US", "variable": "publicTrust" }, "op": "add", "value": -5 }
+    ],
+    "headline": "Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid",
+    "cityEffect": { "city": "sf", "kind": "blackout", "intensity": 0.6 },
+    "popup": true
+  }
+]

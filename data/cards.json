@@ -1,0 +1,32 @@
+[
+  {
+    "id": "datacentre-campus",
+    "title": "A giant data-centre campus",
+    "text": "Your board wants a huge new campus on the edge of the city, online in a year. The local grid can barely carry it. A staged build would take three years.",
+    "era": "2026-2030",
+    "options": [
+      {
+        "id": "fastTrack",
+        "label": "Fast-track the campus",
+        "effects": [
+          { "target": { "scope": "company", "variable": "aiCapability" }, "op": "add", "value": 5 },
+          { "target": { "scope": "company", "variable": "companyValue" }, "op": "add", "value": 15 },
+          { "target": { "scope": "region", "region": "any", "variable": "energy" }, "op": "add", "value": -15 }
+        ],
+        "shortTerm": { "economy": 1, "safety": 0, "publicTrust": -1 },
+        "longTerm": { "economy": 1, "safety": -1, "publicTrust": -1 }
+      },
+      {
+        "id": "staged",
+        "label": "Build in stages and upgrade the grid",
+        "effects": [
+          { "target": { "scope": "company", "variable": "money" }, "op": "add", "value": -40 },
+          { "target": { "scope": "region", "region": "any", "variable": "energy" }, "op": "add", "value": -3 },
+          { "target": { "scope": "region", "region": "any", "variable": "publicTrust" }, "op": "add", "value": 2 }
+        ],
+        "shortTerm": { "economy": -1, "safety": 0, "publicTrust": 1 },
+        "longTerm": { "economy": 1, "safety": 0, "publicTrust": 1 }
+      }
+    ]
+  }
+]
