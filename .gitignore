@@ -1,1 +1,3 @@
 .claude/worker-id
+node_modules
+dist

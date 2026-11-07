@@ -1,25 +1,32 @@
-# claudes-plan
+# AI 2126
 
-Hackathon project. Idea, stack and scope are not decided yet.
+Web strategy game: run the world's AI companies from 2026 to 2126 and watch your choices reshape
+jobs, wealth, climate and humanity's fate. Hackathon theme: "New Worlds".
 
-## Status
-- [ ] Pick the idea
-- [ ] Pick the stack
-- [ ] Fill in the sections below
+**Read `docs/plan.md` first. It is the single source of truth** (check its section 17 changelog before every task).
+If anything conflicts with it, the plan wins; report the conflict. `TASKS.md` and `DECISIONS.md`
+hold current assignments and decisions. Role prompts are in `roles/worker-N.md`.
 
-## Project overview
-_TBD: one or two sentences on what we're building._
+## Stack and commands
+React + TypeScript (Vite), Vitest. Simulation is pure TypeScript in the browser.
+- `npm install`, `npm run dev`, `npm run typecheck`, `npm test`, `npm run build`
 
-## Tech stack
-_TBD_
+## Layout and ownership
+| Path | Owner |
+|---|---|
+| `src/contracts/`, `src/app/`, `docs/plan.md`, `TASKS.md`, `DECISIONS.md`, `CLAUDE.md` | master (lead) |
+| `src/sim/`, `data/`, `scripts/` | Claude 1 (worker-1) |
+| `src/world/` | Claude 2 (worker-2) |
+| `src/ui/` | Claude 3 (worker-3) |
 
-## Commands
-_TBD: install, run, test, lint._
-
-## Conventions
-- Keep commits small and the message clear.
-- Prefer the simplest thing that works; this is a hackathon.
-- Update this file as decisions are made.
+## Rules for every agent (summary of plan section 14)
+- Stay in your folders. Never edit `src/contracts/`; ask the lead.
+- No invented data; real figures go in `data/sources.json` with source, date, `verified` flag.
+- Fictional company names. Sensitive topics (war, bio, cyber) stay abstract and non-graphic.
+- Determinism: all randomness via the seeded `Rng` passed to `step`. No `Math.random()` in the sim.
+- Convert/validate strings (e.g. JSON year keys) before arithmetic.
+- Done = typecheck + tests pass, only your folders changed, PR explains how it was checked; visuals need screenshots.
+- Ask, don't guess.
 
 ## Team workflow
 

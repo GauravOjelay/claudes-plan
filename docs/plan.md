@@ -1,7 +1,5 @@
-Claude
 
 
-Plan · MD
 # AI 2126 — Project Plan
  
 > **This file is the single source of truth for the project.** Every Claude agent reads it before starting work and re-reads it before each new task. If something here conflicts with a prompt, a comment or another file, this file wins, and the conflict gets reported to the team. The Google Doc is the team's drafting space; agents cannot open it, so anything decided there must be copied here.
@@ -587,7 +585,7 @@ This is **not** a single-machine agent team; the three Claudes cannot message ea
 ### 13.3 Git workflow
  
 - `main` is always runnable.
-- Each worker works on its own branch (e.g. `sim/…`, `world/…`, `ui/…`) and opens a pull request into `main`.
+- Each worker works on its own branch (`worker-1`, `worker-2`, `worker-3`; this matches the sync hook, see changelog 2026-11-07) and opens small pull requests into `main`.
 - Each worker edits **only its own folders.** Any change needed in `src/contracts/` is requested from the lead, never made directly.
 - Pull before starting each task; keep pull requests small.
 - The lead merges, and re-checks the integration loop after each merge.
@@ -657,5 +655,6 @@ During development, add new features, changes and bugs here, newest first. Every
 | Date | Type | Entry | Affects |
 |---|---|---|---|
 | 2026-11-07 | Setup | Plan created from the team's Google Doc. | All |
+| 2026-11-07 | Change | Branch names are `worker-1/2/3`, not `sim/…`/`world/…`/`ui/…`, so the per-prompt sync hook can read each worker's comms file. Workers coordinate through `TASKS.md`, `DECISIONS.md`, `comms/worker-N.md`; role prompts are in `roles/worker-N.md`. | All |
+| 2026-11-07 | Setup | Lead added draft `src/contracts/` v0.1 (+ mocks) and a Vite/React/TS scaffold. Provisional answers to section 16 recorded in `DECISIONS.md`. | All |
  
-Claude finished the response
