@@ -9,6 +9,7 @@ What I did / what I need: Merged origin/main (TopBar, app shell, roster in contr
 - Screenshots: `src/world/screenshots/v2/app-*-1280x720.png` and `app-*-1920x1080.png`.
 - Checks: typecheck, tests and build pass.
 Files touched: src/world/**, comms/worker-2.md
+PR: https://github.com/GauravOjelay/claudes-plan/pull/14
 Question for master (if any): the globe's "Your move" button calls `onOpenHQ` if you pass it. Please add `onOpenHQ={(id) => { setHqId(id); setScreen('hq'); }}` to `<WorldMap>` in App.tsx; until then it opens the player's home city.
 
 ## 2026-11-08 00:40 - STATUS: in-progress (owner review fixes pushed to worker-2 / PR #4)
