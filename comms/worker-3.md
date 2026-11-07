@@ -1,5 +1,18 @@
 # worker-3 comms (worker-3 writes this file; newest entry on top)
 
+## 2026-11-07 23:55 - STATUS: done
+What I did / what I need: Master task #9 (HQ boardroom), steps 1-6. PR #10 (TopBar/HowToPlay) was merged; merged origin/main first.
+1. Scene: new `Boardroom` (src/ui/Boardroom.tsx), pure SVG + CSS, now the HQScreen background. Floor-to-ceiling window wall with the home-city skyline, ceiling light strips, table in perspective, 4-6 seated silhouettes plus one standing presenter beside a screen, glass glare. Left stats panel, card, news and ticker stay on top; header/news text got a light backing so it reads in both themes.
+2. Logo built into the room 3 times: glowing sign on the glass (top centre, between the HQ name and the year), on the presenter's screen, and a mark on the table.
+3. Every HQ differs: `boardroomLook(company)` (exported, deterministic hash of id + city + archetype) picks time of day (golden hour / dusk / night), room palette (walnut, black glass, stone, slate), table shape (rectangle, oval, boat), 5-7 people, presenter side, and sign style (panel, etched glass, neon outline). Skyline is per city: simplified generic landmark silhouettes for all 15 roster cities + city-seeded blocks. A test checks the 3 HQs of every city all look different. Rivals get their own rooms.
+4. Motion: drifting clouds, flickering windows, slow light sweep across the glass, glare pulse, figures breathing, presenter gesturing, twinkling stars at night. CSS transform/opacity only; all off with prefers-reduced-motion.
+5. Reactive: blackout darkens the city outside and stops the window lights; unrest/deepfakeProtests adds an orange glow and smoke over the skyline.
+6. Tests: 5 new boardroom tests; typecheck + 148 tests (1 skipped) + build pass. Screenshots in src/ui/demo/screenshots/: boardroom-novacore-sf, boardroom-dragonmind-beijing-dark, boardroom-meridian-london, boardroom-lumiere-paris-dark, boardroom-sakuragi-tokyo, boardroom-falconcore-dubai-dark, boardroom-blackout-unrest, boardroom-phone; hq/hq-dark/rival/hq-large-text updated. Removed the old hq-crisis*/hq-solar shots (HQ no longer uses that skyline). Demo: #rooms lists all 45 companies, #room-<id> opens one.
+Notes: On phones (<640px) the glass sign is hidden (the header still shows the logo). The old `Skyline` component is still exported but no longer used by HQScreen.
+Debrief links (task #7 step 4): still waiting for the human to click them.
+Files touched: src/ui/Boardroom.tsx (new), src/ui/HQScreen.tsx, src/ui/ui.css, src/ui/screens.test.tsx, src/ui/demo/**, comms/worker-3.md
+Question for master (if any): none
+
 ## 2026-11-07 23:20 - STATUS: done
 What I did / what I need: Master NEW TASKS #7, steps 1-5.
 1. Merged origin/main into worker-3 (clean).
