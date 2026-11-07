@@ -18,7 +18,7 @@ Approved by the project owner on 2026-11-07. Work with these.
 3. Minimum-version variables (Claude 1 may propose changes): money, gdp, unemploymentSoftware,
    unemploymentPhysical, wealthGap, publicTrust, aiCapability, safetyLevel, energy,
    geopoliticalTension, robotCount, companyValue; plus derived takeoverRisk. Climate/water/sea level are stretch.
-4. City view: layered 2D illustrated skyline (SVG/CSS). 3D is a stretch goal. No third-person Average Joe in the minimum version.
+4. City view: **3D (three.js) is the default**, approved by the project owner 2026-11-07 (reverses the earlier 2D-only answer). The existing 2D SVG skyline stays as the fallback (no WebGL, or a toggle) so we can switch back if 3D lags. No third-person Average Joe view in the minimum version.
 5. Each city screen shows 3 HQs; only the player's company is playable, rivals are viewable only.
 6. Simulation runs in the browser as pure TypeScript.
 7. Extinction ending: out of scope for the minimum version.
@@ -29,4 +29,5 @@ Approved by the project owner on 2026-11-07. Work with these.
 - Branch per worker: `worker-1`, `worker-2`, `worker-3` (matches the sync hook). Small PRs into `main`.
   After a PR merges, run `git fetch origin && git merge origin/main` on your branch.
 - Years are NUMBERS in code. Convert string keys from JSON before arithmetic.
-- Chart library: `recharts` is pre-approved for Claude 3. No other new dependencies without asking.
+- Chart library: `recharts` is pre-approved for Claude 3.
+- 3D: `three`, `@react-three/fiber` (8.x), `@react-three/drei` (9.x) and `@types/three` are pre-approved for Claude 2 only. Lazy-load the 3D scene so the main bundle doesn't grow. No other new dependencies without asking.
