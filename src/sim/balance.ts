@@ -58,8 +58,17 @@ export interface GameResult {
   choices: number;
 }
 
-/** Play one whole game with a simulated player. `policySeed` drives the player's own choices (not the sim's rng). */
-export function playGame(seed: number, policy: PolicyName, decisions: Decision[] = defaultContent.decisions): GameResult {
+/**
+ * How the simulated player meets cards:
+ * - 'first' mirrors the app today: the HQ screen shows only the FIRST available card, in data order, and the player
+ *   picks an option. So the order of data/cards.json is part of the game, and the same ~11 cards come up every game.
+ * - 'any' (default) lets the player answer whichever available card they like, which is what a card-picker or several
+ *   cards per year would allow (plan 6.8: "several decisions per year"). All balance tests use this mode.
+ */
+export type CardMode = 'first' | 'any';
+
+/** Play one whole game with a simulated player. The player's own choices use their own rng (not the sim's). */
+export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any', decisions: Decision[] = defaultContent.decisions): GameResult {
   const player = createRng(seed * 7919 + 13);
   let state = createInitialState(seed, 'novacore');
   let guard = 0;
@@ -70,7 +79,9 @@ export function playGame(seed: number, policy: PolicyName, decisions: Decision[]
       // A random player answers a random card. A player with a style answers the card where their style matters most.
       const scoreCard = (c: Decision) => c.options.map((o) => ({ o, s: appeal(policy, o) + player.next() * (policy === 'random' ? 1 : 0.5) })).sort((a, b) => b.s - a.s);
       const ranked = cards.map((c) => ({ c, opts: scoreCard(c) }));
-      const pickedCard = policy === 'random'
+      const pickedCard = mode === 'first'
+        ? ranked[0]
+        : policy === 'random'
         ? ranked[Math.floor(player.next() * ranked.length)]
         : ranked.sort((a, b) => b.opts[0].s - a.opts[0].s)[0];
       choice = { decisionId: pickedCard.c.id, optionId: pickedCard.opts[0].o.id, companyId: 'novacore' };
@@ -88,14 +99,14 @@ export interface BalanceReport {
   meanYear: Partial<Record<EndingId, number>>;
 }
 
-export function runBalance(gamesPerPolicy: number, policies: PolicyName[] = POLICIES, firstSeed = 1): BalanceReport {
+export function runBalance(gamesPerPolicy: number, policies: PolicyName[] = POLICIES, firstSeed = 1, mode: CardMode = 'any'): BalanceReport {
   const byPolicy = {} as BalanceReport['byPolicy'];
   const overall: BalanceReport['overall'] = {};
   const yearSum: Partial<Record<EndingId, number>> = {};
   for (const p of policies) {
     byPolicy[p] = {};
     for (let i = 0; i < gamesPerPolicy; i++) {
-      const r = playGame(firstSeed + i, p);
+      const r = playGame(firstSeed + i, p, mode);
       byPolicy[p][r.ending] = (byPolicy[p][r.ending] ?? 0) + 1;
       overall[r.ending] = (overall[r.ending] ?? 0) + 1;
       yearSum[r.ending] = (yearSum[r.ending] ?? 0) + r.year;
