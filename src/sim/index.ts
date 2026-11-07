@@ -6,7 +6,7 @@
  *   apply choices -> apply scheduled effects -> run rules -> fade city effects
  *   -> check event thresholds -> derive takeoverRisk -> advance year -> record history -> check endings
  */
-import { COMPANY_ROSTER } from '../contracts/cities';
+import { CITIES, COMPANY_ROSTER } from '../contracts/cities';
 import type {
   Decision, ExpertOutlook, GameEvent, PlayerChoice, RegionId, StepFn, WorldState,
 } from '../contracts';
@@ -27,6 +27,7 @@ const baseline = parseBaseline(baselineJson);
 
 export const START_YEAR = baseline.startYear;
 export const CITY_EFFECT_FADE = 0.1; // intensity lost per year
+export const BLACKOUT_REPAIR_FADE = 0.3; // a blackout fades this fast once its region's grid is no longer short
 export const EVENT_COOLDOWN = 3; // an event cannot fire again within this many years of its last firing
 
 /** A contract GameEvent plus a sim-only flag: `once` events fire at most once per game. */
@@ -115,7 +116,12 @@ export function createStep(content: Content): StepFn {
   }
 
   function fadeCityEffects(state: WorldState): void {
-    for (const e of state.activeCityEffects) e.intensity = Math.round((e.intensity - CITY_EFFECT_FADE) * 1000) / 1000;
+    for (const e of state.activeCityEffects) {
+      // The picture follows the cause: when the grid is no longer short, the blackout clears quickly.
+      const region = CITIES.find((c) => c.id === e.city)?.region;
+      const repaired = e.kind === 'blackout' && region !== undefined && state.regions[region].energy >= 0;
+      e.intensity = Math.round((e.intensity - (repaired ? BLACKOUT_REPAIR_FADE : CITY_EFFECT_FADE)) * 1000) / 1000;
+    }
     state.activeCityEffects = state.activeCityEffects.filter((e) => e.intensity > 0);
   }
 

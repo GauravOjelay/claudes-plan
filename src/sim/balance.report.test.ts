@@ -9,13 +9,16 @@ import { POLICIES, runBalance } from './balance';
  */
 it.runIf(process.env.BALANCE_REPORT)('prints the balance report', () => {
   const n = Number(process.env.BALANCE_GAMES ?? 1000);
-  const r = runBalance(n);
-  const endings = Object.keys(r.overall) as EndingId[];
-  const pct = (x = 0, d = n): string => `${((100 * x) / d).toFixed(1)}%`;
-  const rows: Record<string, Record<string, string>> = {};
-  for (const p of POLICIES) rows[p] = Object.fromEntries(endings.map((e) => [e, pct(r.byPolicy[p][e])]));
-  rows.ALL = Object.fromEntries(endings.map((e) => [e, pct(r.overall[e], r.games)]));
-  console.log(`\nBalance report: ${r.games} games (${n} per player type). The 'random' row is a player choosing randomly.`);
-  console.table(rows);
-  console.log('Mean final year per ending:', JSON.stringify(r.meanYear));
+  for (const mode of ['any', 'first'] as const) {
+    const r = runBalance(n, POLICIES, 1, mode);
+    const endings = Object.keys(r.overall) as EndingId[];
+    const pct = (x = 0, d = n): string => `${((100 * x) / d).toFixed(1)}%`;
+    const rows: Record<string, Record<string, string>> = {};
+    for (const p of POLICIES) rows[p] = Object.fromEntries(endings.map((e) => [e, pct(r.byPolicy[p][e])]));
+    rows.ALL = Object.fromEntries(endings.map((e) => [e, pct(r.overall[e], r.games)]));
+    const what = mode === 'any' ? "player answers any available card" : 'APP TODAY: the HQ shows only the first available card';
+    console.log(`\nBalance report, mode '${mode}' (${what}): ${r.games} games, ${n} per player type. 'random' picks randomly.`);
+    console.table(rows);
+    console.log('Mean final year per ending:', JSON.stringify(r.meanYear));
+  }
 }, 300000);
