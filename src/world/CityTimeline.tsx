@@ -59,7 +59,7 @@ export function cityTimelineItems(state: WorldState, city: CityInfo, decisions: 
   return items.filter((i) => Number.isFinite(i.year)).sort((a, b) => a.year - b.year);
 }
 
-const PAST_WIDTH = 78; // % of the track used for the past; the rest shows future branches
+const TYPE_LABEL: Record<TimelineItem['type'], string> = { choice: 'Decision', event: 'Event', effect: 'City effect' };
 
 export function CityTimeline({ state, cityId, cities = ALL_CITIES, decisions, onScrub }: CityTimelineProps) {
   const city = cities.find((c) => c.id === cityId);
@@ -70,73 +70,79 @@ export function CityTimeline({ state, cityId, cities = ALL_CITIES, decisions, on
   const start = Math.min(2026, ...items.map((i) => i.year));
   const now = Math.max(state.year, ...items.map((i) => i.year));
   const span = Math.max(1, now - start);
-  const pos = (y: number) => ((y - start) / span) * PAST_WIDTH;
+  // 3% padding each side so end nodes and labels never touch the edges
+  const pos = (y: number) => 3 + ((y - start) / span) * 94;
   const year = selected ?? now;
   const pick = (y: number) => {
     setSelected(y);
     onScrub?.(y);
   };
 
-  // One marker per (year, type) so busy years stay clickable.
-  const groups = new Map<string, TimelineItem[]>();
-  for (const it of items) {
-    const key = `${it.year}:${it.type}`;
-    groups.set(key, [...(groups.get(key) ?? []), it]);
+  // One node per year, summarising what happened that year.
+  const byYear = new Map<number, TimelineItem[]>();
+  for (const it of items) byYear.set(it.year, [...(byYear.get(it.year) ?? []), it]);
+  const years = [...byYear.keys()].sort((x, y) => x - y);
+  // Year labels: start, now and busy years, skipping any closer than 6% so they never overlap.
+  const labels: number[] = [];
+  for (const y of [...new Set([start, ...years])].sort((x, z) => x - z)) {
+    if (y === now) continue;
+    if (labels.length && pos(y) - pos(labels[labels.length - 1]) < 6) continue;
+    if (pos(now) - pos(y) < 6) continue;
+    labels.push(y);
   }
-  const tickEvery = span > 40 ? 10 : span > 15 ? 5 : span > 6 ? 2 : 1;
-  const ticks: number[] = [];
-  for (let y = start; y <= now; y += tickEvery) ticks.push(y);
-  if (ticks[ticks.length - 1] !== now) ticks.push(now);
+  labels.push(now);
 
-  const yearItems = items.filter((i) => i.year === year);
+  const yearItems = byYear.get(year) ?? [];
   const yearHeadlines = state.headlines.filter((h) => Number(h.year) === year && h.city === city.id && !yearItems.some((i) => i.text === h.text));
   const branches = state.unlockedPathways;
 
   return (
     <section className="w-root w-timeline w-panel" style={{ margin: 12 }} aria-label={`${city.name} timeline`}>
-      <h3>{city.name} timeline</h3>
-      <div className="w-tl-legend">
-        <span><i style={{ background: 'var(--w-warn)' }} />Events</span>
-        <span><i style={{ background: 'var(--w-accent)' }} />Decisions by local HQs</span>
-        <span><i style={{ background: 'var(--w-bad)' }} />City effects</span>
-        <span>- - Unlocked pathways</span>
-      </div>
-      <div className="w-tl-track">
-        <div className="w-tl-axis" />
-        <div className="w-tl-past" style={{ width: `${pos(year)}%` }} />
-        {ticks.map((t) => (
-          <span key={t} className="w-tl-year" style={{ left: `${pos(t)}%` }}>{t}</span>
-        ))}
-        {[...groups.entries()].map(([key, g]) => {
-          const it = g[0];
-          return (
-            <button key={key} className={`w-tl-mark ${it.type}${it.good ? ' good' : ''}`} style={{ left: `${pos(it.year)}%` }}
-              aria-pressed={year === it.year} title={g.map((x) => `${x.year}: ${x.text}`).join('\n')}
-              aria-label={`${it.year}: ${g.length} ${it.type}${g.length > 1 ? 's' : ''}`} onClick={() => pick(it.year)}>
-              {g.length > 1 ? g.length : ''}
-            </button>
-          );
-        })}
-        <div className="w-tl-now" style={{ left: `${pos(now)}%` }}><span>NOW</span></div>
-        <div className="w-tl-branches" style={{ left: `calc(${PAST_WIDTH}% + 44px)`, right: 0 }}>
-          {branches.length === 0 && <span className="w-tl-branch" style={{ top: 38, opacity: 0.6 }}>no pathways unlocked yet</span>}
-          {branches.slice(0, 4).map((p, i) => (
-            <span key={p} className="w-tl-branch" style={{ top: 6 + i * 18 }}>{p}</span>
-          ))}
-          {branches.length > 4 && <span className="w-tl-branch" style={{ top: 78 }}>+{branches.length - 4} more</span>}
+      <div className="w-tl-head">
+        <h3>{city.name} timeline</h3>
+        <div className="w-tl-legend">
+          <span><i style={{ background: 'var(--w-accent)' }} />Decisions by local HQs</span>
+          <span><i style={{ background: 'var(--w-warn)' }} />Events</span>
+          <span><i style={{ background: 'var(--w-bad)' }} />City effects</span>
         </div>
       </div>
-      <input className="w-tl-range" type="range" min={start} max={now} step={1} value={year}
-        aria-label="Scrub timeline year" onChange={(e) => pick(Number(e.target.value))}
-        style={{ width: `calc(${PAST_WIDTH}% + 16px)` }} />
+      <div className="w-tl2">
+        <div className="w-tl2-track">
+          <div className="w-tl2-rail" />
+          <div className="w-tl2-past" style={{ width: `${pos(year)}%` }} />
+          <div className="w-tl2-now" style={{ left: `${pos(now)}%` }}><span>NOW</span></div>
+          {years.map((y) => {
+            const g = byYear.get(y)!;
+            const types = (['choice', 'event', 'effect'] as const).filter((t) => g.some((i) => i.type === t));
+            const allGood = g.filter((x) => x.type === 'effect').every((x) => x.good);
+            return (
+              <button key={y} className="w-tl2-node" style={{ left: `${pos(y)}%` }} aria-pressed={year === y}
+                title={g.map((x) => `${TYPE_LABEL[x.type]}: ${x.text}`).join('\n')}
+                aria-label={`${y}: ${g.length} item${g.length > 1 ? 's' : ''}`} onClick={() => pick(y)}>
+                {types.map((t) => <i key={t} className={`t-${t}${t === 'effect' && allGood ? ' good' : ''}`} />)}
+                {g.length > 1 && <b>{g.length}</b>}
+              </button>
+            );
+          })}
+          {labels.map((y) => (
+            <span key={y} className={`w-tl2-year${y === now ? ' now' : ''}`} style={{ left: `${pos(y)}%` }}>{y}</span>
+          ))}
+        </div>
+        <div className="w-tl2-future">
+          <small>Possible futures</small>
+          {branches.length === 0 ? <span className="w-tl2-branch muted">None unlocked yet</span> : branches.slice(0, 4).map((p) => <span key={p} className="w-tl2-branch">{p}</span>)}
+          {branches.length > 4 && <span className="w-tl2-branch muted">+{branches.length - 4} more</span>}
+        </div>
+      </div>
+      <input className="w-tl-range" type="range" min={start} max={now} step={1} value={year} aria-label="Scrub timeline year" onChange={(e) => pick(Number(e.target.value))} />
       <div className="w-tl-detail" aria-live="polite">
-        <strong>{year}</strong>
+        <div className="w-tl-detail-year">{year}</div>
         {yearItems.length === 0 && yearHeadlines.length === 0 ? (
-          <span style={{ color: 'var(--w-muted)' }}> · nothing recorded for {city.name}</span>
+          <span style={{ color: 'var(--w-muted)' }}>Nothing recorded for {city.name} this year.</span>
         ) : (
           <ul>
-            {yearItems.map((i, n) => <li key={n}>{i.text}</li>)}
-            {yearHeadlines.map((h, n) => <li key={`h${n}`} style={{ color: 'var(--w-muted)' }}>📰 {h.text}</li>)}
+            {yearItems.map((i, n) => <li key={n}><span className={`w-tl-chip t-${i.type}`}>{TYPE_LABEL[i.type]}</span>{i.text}</li>)}
+            {yearHeadlines.map((h, n) => <li key={`h${n}`}><span className="w-tl-chip">News</span>{h.text}</li>)}
           </ul>
         )}
       </div>

@@ -38,7 +38,9 @@ export interface WorldMapProps {
   cities?: CityInfo[];
   initialMetric?: MapMetric;
   initialOverlays?: MapOverlay[];
-  /** '3d' (default): Apple-Maps-style interactive map. '2d': the SVG map (also the fallback without WebGL). */
+  /** Opens the player's HQ (decision cards). Without it the map's "make a decision" button opens the player's home city. */
+  onOpenHQ?: (companyId: string) => void;
+  /** '3d' (default): Apple-Maps-style interactive globe. '2d': the SVG map (also the fallback without WebGL). */
   initialMode?: '3d' | '2d';
 }
 
@@ -51,7 +53,7 @@ export function WorldMap(props: WorldMapProps) {
     <div className="w-root" style={{ padding: 12 }}>
       <Fallback fallback={flat}>
         <Suspense fallback={<div className="wm-wrap wm-loading">Loading map…</div>}>
-          <WorldMap3D state={props.state} onSelectCity={props.onSelectCity} cities={cities} initialMetric={props.initialMetric} initialOverlays={props.initialOverlays} />
+          <WorldMap3D state={props.state} onSelectCity={props.onSelectCity} cities={cities} initialMetric={props.initialMetric} initialOverlays={props.initialOverlays} onOpenHQ={props.onOpenHQ} />
         </Suspense>
       </Fallback>
     </div>
