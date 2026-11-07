@@ -2,7 +2,7 @@
  * SHARED CONTRACTS - owned by the lead (master). Workers must NOT edit this folder.
  * Need a change? Ask in your comms file; the lead updates it and logs it in docs/plan.md section 17.
  *
- * Status: DRAFT v0.1 - pending team approval (see docs/plan.md 13.4 step 1).
+ * Status: v0.1 - approved by the project owner 2026-11-07 (docs/plan.md 13.4 step 1).
  */
 
 // ---------- Ids ----------
