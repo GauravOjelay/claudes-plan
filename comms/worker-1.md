@@ -1,5 +1,33 @@
 # worker-1 comms (worker-1 writes this file; newest entry on top)
 
+## 2026-11-08 09:00 - done: first-card flow retuned + city effect durations (your DECISION #8)
+Done as you decided: ONE card per year in data order (option 3), the bad endings are now reachable in the real app, `src/sim/demo.lock.test.ts` still passes untouched.
+
+**1. App flow ('first' mode: the HQ shows only the first available card).** Table, 1,000 games per player type (`BALANCE_REPORT=1 npx vitest run src/sim/balance.report.test.ts` prints it; the tests assert it with 400 per type):
+| player | Utopia | Slowdown | Feudalism | AI takeover | bankrupt | nationalised | WW3 |
+|---|---|---|---|---|---|---|---|
+| random | 38.7% | 16.5% | 37.4% | 3.2% | 3.8% | 0.2% | 0.2% |
+| cautious | 67.2% | 32.8% | - | - | - | - | - |
+| generous | 100% | - | - | - | - | - | - |
+| reckless | - | - | - | 87.1% | - | - | 12.9% |
+| spender | - | - | - | - | 100% | - | - |
+| warmonger | - | - | - | 59.2% | - | - | 40.8% |
+| villain / profit | - | - | - | 60.3% | - | - | 39.7% |
+All 7 endings occur; a random player gets no ending above 39%. Before (same flow): only Utopia, Slowdown, Feudalism and a rare nationalised; takeover, WW3 and bankruptcy were impossible. Careful play does not go bankrupt (cautious and generous under 5%, tested).
+What I changed (only options/numbers the demo does not pick, so the demo is untouched): "Ignore it and keep going" safety -10 (was -8; a fully reckless run now ends below the takeover line of 20); tension up on racing choices that are on screen: "Ship first" +6, "Mass-produce robots" +12 (robot arms race, plan 6.4), "Hand it control" +8, "Keep it proprietary" +4, "Leave it to governments" +3; war-threat event chance 0.4 and +10 tension; two new money-sink options for a deliberate spender: "Build your own power plant" (-150 money, energy +20 after 2 years) on the power card and "Launch a moonshot research programme" (-120) on the research card, both without a trust benefit so ordinary careful play does not pick them. Test limits: adds may now be up to 200.
+Still true (your call, no action needed): only ~11 of the 21 cards appear in any game. Nationalised is reachable but very rare in this flow (0.2% random); it is fine in the free-choice mode.
+
+**2. City effects: different durations, overlapping** (`src/sim/cityEffects.ts`, tests in `cityEffects.test.ts`). `CityEffect` shape unchanged. Each kind has build-up (years to reach its peak; the event's `intensity` is the peak), hold, and decay per year:
+- hits at full strength, short: gridlock (gone in 1-2 years), bankRun, deepfakeProtests, unrest (2-4 years)
+- builds then calms: outbreak (1 yr build), embargo, solarBoom (1 yr build, stays several years), ghostOffices, warBuildup (2 yrs build)
+- long: flooding (3 yrs build, 3 hold, very slow decay, about 18 years) and surveillance (2 build, 3 hold, slow decay)
+- blackout hits at once, lingers, and clears fast (0.3/yr) once the grid is repaired (so the solar boom visibly reverses it).
+Different kinds (and different cities) are independent, so several can be active in one city at once; a second effect of the same kind in the same city is still not started while one is live. worker-2: `intensity` is what changes smoothly year to year (for example solarBoom starts at 0.35 and grows to 0.7 the next year; flooding climbs for 3 years). `startIntensity()` and `EFFECT_PROFILES` are exported if you want the same curve for a demo mode.
+`data/demo.md` updated with the new solar boom numbers (0.35, then 0.7, fading 0.4 to 0.2 by 2037).
+
+Checked: `npm run typecheck`, `npm test` (159 tests) and `npm run build` pass. Files touched: `src/sim/{cityEffects,index,balance,content.test,sim.test,balance.test,cityEffects.test}.ts`, `data/{cards,events}.json`, `data/demo.md`, `comms/worker-1.md`.
+Question for master: none. Free for the next task.
+
 ## 2026-11-08 06:00 - question (needs your decision) + done: demo script and verification checklist
 **Please read the QUESTION first: it changes what the app can show.**
 
