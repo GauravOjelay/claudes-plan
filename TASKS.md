@@ -40,6 +40,12 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **EXTRA FIXES FROM THE OWNERS (master, 2026-11-08 #10) for worker-2, do these right after the globe:**
+> A. **World map page is taller than the screen (scrolls).** Make the map page container `height: 100vh; overflow: hidden` (use `100dvh` too), make the globe's container a flexbox with `justify-content: center; align-items: center`, and size the globe from its container (reduce its radius / the container size so the whole globe fits in the viewport, centred).
+> B. **The city stat card is outside the viewport** because of that oversized page; after A it must be fully visible on a 1280x720 screen. Check at 1280x720 and 1920x1080.
+> C. **The "Your move" button** (top right, above the headquarters panel) does nothing. It must call `onSelectCompany(state.playerCompanyId)` (open the player's HQ).
+> D. **The top nav bar** in the real app is the new `TopBar` (in `src/ui`, already on main), so merge `origin/main` first and make sure your pages/dev pages don't show bare native buttons any more. Any buttons inside `src/world` need proper styling (same look as TopBar tabs).
+> Please screenshot at 1280x720 and put them in the PR.
 > **TEAM FEEDBACK CONFIRMED (master, 2026-11-08 #8): the owners (Krish, Charles, Rishi) re-sent their list. Priority order, do the first one first:**
 > 1. **WORLD MAP MUST BE A REAL GLOBE** like Apple Maps: a sphere you orbit/zoom/spin, atmosphere glow, day/night shading, and land that looks REAL (relief/terrain shading or extrusion with coast detail), not flat origami plates. Use the approved `world-atlas`. 2D map stays as the fallback.
 > 2. Every city shows ITS OWN companies (from the city's `companyIds`; all 15 cities and 45 companies are in `src/contracts/cities.ts`). No city may show San Francisco's companies.
@@ -79,6 +85,13 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-2: PR #3 (2D) is merged into main. Next: `git fetch origin && git merge origin/main` on `worker-2`, resolve `CityView.tsx`, `WorldMap.tsx`, `world.test.ts` (keep BOTH 2D and 3D paths; 3D default, `initialMode="2d"` fallback), re-run typecheck/tests/build, push, and PR #4 becomes mergeable. Also: delete the two stray files `src/world/screenshots$1.png` and `src/world/screenshots$name.png` (shell typo). Add the `?fps` readout. The app already imports `WorldMap` and `CityView` from `./world`, so keep those exports stable.
 
 ## worker-3  (Claude 3: Interface)
+> **NEW TOP-PRIORITY TASK (master, 2026-11-08 #9) for worker-3: the HQ boardroom scene.** The owners sent a reference image: a dusk boardroom, long dark conference table, executives seated and one standing and presenting, floor-to-ceiling windows with a glowing golden-hour city skyline behind, strip lights overhead. Make the HQ screen background look like that (`src/ui/` only, keep the left stats panel, card and news readable on top):
+> 1. **Scene:** layered SVG/CSS (no heavy deps): window wall with the skyline, table in perspective, 5-7 stylised seated/standing figures (simple silhouettes are fine, no real people), overhead light strips, subtle reflections on the glass.
+> 2. **Company logo, built in:** use `CompanyLogo` on the room itself, e.g. glowing sign on the back wall or glass, on the presenter's screen/lectern, and a small mark on the table. It must be clearly readable.
+> 3. **Every HQ looks different:** derive a look from the company (id/archetype/home city): different skyline for its city (sf, beijing, london, new york, tokyo etc.), time of day (golden hour/dusk/night), room palette, table shape, number of people, logo placement. Rivals (view-only) get their own looks too.
+> 4. **Light movement:** gentle, slow, realistic: drifting clouds/haze, flickering window lights in the skyline, a slow light sweep, subtle idle motion of the figures, soft glass glare. Respect `prefers-reduced-motion` (no animation then). Keep it smooth (CSS transforms/opacity only).
+> 5. Reactive bit if time: when the player's city has a blackout/unrest effect, dim or change the skyline outside the window.
+> 6. PR with screenshots of at least 4 different companies, light and dark theme. Do it after you merge `origin/main`.
 > **NEW TASKS (master, 2026-11-08 #7) - the hook was broken and hid this section until now; sorry. Your intro screen is wired into the app now. Do these in order:**
 > 1. `git fetch origin && git merge origin/main`.
 > 2. `TopBar` in `src/ui/` (the app's plain browser-button header looks unfinished): props `{ year, screen, onNavigate(screen), cardsWaiting, onSkipYear, children }` where screen is `'map'|'city'|'hq'|'dashboard'`. Style it: big readable year, clear active tab, a high-contrast "N cards waiting" call to action. Export it; I will wire it into `src/app`.
