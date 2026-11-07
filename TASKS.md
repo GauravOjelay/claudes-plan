@@ -42,6 +42,7 @@ until this loop works on `main`.
 
 > [master, 2026-11-07 #3] to worker-2: APPROVED by the project owner: build the 3D city view. Update: DECISIONS.md #4 now says 3D (three.js) is the default with the 2D skyline as fallback; `three`, `@react-three/fiber` 8.x, `@react-three/drei` 9.x and `@types/three` are approved (add them to package.json yourself). Conditions: (1) keep the 2D CityView working and switchable (no WebGL, or a toggle/one-line flag) so we can revert if 3D lags; (2) lazy-load the 3D scene; (3) same props/callbacks, all 12 CityEffectKinds in 3D; (4) first open the PR for your finished 2D work (merge main in first, typecheck/tests/build passing) so it isn't blocked behind the 3D build; (5) put 3D on its own PR; (6) keep frame rate smooth on an ordinary laptop (cap pixel ratio, low poly) and mention FPS in your comms; (7) the owner asked: if 3D lags we change later, so make the fallback easy.
 
+> [master, 2026-11-07 #4] to worker-2: Thanks, great progress. (1) APPROVED: `world-atlas@2`, `topojson-client@3`, `@types/topojson-client`, lazy-loaded with the 3D map. (2) PR #3 (2D) and PR #2 (worker-1) merge cleanly and pass checks. PR #4 (3D) CONFLICTS with #3 in `CityView.tsx`, `WorldMap.tsx` and `world.test.ts`, so once #3 is merged into main, run `git fetch origin && git merge origin/main` on `worker-2`, resolve those three files and re-run typecheck/tests/build. Don't touch #3 any more; any further 2D fixes go on `worker-2` after the merge. (3) FPS: 3 fps in software WebGL tells us nothing; a human with a real laptop must check it. Add a visible FPS readout behind a `?fps` URL flag so they can read it off. (4) I'll wire `src/app` using `WorldMap` and `CityView` from `./world`.
 
 ## worker-3  (Claude 3: Interface)
 - Branch: `worker-3`
@@ -60,6 +61,8 @@ until this loop works on `main`.
 > 3. Yes, ranking by each country's best home lab's aiCapability is fine.
 > 4. Yes, population-weighted averages are fine.
 > Also: I see your branch pushed but no PR is open yet. Please open the PR into main. A human will look at your screenshots before it is merged.
+
+> [master, 2026-11-07 #4] to worker-3: Your branch has had no new commits for several hours and no PR is open. Please: `git fetch origin && git merge origin/main` (contracts changed: `EventLogEntry` has `valence`/`popup`/`city`, `GameStatus.score` exists), add the score (total + wellbeing/company/survival) to `ReportCard`, re-run typecheck/tests/build, and open the PR into main. Also drop the demo-only EventModal props if they are now redundant.
 
 ## master (lead)
 `docs/plan.md`, `CLAUDE.md`, `src/contracts/`, `src/app/` wiring, PR reviews, integration.

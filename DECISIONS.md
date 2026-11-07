@@ -30,4 +30,5 @@ Approved by the project owner on 2026-11-07. Work with these.
   After a PR merges, run `git fetch origin && git merge origin/main` on your branch.
 - Years are NUMBERS in code. Convert string keys from JSON before arithmetic.
 - Chart library: `recharts` is pre-approved for Claude 3.
-- 3D: `three`, `@react-three/fiber` (8.x), `@react-three/drei` (9.x) and `@types/three` are pre-approved for Claude 2 only. Lazy-load the 3D scene so the main bundle doesn't grow. No other new dependencies without asking.
+- 3D: `three`, `@react-three/fiber` (8.x), `@react-three/drei` (9.x) and `@types/three` are pre-approved for Claude 2 only. Lazy-load the 3D scene so the main bundle doesn't grow. - Map data: `world-atlas@2`, `topojson-client@3` and `@types/topojson-client` are pre-approved for Claude 2 (real coastlines, public-domain Natural Earth data). Lazy-load with the 3D map.
+- No other new dependencies without asking.
