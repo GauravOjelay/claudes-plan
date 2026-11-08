@@ -36,7 +36,7 @@ export const mockWorldState: WorldState = {
   },
   regions,
   companies: mockCompanies,
-  playerCompanyId: 'novacore',
+  playerCompanyId: 'closedai',
   activeCityEffects: [{ city: 'sf', kind: 'blackout', intensity: 0.6, sinceYear: 2026 }],
   unlockedPathways: [],
   choiceLog: [],

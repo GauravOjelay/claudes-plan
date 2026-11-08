@@ -8,9 +8,9 @@ const { decisions, events } = defaultContent;
 const CITY_KINDS: CityEffectKind[] = [
   'blackout', 'ghostOffices', 'deepfakeProtests', 'gridlock', 'bankRun', 'warBuildup', 'outbreak', 'embargo', 'surveillance', 'solarBoom', 'flooding', 'unrest',
 ];
-const REGION_KEYS = Object.keys(createInitialState(1, 'novacore').regions.US);
-const GLOBAL_KEYS = Object.keys(createInitialState(1, 'novacore').global);
-const COMPANY_KEYS = Object.keys(createInitialState(1, 'novacore').companies[0].vars);
+const REGION_KEYS = Object.keys(createInitialState(1, 'closedai').regions.US);
+const GLOBAL_KEYS = Object.keys(createInitialState(1, 'closedai').global);
+const COMPANY_KEYS = Object.keys(createInitialState(1, 'closedai').companies[0].vars);
 
 const allEffects = (): Effect[] => [...decisions.flatMap((d) => d.options.flatMap((o) => o.effects)), ...events.flatMap((e) => e.effects)];
 
@@ -106,20 +106,20 @@ describe('pathways are all reachable', () => {
   it('each option can be chosen (requirements permitting) without the sim throwing', () => {
     for (const d of decisions) {
       for (const o of d.options) {
-        const s = createInitialState(1, 'novacore');
+        const s = createInitialState(1, 'closedai');
         s.year = 2034;
         s.companies[0].vars.aiCapability = 40;
         s.unlockedPathways = [...unlocked];
-        expect(() => step(s, [{ decisionId: d.id, optionId: o.id, companyId: 'novacore' }], createRng(1))).not.toThrow();
+        expect(() => step(s, [{ decisionId: d.id, optionId: o.id, companyId: 'closedai' }], createRng(1))).not.toThrow();
       }
     }
   });
 });
 
 describe('signature event chains (decision -> consequence)', () => {
-  const choose = (decisionId: string, optionId: string) => ({ decisionId, optionId, companyId: 'novacore' });
+  const choose = (decisionId: string, optionId: string) => ({ decisionId, optionId, companyId: 'closedai' });
   const run = (seed: number, first: ReturnType<typeof choose>[], years: number, tweak?: (s: ReturnType<typeof createInitialState>) => void) => {
-    let s = createInitialState(seed, 'novacore');
+    let s = createInitialState(seed, 'closedai');
     tweak?.(s);
     for (let i = 0; i < years && !s.status.over; i++) s = step(s, i === 0 ? first : [], createRng(seed * 1000 + i));
     return s;

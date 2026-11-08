@@ -51,7 +51,7 @@ export function createInitialState(seed: number, playerCompanyId: string): World
   const s = num(seed, 'seed');
   const player = COMPANY_ROSTER.find((c) => c.id === playerCompanyId);
   if (!player) throw new Error(`Unknown company: ${playerCompanyId}`);
-  if (!player.playable) throw new Error(`${player.name} is not playable (only NovaCore is, for now)`);
+  if (!player.playable) throw new Error(`${player.name} is not playable (only ClosedAI is, for now)`);
 
   const outlook = OUTLOOKS[Math.floor(createRng(s).next() * OUTLOOKS.length)];
   const regions = Object.fromEntries(ALL_REGIONS.map((r) => [r, regionFromBaseline(baseline.regions[r])])) as WorldState['regions'];

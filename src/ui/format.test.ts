@@ -59,10 +59,10 @@ describe('relevantHeadlines', () => {
       [
         { year: 2026, text: 'a', city: 'sf' },
         { year: 2027, text: 'b', city: 'beijing' },
-        { year: 2027, text: 'c', companyId: 'novacore' },
+        { year: 2027, text: 'c', companyId: 'closedai' },
         { year: 2028, text: 'd' },
       ],
-      'novacore',
+      'closedai',
       'sf',
     );
     expect(out.map((h) => h.text)).toEqual(['d', 'c', 'a']);

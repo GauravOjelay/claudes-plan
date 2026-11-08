@@ -66,7 +66,7 @@ describe('cityTimelineItems', () => {
     const state = {
       ...mockWorldState,
       choiceLog: [
-        { year: 2028, decisionId: 'd1', optionId: 'a', companyId: 'novacore' },
+        { year: 2028, decisionId: 'd1', optionId: 'a', companyId: 'closedai' },
         { year: 2027, decisionId: 'd2', optionId: 'b', companyId: 'dragonmind' }, // Beijing: excluded
       ],
       eventLog: [

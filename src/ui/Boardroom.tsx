@@ -35,7 +35,7 @@ function hashString(s: string): number {
 }
 
 const ARCHETYPE_INDEX: Record<Company['archetype'], number> = {
-  frontierLab: 0, chipMaker: 1, researchLab: 2, stateBackedLab: 3,
+  frontierLab: 0, chipMaker: 1, researchLab: 2, stateBackedLab: 3, softwareCompany: 4, financeFirm: 5,
 };
 
 /** Derive a company's room from its id, archetype and home city. */

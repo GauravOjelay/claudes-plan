@@ -14,7 +14,7 @@ export type RegionId = PowerId | (typeof GROUPED_REGIONS)[number];
 export const ERAS = ['2026-2030', '2031-2036', '2037-2050', '2051-2075', '2076-2100', '2101-2126'] as const;
 export type EraId = (typeof ERAS)[number];
 
-export type CompanyArchetype = 'chipMaker' | 'frontierLab' | 'researchLab' | 'stateBackedLab';
+export type CompanyArchetype = 'chipMaker' | 'frontierLab' | 'researchLab' | 'stateBackedLab' | 'softwareCompany' | 'financeFirm';
 export type ExpertOutlook = 'severeShock' | 'middle' | 'overblown'; // Hinton-style .. Acemoglu-style
 
 // ---------- Variables (docs/plan.md section 3) ----------
@@ -58,11 +58,11 @@ export type CompanyVar = keyof CompanyVars;
 
 export interface Company {
   id: string;
-  name: string; // FICTIONAL until open decision 1 is resolved
+  name: string; // parody name of a real firm (owner decision 2026-11-08)
   archetype: CompanyArchetype;
   homeRegion: RegionId;
   homeCity: string;
-  playable: boolean;
+  playable: boolean; // all true since 2026-11-08: the player controls every company
   vars: CompanyVars;
 }
 
@@ -248,7 +248,7 @@ export interface CityInfo {
   region: RegionId;
   /** Position on the world map, 0-1 (x: west->east, y: north->south). */
   mapPos: { x: number; y: number };
-  companyIds: string[]; // at least 3 HQs per city (rivals viewable only)
+  companyIds: string[]; // may be empty: not every city has an AI HQ
 }
 
 // ---------- Average Joe (plan 10.5; owner request 2026-11-08) ----------

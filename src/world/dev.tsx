@@ -32,10 +32,10 @@ const devBase: WorldState = {
     AFRICA: { ...mockWorldState.regions.AFRICA, gdp: 3000, population: 1500, waterStress: 65 },
   },
   choiceLog: [
-    { year: 2026, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'novacore' },
+    { year: 2026, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'closedai' },
     { year: 2028, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'helix' },
     { year: 2028, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'silicara' },
-    { year: 2030, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'novacore' },
+    { year: 2030, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'closedai' },
   ],
   eventLog: [
     { year: 2027, eventId: 'blackout-belt', headline: 'Rolling blackouts spread across the Bay as campus demand spikes', valence: 'negative', popup: true, city: 'sf' },

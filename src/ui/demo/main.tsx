@@ -36,7 +36,7 @@ const base: WorldState = {
   history: demoHistory(),
   headlines: [
     ...mockWorldState.headlines,
-    { year: 2026, text: 'NovaCore stock jumps 12% after agent launch', companyId: 'novacore' },
+    { year: 2026, text: 'ClosedAI stock jumps 12% after agent launch', companyId: 'closedai' },
     { year: 2026, text: 'San Francisco grid operator warns of summer shortfall', city: 'sf' },
     { year: 2026, text: 'Rival lab in Beijing announces new model', city: 'beijing' },
   ],
@@ -55,11 +55,11 @@ const ended: WorldState = {
   ...base,
   year: 2036,
   choiceLog: [
-    { year: 2026, decisionId: 'datacentre-campus', optionId: 'staged', companyId: 'novacore' },
-    { year: 2027, decisionId: 'release-strategy', optionId: 'partnerGov', companyId: 'novacore' },
-    { year: 2028, decisionId: 'safety-mechanisms', optionId: 'buildSafeguards', companyId: 'novacore' },
-    { year: 2031, decisionId: 'treaty-or-race', optionId: 'treaty', companyId: 'novacore' },
-    { year: 2033, decisionId: 'final-oversight', optionId: 'humansInLoop', companyId: 'novacore' },
+    { year: 2026, decisionId: 'datacentre-campus', optionId: 'staged', companyId: 'closedai' },
+    { year: 2027, decisionId: 'release-strategy', optionId: 'partnerGov', companyId: 'closedai' },
+    { year: 2028, decisionId: 'safety-mechanisms', optionId: 'buildSafeguards', companyId: 'closedai' },
+    { year: 2031, decisionId: 'treaty-or-race', optionId: 'treaty', companyId: 'closedai' },
+    { year: 2033, decisionId: 'final-oversight', optionId: 'humansInLoop', companyId: 'closedai' },
   ],
   status: {
     over: true, ending: 'slowdown', reason: 'Shared oversight held through 2036.',
@@ -110,7 +110,7 @@ function Demo() {
     setState((s) => ({
       ...s,
       choiceLog: [...s.choiceLog, { year: s.year, decisionId, optionId, companyId: s.playerCompanyId }],
-      headlines: [...s.headlines, { year: s.year, text: `NovaCore decides: ${opt?.label ?? optionId}`, companyId: s.playerCompanyId }],
+      headlines: [...s.headlines, { year: s.year, text: `ClosedAI decides: ${opt?.label ?? optionId}`, companyId: s.playerCompanyId }],
     }));
   };
 
@@ -121,7 +121,7 @@ function Demo() {
   return (
     <UiRoot initial={{ ...(theme && { theme }), ...(scale && { textScale: scale }) }}>
       <nav style={{ display: 'flex', gap: 8, padding: '8px 16px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)' }}>
-        {['rooms', 'room-novacore', 'room-dragonmind', 'room-meridian', 'room-lumiere', 'room-blackout', 'topbar', 'topbar-done', 'howto', 'intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
+        {['rooms', 'room-closedai', 'room-dragonmind', 'room-meridian', 'room-lumiere', 'room-blackout', 'topbar', 'topbar-done', 'howto', 'intro', 'hq', 'crisis', 'sunny', 'rival', 'dash', 'danger', 'event', 'report', 'report-noscore'].map((v) => (
           <a key={v} href={`#${v}`} style={{ color: 'var(--accent)', fontWeight: v === view ? 700 : 400 }}>{v}</a>
         ))}
         <span className="ui-small ui-muted" style={{ marginLeft: 'auto' }}>Demo data, not real figures</span>

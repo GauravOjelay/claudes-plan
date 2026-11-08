@@ -6,6 +6,8 @@ export const ARCHETYPE_COLOR: Record<CompanyArchetype, string> = {
   chipMaker: '#e69f00',
   researchLab: '#009e73',
   stateBackedLab: '#d55e00',
+  softwareCompany: '#cc79a7',
+  financeFirm: '#56b4e9',
 };
 
 export const ARCHETYPE_LABEL: Record<CompanyArchetype, string> = {
@@ -13,6 +15,8 @@ export const ARCHETYPE_LABEL: Record<CompanyArchetype, string> = {
   chipMaker: 'Chip maker',
   researchLab: 'Research lab',
   stateBackedLab: 'State-backed lab',
+  softwareCompany: 'Software company',
+  financeFirm: 'Finance firm',
 };
 
 function initials(name: string): string {
