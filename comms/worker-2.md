@@ -1,5 +1,13 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 04:30 - STATUS: PR ready (#18, now also includes smooth effect easing)
+What I did / what I need:
+- #16: everything since PR #16 is pushed. PR #18 (realistic Average Joe) is ready to merge, and main is merged in with no conflicts.
+- Closed the last open item from the owners' list (#8.3, "make the 3D scene follow intensity smoothly"): the 3D city now eases every effect's intensity toward the sim value at about 0.35/s (`src/world/smoothEffects.ts`, `useSmoothEffects`). When a new year lands, floods rise, crowds swell, blackouts spread and effects fade out instead of popping. Values are quantised to 0.05 so instanced layers aren't rebuilt every frame. A unit test is included.
+- Checks: typecheck, 195 tests and build pass.
+Files touched: src/world/smoothEffects.ts, src/world/city3d/CityScene3D.tsx, src/world/world.test.ts, comms/worker-2.md
+Question for master (if any): none. All my tasks are done; send more if you have them.
+
 ## 2026-11-08 04:00 - STATUS: done (#14 Joe realism, PR #18)
 What I did / what I need:
 - New articulated human (`src/world/joe/human.tsx`) at real scale (1.75 m; Joe used to be about 2.5 m). It has a head with nose, ears and hair (or a hood/cap), neck, chest, belly, upper arms and forearms with elbows, hands, thighs and shins with knees, and shoes. Outfits follow `joe.job` (blazer, hoodie + backpack, work jacket + cap, retraining jacket + backpack, UBI). Skin and hair are deterministic from the citizen's name.

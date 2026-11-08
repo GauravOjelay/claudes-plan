@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import type { CityEffectKind, CityInfo, Company, WorldState } from '../../contracts';
 import { ALL_EFFECT_KINDS, companiesInCity, effectsForCity } from '../util';
 import { Toasts } from '../EventFeed';
+import { useSmoothEffects } from '../smoothEffects';
 import { FpsMeter, useFpsVisible } from '../FpsMeter';
 import { ALL_CITIES } from '../roster';
 import { buildCityGeometries, makeBuildingMaterial, makeUniforms, type CityUniforms } from './buildingMaterial';
@@ -221,7 +222,7 @@ function SceneContents({ state, city, onSelectCompany, time, api }: {
   const layout = useMemo(() => buildLayout3D(city.id), [city.id]);
   const uniforms = useMemo(makeUniforms, []);
   const smokeTex = useMemo(softTexture, []);
-  const fx = effectsForCity(state, city.id);
+  const fx = useSmoothEffects(effectsForCity(state, city.id));
   const k = (kind: CityEffectKind) => fx.get(kind)?.intensity ?? 0;
   const look = LOOKS[time];
   const sun = useMemo(() => sunDir(look.sunElev), [look.sunElev]);
