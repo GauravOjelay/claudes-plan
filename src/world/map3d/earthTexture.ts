@@ -239,7 +239,35 @@ export function paintEarth(earth: EarthData, W = 2048, H = 1024): EarthTextures 
       height[y * HW + x] = land * (0.12 * n + rangeHeight(lon, lat) * (0.7 + 0.6 * n));
     }
   }
-  const hAt = (x: number, y: number) => height[Math.min(HH - 1, Math.max(0, y)) * HW + (((x % HW) + HW) % HW)];
+  // soften the height field (removes blocky relief when zoomed in)
+  {
+    const tmpC = canvas(HW, HH);
+    const tc = tmpC.getContext('2d')!;
+    const ti = tc.createImageData(HW, HH);
+    for (let i = 0; i < HW * HH; i++) {
+      const v = Math.round(clamp01(height[i]) * 255);
+      ti.data[i * 4] = ti.data[i * 4 + 1] = ti.data[i * 4 + 2] = v;
+      ti.data[i * 4 + 3] = 255;
+    }
+    tc.putImageData(ti, 0, 0);
+    const blurC = canvas(HW, HH);
+    const bl = blurC.getContext('2d')!;
+    bl.filter = 'blur(1.4px)';
+    bl.drawImage(tmpC, 0, 0);
+    const bd = bl.getImageData(0, 0, HW, HH).data;
+    for (let i = 0; i < HW * HH; i++) height[i] = bd[i * 4] / 255;
+  }
+  const hAtI = (x: number, y: number) => height[Math.min(HH - 1, Math.max(0, y)) * HW + (((x % HW) + HW) % HW)];
+  // bilinear sample in half-res coordinates
+  const hAt = (x: number, y: number) => {
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const fx = x - x0;
+    const fy = y - y0;
+    const a = hAtI(x0, y0) + (hAtI(x0 + 1, y0) - hAtI(x0, y0)) * fx;
+    const b = hAtI(x0, y0 + 1) + (hAtI(x0 + 1, y0 + 1) - hAtI(x0, y0 + 1)) * fx;
+    return a + (b - a) * fy;
+  };
 
   const colorC = canvas(W, H);
   const cc = colorC.getContext('2d')!;
@@ -270,16 +298,16 @@ export function paintEarth(earth: EarthData, W = 2048, H = 1024): EarthTextures 
         col = mix(col, mix(C.sand, C.sand2, n), desertness(lon, lat));
         col = mix(col, [col[0] * 0.8, col[1] * 0.85, col[2] * 0.8], n);
         // relief: rock then snow with height
-        const hx = Math.floor(x / 2);
-        const hy = Math.floor(y / 2);
+        const hx = x / 2;
+        const hy = y / 2;
         const h = hAt(hx, hy);
         col = mix(col, C.rock, clamp01((h - 0.35) * 1.6));
         col = mix(col, C.snow, clamp01((h - 0.85) * 2.5));
         // ice caps
         if (lat < -60 || (lat > 60 && lon > -75 && lon < -12) || lat > 79) col = mix(C.snow, [214, 224, 236], n * 0.6);
         // hillshade (light from the north-west)
-        const gx = (hAt(hx + 2, hy) - hAt(hx - 2, hy)) * 0.5;
-        const gy = (hAt(hx, hy + 2) - hAt(hx, hy - 2)) * 0.5;
+        const gx = (hAt(hx + 1.5, hy) - hAt(hx - 1.5, hy)) * 0.66;
+        const gy = (hAt(hx, hy + 1.5) - hAt(hx, hy - 1.5)) * 0.66;
         const shade = Math.min(1.12, Math.max(0.72, 0.95 + (-gx + gy) * 1.3));
         col = [col[0] * shade, col[1] * shade, col[2] * shade];
       } else {
@@ -296,8 +324,8 @@ export function paintEarth(earth: EarthData, W = 2048, H = 1024): EarthTextures 
   cc.putImageData(img, 0, 0);
 
   // borders on top
-  cc.strokeStyle = 'rgba(255,255,255,0.32)';
-  cc.lineWidth = 0.8;
+  cc.strokeStyle = 'rgba(255,255,255,0.24)';
+  cc.lineWidth = 0.6;
   for (const dx of [-W, 0, W]) {
     cc.beginPath();
     for (const line of earth.borders) {

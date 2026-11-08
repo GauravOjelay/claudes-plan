@@ -248,7 +248,7 @@ function GlobeRig({ api }: { api: MutableRefObject<GlobeApi> }) {
     }
     if (a.zoom !== 1) {
       // zoom by altitude above the surface so it feels the same far out and close in
-      camera.position.setLength(THREE.MathUtils.clamp(R + (dist - R) * a.zoom, R * 1.12, R * 4));
+      camera.position.setLength(THREE.MathUtils.clamp(R + (dist - R) * a.zoom, R * 1.3, R * 4));
       a.zoom = 1;
       a.lastInput = performance.now();
     }
@@ -386,7 +386,7 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric,
     const { lon, lat } = cityLonLat(c);
     setSelected(id);
     api.current.flyTo = lonLatToVec(lon, lat, 1);
-    api.current.flyDist = R * 1.55;
+    api.current.flyDist = R * 1.6;
     api.current.lastInput = performance.now();
   };
   const flyHome = () => {
@@ -401,7 +401,7 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric,
         onPointerMissed={() => setSelected(null)} gl={{ antialias: true }}>
         <color attach="background" args={['#04060c']} />
         <PerformanceMonitor flipflops={4} onIncline={() => setDpr((d) => Math.min(2, d + 0.25))} onDecline={() => setDpr((d) => Math.max(0.75, d - 0.3))} />
-        <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.06} minDistance={R * 1.12} maxDistance={R * 4} zoomSpeed={0.7} autoRotateSpeed={0.25} />
+        <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.06} minDistance={R * 1.3} maxDistance={R * 4} zoomSpeed={0.7} autoRotateSpeed={0.25} />
         <GlobeRig api={api} />
         {fpsVisible && <FpsMeter target={fpsEl} />}
         <ambientLight intensity={0.55} />

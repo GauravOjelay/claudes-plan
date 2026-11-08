@@ -251,6 +251,7 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
 }
 
 export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d' }: CityViewProps) {
+  const [statsOpen, setStatsOpen] = useState(false);
   const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
   const city = cities.find((c) => c.id === cityId);
   if (!city) {
@@ -287,6 +288,29 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
           ) : (
             <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />
           )}
+          {region && (
+            <section className={`w-statcard${statsOpen ? ' open' : ''}`} aria-label={`${REGION_NAMES[city.region]} stats`}>
+              <button className="w-statcard-head" aria-expanded={statsOpen} onClick={() => setStatsOpen((o) => !o)}>
+                <span>{REGION_NAMES[city.region]}</span><span aria-hidden>{statsOpen ? '▾' : '▸'}</span>
+              </button>
+              <dl className="w-kv">
+                <dt>GDP</dt><dd>{fmtMoneyBn(region.gdp)}</dd>
+                <dt>Population</dt><dd>{fmtPeopleM(region.population)}</dd>
+                <dt>Software jobs lost</dt><dd>{fmtPct(region.unemploymentSoftware)}</dd>
+                <dt>Public trust</dt><dd>{Math.round(region.publicTrust)}/100</dd>
+                {statsOpen && (
+                  <>
+                    <dt>Physical jobs lost</dt><dd>{fmtPct(region.unemploymentPhysical)}</dd>
+                    <dt>Wealth gap</dt><dd>{Math.round(region.wealthGap)}/100</dd>
+                    <dt>Energy balance</dt><dd style={{ color: region.energy < 0 ? 'var(--w-bad)' : undefined }}>{region.energy > 0 ? '+' : ''}{Math.round(region.energy)}</dd>
+                    <dt>Water stress</dt><dd>{Math.round(region.waterStress)}/100</dd>
+                    <dt>Regulation</dt><dd>{Math.round(region.regulationStrictness)}/100</dd>
+                    <dt>World tension</dt><dd>{Math.round(state.global.geopoliticalTension)}/100</dd>
+                  </>
+                )}
+              </dl>
+            </section>
+          )}
         </div>
         <aside>
           {player && (
@@ -310,23 +334,6 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
           <section className="w-panel">
             <EventFeed state={state} cities={cities} cityId={city.id} max={6} />
           </section>
-          {region && (
-            <section className="w-panel">
-              <h3>{REGION_NAMES[city.region]}</h3>
-              <dl className="w-kv">
-                <dt>GDP</dt><dd>{fmtMoneyBn(region.gdp)}</dd>
-                <dt>Population</dt><dd>{fmtPeopleM(region.population)}</dd>
-                <dt>Software jobs lost</dt><dd>{fmtPct(region.unemploymentSoftware)}</dd>
-                <dt>Physical jobs lost</dt><dd>{fmtPct(region.unemploymentPhysical)}</dd>
-                <dt>Wealth gap</dt><dd>{Math.round(region.wealthGap)}/100</dd>
-                <dt>Public trust</dt><dd>{Math.round(region.publicTrust)}/100</dd>
-                <dt>Energy balance</dt><dd style={{ color: region.energy < 0 ? 'var(--w-bad)' : undefined }}>{region.energy > 0 ? '+' : ''}{Math.round(region.energy)}</dd>
-                <dt>Water stress</dt><dd>{Math.round(region.waterStress)}/100</dd>
-                <dt>Regulation</dt><dd>{Math.round(region.regulationStrictness)}/100</dd>
-                <dt>World tension</dt><dd>{Math.round(state.global.geopoliticalTension)}/100</dd>
-              </dl>
-            </section>
-          )}
         </aside>
       </div>
       {showTimeline && <CityTimeline state={state} cityId={city.id} cities={cities} decisions={decisions} />}

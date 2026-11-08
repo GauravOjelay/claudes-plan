@@ -1,5 +1,39 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 01:30 - STATUS: done (owner fixes #10 A-D ready, PR open)
+What I did / what I need: Merged origin/main (TopBar, app shell, roster in contracts) and checked the REAL app (root URL) at 1280x720 and 1920x1080 with headless Chrome:
+- A. The globe fits the viewport (your `.app-shell`/`is-map` rules plus my globe container) and is centred. Nothing scrolls on the map page.
+- B. The city stat card is now a compact overlay inside the 3D scene (bottom-left; expand ▸ for all stats), so it is always visible. The scene height follows the viewport (`--w-scene-h`) and the right column scrolls internally if needed.
+- C. "Your move" button: I clicked it in the real app and it opens NovaCore HQ. The real bug was that its text was invisible in the light theme, because `src/ui` sets `.ui-root button { color: inherit }` and that beat my button colours (black text on black). The same applied to the globe toolbar and the 3D HQ labels. All src/world buttons now use higher-specificity colours.
+- D. All world buttons are styled; the dev page has a styled bar, and there is no debug text any more.
+- Screenshots: `src/world/screenshots/v2/app-*-1280x720.png` and `app-*-1920x1080.png`.
+- Checks: typecheck, tests and build pass.
+Files touched: src/world/**, comms/worker-2.md
+PR: https://github.com/GauravOjelay/claudes-plan/pull/14
+Question for master (if any): the globe's "Your move" button calls `onOpenHQ` if you pass it. Please add `onOpenHQ={(id) => { setHqId(id); setScreen('hq'); }}` to `<WorldMap>` in App.tsx; until then it opens the player's home city.
+
+## 2026-11-08 00:40 - STATUS: in-progress (owner review fixes pushed to worker-2 / PR #4)
+What I did / what I need:
+- Merged main into worker-2 and resolved CityView/WorldMap/world.test (kept both 2D and 3D; 3D default, `initialMode="2d"` fallback). Exports are unchanged: `WorldMap`, `CityView`. The new optional prop `WorldMap.onOpenHQ(companyId)` opens the HQ screen; please wire it in App.tsx (`setHqId(id); setScreen('hq')`).
+- World map is now a 3D GLOBE in the style of Apple Maps:
+  - Real Natural Earth 50m coastlines and borders (world-atlas, lazy chunk). The terrain texture (biomes, deserts, real mountain ranges with relief shading, ice caps, continental shelves) is drawn in code, so no image downloads. Atmosphere glow and stars.
+  - Smooth inertial rotate and zoom, pins hidden behind the horizon, fly-in callout, and Terrain/GDP/AI/Tension tints plus grid and water overlays.
+- Live events on the globe: coloured pulsing rings at cities, toasts (6 s), and a "Happening now" feed (newest pushed in at the top, oldest popped at the bottom, revealed slowly). Clicking a feed item flies to that city.
+- Event demo (`src/world/demo.ts`, `useEventDemo`): visual only, not the sim. Overlapping events, each with its own life cycle: a flood builds up over about 30 s, holds, then recedes; protests are about 20 s; war searchlights are shorter now. The dev page runs it by default. If you want it in the app (e.g. an attract mode), it is one hook.
+- 3D city:
+  - FPS chip.
+  - Camera pad and shortcut bar hidden until the user scrolls or presses (never on hover).
+  - Big year badge that "bumps" when the year changes.
+  - Fuller two-tone clouds and a brighter flood.
+  - Toasts instead of permanent banners.
+  - Rolling 6-item feed in "Happening now".
+- Calmer timeline: one node per year, year labels 1.25rem below the rail, "NOW" pill, futures in their own column.
+- Black "Your move: Make a decision at <your company> HQ" button on the city view (calls `onSelectCompany(playerCompanyId)`) and on the globe (calls `onOpenHQ`).
+- Each city now shows its OWN companies; the dev page always opened SF, which is fixed. There are 12 new cities (roster proposal in `src/world/roster.ts`, still waiting on your answer to question 1 of my 23:30 entry).
+- Checks: typecheck, 107 tests and build pass. three.js and world-atlas are only in lazy chunks. Screenshots are in `src/world/screenshots/v2/`. FPS still needs a real laptop.
+Files touched: src/world/**, package.json, package-lock.json, comms/worker-2.md
+Question for master (if any): still open from 23:30: (1) move the roster into contracts, (2) Tokyo region, (3) effects vs policies, (4) app header styling (yours). New: (5) please wire `WorldMap onOpenHQ` in App.tsx.
+
 ## 2026-11-07 23:30 - STATUS: in-progress + QUESTIONS (owner review round)
 What I did / what I need: Merged main into worker-2 (kept both 2D and 3D, typecheck + 105 tests + build pass), removed the stray `screenshots$*.png` files, added world-atlas/topojson. The owner reviewed my work and asked for: a real Apple-Maps-style 3D GLOBE with realistic land, more cities each with their OWN companies, a visible FPS readout, controls hidden until used, a prominent current year, fuller clouds, toasts that time out, a rolling "happening now" feed, a live demo of overlapping events with different durations, a cleaner timeline, and a high-contrast "make a decision" call to action. Working on all of these on worker-2.
 Files touched: src/world/**, package.json, package-lock.json, comms/worker-2.md
