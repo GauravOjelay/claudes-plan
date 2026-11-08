@@ -16,7 +16,9 @@ import { ALL_CITIES } from '../roster';
 import { buildCityGeometries, makeBuildingMaterial, makeUniforms, type CityUniforms } from './buildingMaterial';
 import { CameraRig, HOME, makeRigApi, type RigAction, type RigApi } from './CameraRig';
 import { EffectLayer3D, HospitalMarks, Port, Traffic, softTexture } from './effects3d';
-import { BLOCK, buildLayout3D, type Layout3D, type Style } from './layout3d';
+import { BLOCK, buildLayout3D, riverX, type Layout3D, type Style } from './layout3d';
+import { Backdrop, Landmarks } from './Landmarks3D';
+import { cityScene, reservedLots, type CityScene } from './landmarks';
 import '../world.css';
 
 export type TimeOfDay = 'golden' | 'dusk' | 'night';
@@ -93,7 +95,16 @@ function Instanced({ items, geometry, color, colors, cast = true }: {
   );
 }
 
-function Ground({ layout, onDoubleClick }: { layout: Layout3D; onDoubleClick: (p: THREE.Vector3) => void }) {
+/** Is this spot on the land side of the water? The far bank is only built up beside a river (not across a bay, sea or lake). */
+function keepOnFarBank(water: CityScene['water'], x: number, z: number): boolean {
+  const d = riverX(z) - x; // > 0 = west of the river
+  if (d <= 0) return true;
+  if (water === 'bay' || water === 'sea') return false;
+  if (water === 'lake') return d > 380;
+  return true;
+}
+
+function Ground({ layout, scene, onDoubleClick }: { layout: Layout3D; scene: CityScene; onDoubleClick: (p: THREE.Vector3) => void }) {
   const box = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const tree = useMemo(() => new THREE.IcosahedronGeometry(1, 1), []);
   const blocks = useMemo(() => {
@@ -102,14 +113,16 @@ function Ground({ layout, onDoubleClick }: { layout: Layout3D; onDoubleClick: (p
     const plaza = layout.blocks.filter((b) => b.kind === 'plaza').map((b) => ({ x: b.x, y: 0.14, z: b.z, sx: b.size + 2, sy: 0.28, sz: b.size + 2 }));
     return { built, park, plaza };
   }, [layout]);
-  const trees = useMemo(() => layout.trees.map((t) => ({ x: t.x, y: 2.4 * t.s, z: t.z, sx: 2.2 * t.s, sy: 2.6 * t.s, sz: 2.2 * t.s })), [layout]);
-  const sprawl = useMemo(() => layout.sprawl.map((b) => ({ x: b.x, y: b.h / 2, z: b.z, sx: b.w, sy: b.h, sz: b.d })), [layout]);
+  const trees = useMemo(() => layout.trees.filter((t) => keepOnFarBank(scene.water, t.x, t.z)).map((t) => ({ x: t.x, y: 2.4 * t.s, z: t.z, sx: 2.2 * t.s, sy: 2.6 * t.s, sz: 2.2 * t.s })), [layout, scene.water]);
+  const sprawl = useMemo(() => layout.sprawl.filter((b) => keepOnFarBank(scene.water, b.x, b.z)).map((b) => ({ x: b.x, y: b.h / 2, z: b.z, sx: b.w, sy: b.h, sz: b.d })), [layout, scene.water]);
   const river = useMemo(() => {
     const pts = layout.river;
     const pos: number[] = [];
     const idx: number[] = [];
+    // A bay or sea has no far bank; a lake has one a long way off.
+    const reach = scene.water === 'bay' || scene.water === 'sea' ? 4000 : scene.water === 'lake' ? 380 : 0;
     pts.forEach((p, i) => {
-      pos.push(p.x - p.width / 2, 0.08, p.z, p.x + p.width / 2, 0.08, p.z);
+      pos.push(p.x - p.width / 2 - reach, 0.08, p.z, p.x + p.width / 2, 0.08, p.z);
       if (i > 0) {
         const a = (i - 1) * 2;
         idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
@@ -120,7 +133,7 @@ function Ground({ layout, onDoubleClick }: { layout: Layout3D; onDoubleClick: (p
     g.setIndex(idx);
     g.computeVertexNormals();
     return g;
-  }, [layout]);
+  }, [layout, scene.water]);
   const hills = useMemo(() => [
     { p: [-1100, -60, -1300], s: [620, 120, 260] }, { p: [-500, -80, -1800], s: [700, 140, 240] },
     { p: [300, -90, -2000], s: [900, 140, 260] }, { p: [-1500, -70, -500], s: [320, 110, 700] },
@@ -130,17 +143,17 @@ function Ground({ layout, onDoubleClick }: { layout: Layout3D; onDoubleClick: (p
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(e.point); }}>
         <planeGeometry args={[6000, 6000]} />
-        <meshStandardMaterial color="#5f5b52" roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} />
       </mesh>
       <mesh geometry={river} receiveShadow>
-        <meshStandardMaterial color="#6d8792" roughness={0.25} metalness={0.3} />
+        <meshStandardMaterial color={scene.waterColor} roughness={scene.water === 'green' ? 1 : 0.25} metalness={scene.water === 'green' ? 0 : 0.3} />
       </mesh>
       <Instanced items={blocks.built} geometry={box} color="#a2968a" cast={false} />
       <Instanced items={blocks.park} geometry={box} color="#56723a" cast={false} />
       <Instanced items={blocks.plaza} geometry={box} color="#c9bda6" cast={false} />
       <Instanced items={trees} geometry={tree} colors={['#3d5a2a', '#4a6a30', '#35502a', '#56763a']} />
       <Instanced items={sprawl} geometry={box} colors={['#b4785a', '#c7b08c', '#d6d0c4', '#9a6a52', '#bfae96']} />
-      {hills.map((h, i) => (
+      {scene.hills && hills.map((h, i) => (
         <mesh key={i} position={h.p as [number, number, number]} scale={h.s as [number, number, number]}>
           <sphereGeometry args={[1, 24, 12]} />
           <meshStandardMaterial color="#56603f" roughness={1} />
@@ -220,7 +233,11 @@ function SceneContents({ state, city, onSelectCompany, time, api, waiting }: {
   state: WorldState; city: CityInfo; onSelectCompany: (id: string) => void; time: TimeOfDay; api: MutableRefObject<RigApi>; waiting: string[];
 }) {
   const hqCompanies = orderHqs(companiesInCity(state, city), state.playerCompanyId, waiting);
-  const layout = useMemo(() => buildLayout3D(city.id, hqCompanies.length), [city.id, hqCompanies.length]);
+  const cs = useMemo(() => cityScene(city.id), [city.id]);
+  const layout = useMemo(
+    () => buildLayout3D(city.id, hqCompanies.length, { reserved: reservedLots(cs), greenery: cs.greenery, heightScale: cs.heightScale }),
+    [city.id, hqCompanies.length, cs],
+  );
   const uniforms = useMemo(makeUniforms, []);
   const smokeTex = useMemo(softTexture, []);
   const fx = useSmoothEffects(effectsForCity(state, city.id));
@@ -271,10 +288,12 @@ function SceneContents({ state, city, onSelectCompany, time, api, waiting }: {
       />
       {time !== 'golden' && <ambientLight intensity={0.15} color="#8090c0" />}
       <Clouds tex={smokeTex} />
-      <Ground layout={layout} onDoubleClick={(p) => { api.current.flyTo = new THREE.Vector3(p.x, 20, p.z); api.current.lastInput = performance.now(); }} />
+      <Ground layout={layout} scene={cs} onDoubleClick={(p) => { api.current.flyTo = new THREE.Vector3(p.x, 20, p.z); api.current.lastInput = performance.now(); }} />
       <Buildings layout={layout} uniforms={uniforms} />
+      <Landmarks placed={cs.landmarks} night={look.night} blackout={k('blackout')} fog={look.fog} />
+      <Backdrop mountains={cs.backdrop} fog={look.fog} />
       <Traffic layout={layout} gridlock={k('gridlock')} />
-      <Port layout={layout} embargo={k('embargo')} />
+      <Port layout={layout} embargo={k('embargo')} ships={cs.water !== 'green'} />
       <HospitalMarks layout={layout} outbreak={k('outbreak')} />
       {active.map((kind) => (
         <EffectLayer3D key={kind} kind={kind} k={fx.get(kind)!.intensity} layout={layout} smokeTex={smokeTex} />

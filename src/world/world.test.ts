@@ -181,3 +181,70 @@ describe('roster (every city has companies)', () => {
     expect(all.has('softwareCompany') && all.has('financeFirm')).toBe(true);
   });
 });
+
+describe('3D landmarks and city settings', () => {
+  it('every landmark builds finite, bounded primitives', async () => {
+    const { LANDMARK_KINDS, buildLandmark, landmarkBounds } = await import('./city3d/landmarks');
+    for (const kind of LANDMARK_KINDS) {
+      const prims = buildLandmark(kind);
+      expect(prims.length, kind).toBeGreaterThan(0);
+      expect(prims.length, kind).toBeLessThan(400); // merged per colour at render time, but keep it small
+      for (const p of prims) {
+        expect(p.p.every(Number.isFinite), kind).toBe(true);
+        expect(/^#[0-9a-f]{6}$/i.test(p.c), `${kind} colour ${p.c}`).toBe(true);
+      }
+      const b = landmarkBounds(prims);
+      expect(b.minY, kind).toBeGreaterThanOrEqual(-45); // bounds of tilted beams are generous; arches sink under the water
+      expect(b.maxY, kind).toBeGreaterThan(10);
+      expect(b.maxY, kind).toBeLessThan(260);
+      expect(b.halfX, kind).toBeLessThan(100);
+      expect(b.halfZ, kind).toBeLessThan(80);
+    }
+  });
+
+  it('gives every city a scene with landmarks of its own, and the landmarks are unique to their city set', async () => {
+    const { CITY_SCENES, cityScene } = await import('./city3d/landmarks');
+    const { CITIES } = await import('../contracts/cities');
+    for (const c of CITIES) {
+      const sc = CITY_SCENES[c.id];
+      expect(sc, c.id).toBeDefined();
+      expect(sc.landmarks.length, c.id).toBeGreaterThanOrEqual(1);
+    }
+    expect(cityScene('nowhere').landmarks).toEqual([]); // unknown city: the generic city
+    // the signature of each real city is there
+    const has = (city: string, kind: string) => CITY_SCENES[city].landmarks.some((l) => l.kind === kind);
+    expect(has('sf', 'goldenGate') && has('nyc', 'empireState') && has('london', 'londonEye') && has('paris', 'eiffelTower')).toBe(true);
+    expect(has('tokyo', 'tokyoTower') && has('dubai', 'burjKhalifa') && has('seattle', 'spaceNeedle') && has('moscow', 'stBasils')).toBe(true);
+    expect(CITY_SCENES.dubai.water).toBe('sea');
+    expect(CITY_SCENES.sf.water).toBe('bay');
+  });
+
+  it('keeps landmark lots clear of the HQ, bank, hospital and plaza blocks and leaves them as open ground', async () => {
+    const { CITIES } = await import('../contracts/cities');
+    const { cityScene, reservedLots } = await import('./city3d/landmarks');
+    const { buildLayout3D, MAX_HQS } = await import('./city3d/layout3d');
+    for (const c of CITIES) {
+      const sc = cityScene(c.id);
+      const reserved = reservedLots(sc);
+      const open = buildLayout3D(c.id, MAX_HQS, { reserved });
+      const none = buildLayout3D(c.id, MAX_HQS);
+      // the special blocks are the same with and without landmarks
+      expect(open.hq, c.id).toEqual(none.hq);
+      expect(open.bank, c.id).toEqual(none.bank);
+      expect(open.hospital, c.id).toEqual(none.hospital);
+      for (const r of reserved) {
+        for (const sp of [...open.hq, open.bank, open.hospital, open.plaza]) expect(Math.hypot(sp.x - r.x, sp.z - r.z), `${c.id} lot (${r.x},${r.z})`).toBeGreaterThan(r.r);
+        // every built-up block is outside the lot (the lot's blocks are open plaza ground)
+        for (const b of open.blocks) if (b.kind === 'built') expect(Math.hypot(b.x - r.x, b.z - r.z), `${c.id} built block in lot`).toBeGreaterThan(r.r);
+      }
+    }
+  });
+
+  it('layout options do not change the default city', async () => {
+    const { buildLayout3D } = await import('./city3d/layout3d');
+    expect(buildLayout3D('sf', 3, {})).toEqual(buildLayout3D('sf', 3));
+    const tall = buildLayout3D('sf', 3, { heightScale: 1.5 });
+    const base = buildLayout3D('sf', 3);
+    expect(Math.max(...tall.sprawl.map((b) => b.h))).toBeGreaterThan(Math.max(...base.sprawl.map((b) => b.h)));
+  });
+});
