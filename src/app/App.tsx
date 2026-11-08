@@ -23,6 +23,8 @@ export function App() {
   const [popups, setPopups] = useState<EventLogEntry[]>([]);
   const [started, setStarted] = useState(false);
   const [help, setHelp] = useState(false);
+  // After each round the player is shown their home city with a floating Continue button.
+  const [recap, setRecap] = useState(false);
 
   // One decision per year (DECISIONS: option 3). Answering a card does NOT end the year:
   // the choice is held until the player presses "End year" in the top bar, so they can
@@ -37,12 +39,23 @@ export function App() {
     setPopups((p) => [...p, ...next.eventLog.slice(before).filter((e) => e.popup)]);
     setPending(null);
     setState(next);
+    const home = next.companies.find((c) => c.id === next.playerCompanyId)?.homeCity;
+    if (home) setCityId(home);
+    setScreen('city');
+    setRecap(true);
+  };
+
+  const continueGame = () => {
+    setRecap(false);
+    setHqId(undefined);
+    setScreen('hq');
   };
 
   const restart = () => {
     setState(newGame(seed));
     setPopups([]);
     setPending(null);
+    setRecap(false);
     setScreen('map');
     setStarted(false);
   };
@@ -128,6 +141,15 @@ export function App() {
       {screen !== 'hq' && <NewsTicker headlines={state.headlines.slice(-8)} />}
 
       </div>
+
+      {recap && (
+        <button className="app-continue" onClick={continueGame} autoFocus>
+          <span>
+            <small>{state.year - 1} is over. Look around your city.</small>
+            Continue to {state.year} →
+          </span>
+        </button>
+      )}
 
       {help && <HowToPlay onClose={() => setHelp(false)} />}
 
