@@ -17,7 +17,7 @@ React + TypeScript (Vite), Vitest. Simulation is pure TypeScript in the browser.
 | `src/contracts/`, `src/app/`, `docs/plan.md`, `TASKS.md`, `DECISIONS.md`, `CLAUDE.md` | master (lead) |
 | `src/sim/`, `data/`, `scripts/` | Claude 1 (worker-1) |
 | `src/world/` | Claude 2 (worker-2) |
-| `src/ui/` | Claude 3 (worker-3) |
+| `src/ui/` | Claude 1 (worker-1), reassigned from Claude 3 on 2026-11-08 |
 
 ## Rules for every agent (summary of plan section 14)
 - Stay in your folders. Never edit `src/contracts/`; ask the lead.
