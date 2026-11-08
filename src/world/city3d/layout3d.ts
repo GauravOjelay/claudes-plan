@@ -74,7 +74,17 @@ const HQ_SPOTS: [number, number, number][] = [
 ];
 export const MAX_HQS = HQ_SPOTS.length;
 
-export function buildLayout3D(cityId: string, hqCount = 3): Layout3D {
+export interface LayoutOptions {
+  /** Open ground for landmarks: blocks whose centre is within r of (x, z) get no buildings. */
+  reserved?: { x: number; z: number; r: number }[];
+  /** Multiplies how many lots become trees (1 = default). */
+  greenery?: number;
+  /** Multiplies building heights (1 = default). */
+  heightScale?: number;
+}
+
+export function buildLayout3D(cityId: string, hqCount = 3, opts: LayoutOptions = {}): Layout3D {
+  const { reserved = [], greenery = 1, heightScale: hs = 1 } = opts;
   const rnd = visualRng(`city3d:${cityId}`);
   const downtown = { x: 10, z: -80 };
   const extent = { x0: -180, x1: 330, z0: -390, z1: 240 };
@@ -156,9 +166,15 @@ export function buildLayout3D(cityId: string, hqCount = 3): Layout3D {
         continue;
       }
 
+      // Landmark lots stay open (plaza paving); the HQ, bank and hospital blocks above always win.
+      if (reserved.some((r) => Math.hypot(bx - r.x, bz - r.z) <= r.r)) {
+        blocks[blocks.length - 1].kind = 'plaza';
+        continue;
+      }
+
       // Downtown towers: one per block, with setbacks.
       if (rnd() < f * 0.75) {
-        const H = 40 + rnd() * 100 * f + rnd() * 25;
+        const H = (40 + rnd() * 100 * f + rnd() * 25) * hs;
         const w = 9 + rnd() * 7;
         const d = 9 + rnd() * 7;
         const glass = rnd() < 0.7;
@@ -175,11 +191,11 @@ export function buildLayout3D(cityId: string, hqCount = 3): Layout3D {
       const lot = BLOCK / split;
       for (let i = 0; i < split; i++)
         for (let j = 0; j < split; j++) {
-          if (rnd() < 0.08) {
+          if (rnd() < 0.08 * greenery) {
             trees.push({ x: bx - BLOCK / 2 + lot * (i + 0.5), z: bz - BLOCK / 2 + lot * (j + 0.5), s: 1 });
             continue;
           }
-          const h = 5 + rnd() * 14 + f * rnd() * 55 + (rnd() < 0.06 ? 25 : 0);
+          const h = (5 + rnd() * 14 + f * rnd() * 55 + (rnd() < 0.06 ? 25 : 0)) * hs;
           const r = rnd();
           const style: Style = r < 0.42 ? 'brick' : r < 0.72 ? 'stone' : r < 0.92 ? 'concrete' : 'glass';
           const inset = 0.6 + rnd() * 1.2;
@@ -203,7 +219,7 @@ export function buildLayout3D(cityId: string, hqCount = 3): Layout3D {
     if (inCity || Math.abs(x - rx) < RIVER_W / 2 + 6) continue;
     if (x < rx && rnd() < 0.55) continue; // greener on the far bank
     const s = 6 + rnd() * 10;
-    sprawl.push({ x, z, y0: 0, w: s, d: s * (0.7 + rnd() * 0.6), h: 3 + rnd() * 10 + (rnd() < 0.03 ? 30 : 0) });
+    sprawl.push({ x, z, y0: 0, w: s, d: s * (0.7 + rnd() * 0.6), h: (3 + rnd() * 10 + (rnd() < 0.03 ? 30 : 0)) * hs });
   }
   for (let i = 0; i < 900; i++) {
     const z = -1300 + rnd() * 1800;

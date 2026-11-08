@@ -313,7 +313,7 @@ function CameraPole({ x, z, phase }: { x: number; z: number; phase: number }) {
 }
 
 // ---------------------------------------------------------------- port + ships (embargo)
-export function Port({ layout, embargo }: { layout: Layout3D; embargo: number }) {
+export function Port({ layout, embargo, ships = true }: { layout: Layout3D; embargo: number; ships?: boolean }) {
   const { port } = layout;
   const ship = useRef<THREE.Group>(null);
   const ship2 = useRef<THREE.Group>(null);
@@ -391,7 +391,7 @@ export function Port({ layout, embargo }: { layout: Layout3D; embargo: number })
         <meshStandardMaterial roughness={0.8} />
       </instancedMesh>
       {[ship, ship2].map((r, i) => (
-        <group key={i} ref={r}>
+        <group key={i} ref={r} visible={ships}>
           <mesh position={[0, 1.2, 0]} castShadow><boxGeometry args={[7, 2.6, 34]} /><meshStandardMaterial color={i ? '#2f3542' : '#5a2a2a'} /></mesh>
           <mesh position={[0, 3.3, -11]} castShadow><boxGeometry args={[5.5, 3, 6]} /><meshStandardMaterial color="#e8e6e0" /></mesh>
           {Array.from({ length: 6 }, (_, k) => (
