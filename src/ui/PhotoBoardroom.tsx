@@ -61,7 +61,19 @@ export const HQ_CITY_PHOTO: Record<string, HqPhotoKey> = {
 export const CITY_PHOTO_LAYOUT: Omit<HqPhoto, 'file' | 'mood'> = {
   logoArea: { x: 60, y: 16, w: 26, h: 24 }, tableLogo: { x: 50, y: 80, w: 6 }, tilt: 0, aspect: 1.78,
 };
-export const CITY_PHOTO_LAYOUT_OVERRIDES: Record<string, Partial<Omit<HqPhoto, 'file' | 'mood'>>> = {};
+export const CITY_PHOTO_LAYOUT_OVERRIDES: Record<string, Partial<Omit<HqPhoto, 'file' | 'mood'>>> = {
+  // Sign on the blank wall of each owner-made photo (read off the picture, % of the image); aspect = image width / height.
+  // Keep y >= 20 on the right (the year and text-size controls sit there) and x >= 28 (the stats panel covers the left).
+  sf: { logoArea: { x: 38, y: 8, w: 26, h: 19 }, tilt: 0, aspect: 1.786 },
+  nyc: { logoArea: { x: 81, y: 35, w: 15, h: 19 }, tilt: 6, aspect: 1.772 },
+  seattle: { logoArea: { x: 72, y: 20, w: 21, h: 24 }, tilt: 6, aspect: 1.796 },
+  austin: { logoArea: { x: 73, y: 20, w: 21, h: 24 }, tilt: 6, aspect: 1.822 },
+  stockholm: { logoArea: { x: 76, y: 20, w: 19, h: 24 }, tilt: 6, aspect: 1.8 },
+  hangzhou: { logoArea: { x: 77, y: 21, w: 17, h: 25 }, tilt: 6, aspect: 1.766 },
+  lagos: { logoArea: { x: 80, y: 20, w: 16, h: 22 }, tilt: 6, aspect: 1.776 },
+  cairo: { logoArea: { x: 73, y: 20, w: 20, h: 26 }, tilt: 6, aspect: 1.79 },
+  bangalore: { logoArea: { x: 73, y: 20, w: 21, h: 18 }, tilt: 6, aspect: 1.798 },
+};
 
 /** File name of a city's own photo. */
 export function cityPhotoFile(cityId: string): string {
