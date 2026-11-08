@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "balance": "node -e \"process.env.BALANCE_REPORT='1';require('child_process').execSync('npx vitest run src/sim/balance.report.test.ts',{stdio:'inherit'})\""
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

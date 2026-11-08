@@ -22,3 +22,5 @@ html, body { margin: 0; }
 .app-continue small { font-size: 0.8rem; font-weight: 500; color: #e6e6e6; }
 .app-continue:active { transform: translateX(-50%) scale(0.96); opacity: 0.8; }
 .app-continue:focus-visible { outline: 3px solid #f5d90a; outline-offset: 3px; }
+.app-continue, .app-continue span { color: #fff !important; }
+.app-continue small { color: #e6e6e6 !important; }
