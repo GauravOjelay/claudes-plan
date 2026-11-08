@@ -430,3 +430,8 @@ button.w-feed-row:hover { filter: brightness(1.15); }
 /* ---------- globe: keep the YEAR chip clear of the toolbar at 1280px ---------- */
 .wm-globe .w-year-badge { left: auto; right: 72px; transform: none; }
 .wm-globe .wm-feed { top: 92px; }
+
+/* Keep the bottom-centre of the city view free for the app's floating Continue button (.app-continue). */
+.w3-wrap .w-fps { left: auto; right: 12px; bottom: auto; top: 52px; transform: none; }
+.w3-help { bottom: auto; top: 56px; }
+.joe-wrap .w-fps { top: 12px; right: 12px; }

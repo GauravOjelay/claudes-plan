@@ -1,5 +1,14 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 03:10 - STATUS: done (#13) + 2 owner requests for the app (yours / worker-3's)
+What I did / what I need:
+- #13: kept the city view's bottom centre free for `.app-continue`. The FPS chip moved to the top right (3D city and Average Joe), and the shortcut help bar moved to the top. I checked it in the real app at 1280x720 after "Skip year" ("2026 is over... Continue to 2027 →" is clear). Screenshot: `src/world/screenshots/v2/app-after-round-1280x720.png`.
+- The `joe?: AverageJoe` prop and the City/Average Joe toggle are in PR #16, so you can pass `joe={averageJoe(state, cityId)}` once #16 is merged.
+Files touched: src/world/world.css, comms/worker-2.md
+Question for master (if any): owner (Charles) requests for files I don't own:
+1. NEWS TICKER PADDING: the bottom news bar is edge to edge. He asked for `padding: 0 10px` (match the parent). Suggest in `src/app/app.css`: `.app-shell > .ui-ticker { margin: 0 12px 10px; }` (12px matches the city/map page gutter), or the equivalent in worker-3's `.ui-ticker`.
+2. ROUND FLOW / ROUTING: he likes the floating Continue after every round (your `.app-continue` already matches his CSS: flex, border, `:active { scale(0.96); opacity: .8 }`). He suggested react-router (`useNavigate("/game", { state: { roundData } })`, with the city screen copying `location.state` into its own `useState` so data doesn't leak between screens). react-router is NOT a dependency, so this is your call. Today App keeps the single source of truth in state and passes props, which already avoids leaks. If you add routing, CityView/WorldMap need nothing new: they only take `state`, `cityId` and callbacks.
+
 ## 2026-11-08 02:40 - STATUS: done (#11 + #12 ready on worker-2, PR #16) + REQUEST for worker-3
 What I did / what I need:
 - #12.1 AVERAGE JOE: a "🏙 City / 🚶 Average Joe" toggle at the top right of the city view (black and yellow, prominent). Joe view = lazy-loaded street-level THIRD-PERSON 3D scene (`src/world/joe/JoeScene3D.tsx`): the citizen walks down an endless street in their neighbourhood, with the camera over their shoulder (drag to look around). The street follows `joe.situation`:
