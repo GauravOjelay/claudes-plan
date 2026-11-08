@@ -1,9 +1,9 @@
 /**
  * Automated balance runs (plan 15.1): play many games with simulated players and count the endings.
  * The harness mirrors the app's rules: each company the player directs gets one card per year, only cards from the current era whose
- * requirements are met and that have not been answered yet.
+ * requirements are met, that fit the company (`audience`) and that have not been answered yet.
  */
-import type { Decision, DecisionOption, EndingId, WorldState } from '../contracts';
+import { decisionFitsCompany, type Decision, type DecisionOption, type EndingId, type WorldState } from '../contracts';
 import { createInitialState, createRng, defaultContent, rngForTurn, step } from './index';
 import { evalCondition } from './vars';
 
@@ -17,7 +17,10 @@ const eraContains = (era: string, year: number): boolean => {
 
 function available(state: WorldState, decisions: Decision[], companyId: string): Decision[] {
   const answered = new Set(state.choiceLog.filter((c) => c.companyId === companyId).map((c) => c.decisionId));
-  return decisions.filter((d) => !answered.has(d.id) && eraContains(d.era, state.year) && (!d.requirements || evalCondition(state, d.requirements)));
+  const company = state.companies.find((c) => c.id === companyId);
+  return decisions.filter(
+    (d) => !answered.has(d.id) && eraContains(d.era, state.year) && (!company || decisionFitsCompany(d, company)) && (!d.requirements || evalCondition(state, d.requirements)),
+  );
 }
 
 const hints = (o: DecisionOption): { economy: number; safety: number; trust: number } => ({
@@ -44,7 +47,7 @@ function appeal(policy: PolicyName, o: DecisionOption): number {
     case 'reckless': return 2 * h.economy - 2 * h.safety;
     case 'profit': return 2 * h.economy - h.trust;
     case 'spender': // always picks the most expensive option
-      return h.safety + h.trust + byEffects(o, { 'company.money': -0.1 });
+      return byEffects(o, { 'company.money': -1 }) + 0.5 * (h.safety + h.trust);
     case 'warmonger': // chases every option that raises world tension, and the arms race with it
       return byEffects(o, { 'global.geopoliticalTension': 1, 'global.aiCapability': 0.5, 'company.aiCapability': 0.5 }) - h.safety;
     case 'villain': return -2 * h.trust - h.safety + h.economy; // wants the public to hate it
