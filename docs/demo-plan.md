@@ -16,7 +16,7 @@ Chrome, full screen (F11), dark mode, sound on. Open ALL tabs first so the 3D ha
 | 3 What-if, one choice changed (2032) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty&at=2032 |
 | 4 War (2034, tension 90, red alert; open Average Joe for the war street) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack+mvidia:grayChips,keepMaterials+mvidia:sellAll,fossil+mvidia:hoardChips,noNet+mvidia:hype,skipSafety+mvidia:skipSecurity,race+mvidia:stockpile,ignoreWarning+mvidia:openUp,fundScience+mvidia:offence&at=2034 |
 | 5 Good ending (Abundance Utopia ~69) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop,acceptRules&at=end |
-| 6 Bad ending | PENDING: worker-1 is adding a tested link that ends in World War (the war link with `at=end` currently ends in Corporate Feudalism, not war). Fallback: show Tab 4 only. |
+| 6 (none) | Final shot: Tab 5 (Utopia report) on the left, Tab 4 (war, 2034) on the right. |
 
 
 ## The message
@@ -42,7 +42,7 @@ Show it three ways: the card's Now/Later arrows BEFORE the choice, the city AFTE
 | 1:15 | Solar boom | Tab 2 | "We open-sourced a materials model. Cheap solar saved the grid." |
 | 1:35 | Split screen: two futures | Tab 2 left (Win+Left), Tab 3 right (Win+Right); End 2032 on the right | "Same world. One different choice in 2027." |
 | 2:00 | War | Tab 4: globe, alert, Average Joe at war | "Let every company race... and this is where it ends." |
-| 2:25 | Two endings side by side | Tab 5 left, Tab 6 right | "AI 2126: the decade that decides the century." |
+| 2:25 | Two endings side by side | Tab 5 left, Tab 4 right | "AI 2126: the decade that decides the century." |
 
 No war link by 8:00? Skip 2:00 and give the split screen 30 s.
 

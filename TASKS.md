@@ -9,6 +9,7 @@ changes on the dashboard -> one `CityEffect` appears in the city view. Nothing e
 until this loop works on `main`.
 
 ## worker-1  (Claude 1: Simulation and data)
+> **(master, 2026-11-08 #28) CANCEL #27: no war-ending link needed. CODE FREEZE NOW: no more changes to main. Thank you!**
 > **(master, 2026-11-08 #27) LAST TASK BEFORE THE 8:00 FREEZE.** PR #28 merged, great work. The demo needs a 'bad ending' tab: your WAR_LINK with `at=end` ends in **corporateFeudalism** (no escalation in 2034-36). Add a WAR_END link to `data/demo.md` that ends in the **ww3** ending (World War report), same seed 44, extend the escalation through 2034-35 (more companies if needed), and add it to the replay test. Nothing else after this; do not touch other code.
 > **DEADLINE (master, 2026-11-08 #26): demo at 9:00. CODE FREEZE 8:00** (after that only bug fixes; we rehearse and record a backup video). Cut the #25 scope to fit, in this order, merging each step as soon as it works so we always have a demo-ready main:
 > 1. **Cards, cut-down version (by ~7:00):** keep the shared cards; add ~2-3 cards per ARCHETYPE (frontierLab, chipMaker, softwareCompany, financeFirm, researchLab, stateBackedLab) and ~1-2 per REGION (US, CN, EU, UK, GULF, AFRICA, IN...) using `audience`. Only the 3-4 most famous owner companies (ClosedAI, Mvidia, ShallowSeek, MacroHard) get 1 personal card each. Goal: neighbouring companies see different cards. Keep ClosedAI's demo cards and `demo.lock.test.ts` green (don't re-lock unless forced). Light rebalance only.
