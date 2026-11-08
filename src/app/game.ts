@@ -1,5 +1,5 @@
 /** Game-loop helpers for src/app (lead). Pure functions; the UI calls these. */
-import type { Decision, PlayerChoice, WorldState } from '../contracts';
+import { decisionFitsCompany, type Decision, type PlayerChoice, type WorldState } from '../contracts';
 import { createInitialState, defaultContent, step } from '../sim';
 import { rngForTurn } from '../sim/rng';
 import { evalCondition } from '../sim/vars';
@@ -24,8 +24,13 @@ export function availableDecisions(
   companyId: string = state.playerCompanyId,
 ): Decision[] {
   const answered = new Set(state.choiceLog.filter((c) => c.companyId === companyId).map((c) => c.decisionId));
+  const company = state.companies.find((c) => c.id === companyId);
   return decisions.filter(
-    (d) => !answered.has(d.id) && eraContains(d.era, state.year) && (!d.requirements || evalCondition(state, d.requirements)),
+    (d) =>
+      !answered.has(d.id) &&
+      eraContains(d.era, state.year) &&
+      (!company || decisionFitsCompany(d, company)) &&
+      (!d.requirements || evalCondition(state, d.requirements)),
   );
 }
 

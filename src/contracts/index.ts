@@ -108,13 +108,36 @@ export interface DecisionOption {
   longTerm: ConsequenceHint;
 }
 
+/**
+ * Who gets a card (owner request 2026-11-08: cards must fit what each company does and where it is).
+ * Omitted = every company. `companyIds` = only these companies. Otherwise EVERY field that is present must match.
+ */
+export interface DecisionAudience {
+  companyIds?: string[];
+  archetypes?: CompanyArchetype[];
+  regions?: RegionId[];
+  cities?: string[];
+}
+
 export interface Decision {
   id: string;
   title: string;
   text: string;
   era: EraId;
   requirements?: Condition;
+  audience?: DecisionAudience;
   options: DecisionOption[];
+}
+
+/** True when `company` should be offered `decision`. Shared by the app, replay and balance code. */
+export function decisionFitsCompany(decision: Decision, company: Company): boolean {
+  const a = decision.audience;
+  if (!a) return true;
+  if (a.companyIds) return a.companyIds.includes(company.id);
+  if (a.archetypes && !a.archetypes.includes(company.archetype)) return false;
+  if (a.regions && !a.regions.includes(company.homeRegion)) return false;
+  if (a.cities && !a.cities.includes(company.homeCity)) return false;
+  return true;
 }
 
 // ---------- Events (data/events.json) ----------
