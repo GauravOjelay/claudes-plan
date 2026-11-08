@@ -13,3 +13,4 @@ export { IntroScreen, type IntroScreenProps } from './IntroScreen';
 export { Skyline, CITY_EFFECT_LABEL } from './Skyline';
 export { TopBar, type TopBarProps, type GameScreen } from './TopBar';
 export { HowToPlay, HelpButton, HOW_TO_PLAY_STEPS } from './HowToPlay';
+export { PhotoBoardroom, photoLook, HQ_PHOTOS, HQ_CITY_PHOTO, type PhotoBoardroomProps } from './PhotoBoardroom';

@@ -22,7 +22,11 @@ const TABS: { id: GameScreen; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
 ];
 
-/** The game's header: year, screen tabs, cards-waiting call to action, and a slot for controls. */
+/**
+ * The game's header: year, screen tabs and the one obvious next step (task #17.2):
+ * "Make your <year> decision →" (pulsing) while a card waits, then "End <year> →" once it is answered.
+ * "Skip year" stays small. A slot on the right holds extra controls.
+ */
 export function TopBar({ year, screen, onNavigate, cardsWaiting, onSkipYear, children }: TopBarProps) {
   const n = Math.max(0, Math.floor(Number(cardsWaiting) || 0));
   return (
@@ -44,15 +48,16 @@ export function TopBar({ year, screen, onNavigate, cardsWaiting, onSkipYear, chi
       <div className="ui-topbar-actions">
         {n > 0 ? (
           <>
-            <button className="ui-topbar-cta" onClick={() => onNavigate('hq')}>
-              <span className="ui-topbar-count">{n}</span> card{n === 1 ? '' : 's'} waiting →
+            <button className="ui-topbar-cta ui-topbar-pulse" onClick={() => onNavigate('hq')}
+              title={`${n} decision card${n === 1 ? '' : 's'} waiting at your HQ`}>
+              Make your {year} decision →
             </button>
             <button className="ui-btn ui-topbar-skip" onClick={onSkipYear} title="Let a year pass without answering a card">
               Skip year
             </button>
           </>
         ) : (
-          <button className="ui-btn ui-btn-primary" onClick={onSkipYear}>Next year →</button>
+          <button className="ui-topbar-end" onClick={onSkipYear}>End {year} →</button>
         )}
         {children}
       </div>

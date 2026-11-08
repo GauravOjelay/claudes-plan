@@ -6,7 +6,7 @@ import { DecisionCard, HintLegend } from './DecisionCard';
 import { cityName, formatCompact, levelLow, relevantHeadlines, THRESHOLDS } from './format';
 import { NewsPopups, NewsTicker } from './News';
 import { CITY_EFFECT_LABEL } from './Skyline';
-import { Boardroom } from './Boardroom';
+import { PhotoBoardroom } from './PhotoBoardroom';
 
 export interface HQScreenProps {
   state: WorldState;
@@ -54,7 +54,7 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
 
   return (
     <div className="ui-hq" style={{ ['--hq-color' as string]: ARCHETYPE_COLOR[company.archetype] }}>
-      <div className="ui-hq-bg"><Boardroom company={company} effects={effects} /></div>
+      <div className="ui-hq-bg"><PhotoBoardroom company={company} effects={effects} /></div>
 
       <header className="ui-hq-header">
         {onBack && <button className="ui-btn" onClick={onBack}>← {city}</button>}
@@ -88,7 +88,7 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
         ) : (
           <div className="ui-viewonly">
             <strong>No decisions waiting.</strong>
-            <p className="ui-muted">Advance to the next year to see what your choices changed.</p>
+            <p className="ui-muted">Look around the globe and the cities, then press End year (top right) to see what your choice changed.</p>
           </div>
         )}
       </section>
