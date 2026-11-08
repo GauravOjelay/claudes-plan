@@ -40,7 +40,7 @@ const RECKLESS: Plan = [
 ];
 
 function playPlan(seed: number, plan: Plan): WorldState {
-  let s = createInitialState(seed, 'novacore');
+  let s = createInitialState(seed, 'closedai');
   while (!s.status.over) {
     const answered = new Set(s.choiceLog.map((c) => c.decisionId));
     const next = plan.find(([id]) => {
@@ -49,7 +49,7 @@ function playPlan(seed: number, plan: Plan): WorldState {
       const [a, b] = d.era.split('-').map(Number);
       return s.year >= a && s.year <= b && (!d.requirements || evalCondition(s, d.requirements));
     });
-    s = step(s, next ? [{ decisionId: next[0], optionId: next[1], companyId: 'novacore' }] : [], rngForTurn(s));
+    s = step(s, next ? [{ decisionId: next[0], optionId: next[1], companyId: 'closedai' }] : [], rngForTurn(s));
   }
   return s;
 }

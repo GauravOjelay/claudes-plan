@@ -104,7 +104,7 @@ describe('data/baseline.json and data/sources.json', () => {
     expect(() => parseBaseline(bad)).toThrow(/finite number/);
   });
   it('createInitialState starts from the baseline, with game-designed fallbacks only where the data has a gap', () => {
-    const s = createInitialState(1, 'novacore');
+    const s = createInitialState(1, 'closedai');
     expect(s.year).toBe(baseline.startYear);
     expect(s.regions.US.gdp).toBe(baseline.regions.US.gdp);
     expect(s.regions.CN.population).toBe(baseline.regions.CN.population);

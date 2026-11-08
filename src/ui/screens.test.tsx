@@ -140,10 +140,10 @@ describe('Boardroom', () => {
   });
 
   it('shows the company logo and name, and draws the right number of people', () => {
-    const c = COMPANY_ROSTER.find((x) => x.id === 'meridian')!;
+    const c = COMPANY_ROSTER.find((x) => x.id === 'twelvelabs')!;
     const html = renderToStaticMarkup(<Boardroom company={c} />);
-    expect(html).toContain('Meridian AI');
-    expect((html.match(/aria-label="Meridian AI logo"/g) ?? []).length).toBe(3); // sign, screen, table
+    expect(html).toContain('TwelveLabs');
+    expect((html.match(/aria-label="TwelveLabs logo"/g) ?? []).length).toBe(3); // sign, screen, table
     expect((html.match(/ui-br-idle/g) ?? []).length).toBe(boardroomLook(c).people - 1);
     expect(html).toContain('ui-br-presenter');
   });
@@ -188,11 +188,11 @@ describe('PhotoBoardroom', () => {
   });
 
   it('shows the company sign and a table logo on the photo, and darkens in a blackout', () => {
-    const c = COMPANY_ROSTER.find((x) => x.id === 'meridian')!;
+    const c = COMPANY_ROSTER.find((x) => x.id === 'twelvelabs')!;
     const html = renderToStaticMarkup(<PhotoBoardroom company={c} />);
     expect(html).toContain('/hq/boardroom-london.jpg');
-    expect(html).toContain('Meridian AI');
-    expect((html.match(/aria-label="Meridian AI logo"/g) ?? []).length).toBe(2); // sign, table
+    expect(html).toContain('TwelveLabs');
+    expect((html.match(/aria-label="TwelveLabs logo"/g) ?? []).length).toBe(2); // sign, table
     expect(html).not.toContain('ui-hqp-blackout');
     const dark = renderToStaticMarkup(<PhotoBoardroom company={c} effects={[{ city: c.homeCity, kind: 'blackout', intensity: 1, sinceYear: 2030 }]} />);
     expect(dark).toContain('ui-hqp-blackout');

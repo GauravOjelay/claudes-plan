@@ -13,13 +13,13 @@ the plan wins unless an entry here is newer than the plan's changelog (plan sect
 
 ## Provisional answers to plan section 16 (open decisions)
 Approved by the project owner on 2026-11-07. Work with these.
-1. Company names/logos: FICTIONAL archetypes (NovaCore, Silicara, Helix Labs, DragonMind; see mocks).
+1. Company names: parodies of real firms chosen by the owner (ClosedAI, Mvidia, MacroHard, ShallowSeek ...), generated logos only.
 2. Random shocks: allowed, but likelihood/severity depend on variables (tension, trust).
 3. Minimum-version variables (Claude 1 may propose changes): money, gdp, unemploymentSoftware,
    unemploymentPhysical, wealthGap, publicTrust, aiCapability, safetyLevel, energy,
    geopoliticalTension, robotCount, companyValue; plus derived takeoverRisk. Climate/water/sea level are stretch.
 4. City view: **3D (three.js) is the default**, approved by the project owner 2026-11-07 (reverses the earlier 2D-only answer). The existing 2D SVG skyline stays as the fallback (no WebGL, or a toggle) so we can switch back if 3D lags. No third-person Average Joe view in the minimum version.
-5. Each city screen shows 3 HQs; only the player's company is playable, rivals are viewable only.
+5. **Changed 2026-11-08 (owner): NO RIVALS.** The player controls every company (17 parody names of real firms, in their real home countries; see `src/contracts/cities.ts`). One optional decision per company per year; End the year when ready.
 6. Simulation runs in the browser as pure TypeScript.
 7. Extinction ending: out of scope for the minimum version.
 8. Starting data source: IMF DataMapper snapshot (World Bank as fallback).

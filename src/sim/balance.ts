@@ -72,7 +72,7 @@ export type CardMode = 'first' | 'any';
 /** Play one whole game with a simulated player. The player's own choices use their own rng (not the sim's). */
 export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any', decisions: Decision[] = defaultContent.decisions): GameResult {
   const player = createRng(seed * 7919 + 13);
-  let state = createInitialState(seed, 'novacore');
+  let state = createInitialState(seed, 'closedai');
   let guard = 0;
   while (!state.status.over && guard++ < 50) {
     const cards = available(state, decisions);
@@ -86,7 +86,7 @@ export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any
         : policy === 'random'
         ? ranked[Math.floor(player.next() * ranked.length)]
         : ranked.sort((a, b) => b.opts[0].s - a.opts[0].s)[0];
-      choice = { decisionId: pickedCard.c.id, optionId: pickedCard.opts[0].o.id, companyId: 'novacore' };
+      choice = { decisionId: pickedCard.c.id, optionId: pickedCard.opts[0].o.id, companyId: 'closedai' };
     }
     state = step(state, choice ? [choice] : [], rngForTurn(state));
   }

@@ -5,7 +5,7 @@ import { averageJoe, createInitialState, rngForTurn, step } from './index';
 
 const JOBS: JoeJob[] = ['employed', 'lostSoftwareJob', 'lostPhysicalJob', 'retraining', 'onUbi'];
 const SITUATIONS: JoeSituation[] = ['prosperous', 'normal', 'struggling', 'blackout', 'protests', 'flood', 'war', 'surveillance', 'outbreak'];
-const fresh = (): WorldState => createInitialState(1, 'novacore');
+const fresh = (): WorldState => createInitialState(1, 'closedai');
 const fx = (kind: CityEffectKind, intensity: number, city = 'sf'): CityEffect => ({ city, kind, intensity, sinceYear: 2026 });
 /** A calm, well-off world where nothing special is happening in San Francisco. */
 function calm(): WorldState {

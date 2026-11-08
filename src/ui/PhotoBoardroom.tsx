@@ -47,6 +47,7 @@ export const HQ_CITY_PHOTO: Record<string, HqPhotoKey> = {
   london: 'london', paris: 'europe', munich: 'europe', moscow: 'europe',
   beijing: 'tokyo', tokyo: 'tokyo', singapore: 'tokyo', bangalore: 'tokyo',
   dubai: 'dubai', cairo: 'dubai', lagos: 'dubai',
+  seattle: 'newyork', austin: 'newyork', stockholm: 'europe', hangzhou: 'tokyo',
 };
 
 export interface PhotoLook {

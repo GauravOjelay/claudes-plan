@@ -4,7 +4,7 @@ import { BLACKOUT_REPAIR_FADE, EFFECT_PROFILES, peaksFromEvents, startIntensity,
 import { createInitialState, createRng, createStep } from './index';
 
 const KINDS = Object.keys(EFFECT_PROFILES) as CityEffectKind[];
-const fresh = (): WorldState => createInitialState(1, 'novacore');
+const fresh = (): WorldState => createInitialState(1, 'closedai');
 const effect = (kind: CityEffectKind, city = 'london', year = 2026): CityEffect => ({ city, kind, intensity: 0, sinceYear: year });
 
 /** Follow one effect for up to 40 years from the moment an event of peak `peak` fires; returns intensity by year. */

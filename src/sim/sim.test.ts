@@ -8,8 +8,8 @@ import { END_YEAR, ENDING_THRESHOLDS, endingFit } from './endings';
 import { EFFECT_PROFILES } from './cityEffects';
 
 const NONE = createStep({ decisions: [], events: [] }); // rules only, no events or cards
-const fresh = (seed = 1): WorldState => createInitialState(seed, 'novacore');
-const pick = (optionId: string): PlayerChoice => ({ decisionId: 'datacentre-campus', optionId, companyId: 'novacore' });
+const fresh = (seed = 1): WorldState => createInitialState(seed, 'closedai');
+const pick = (optionId: string): PlayerChoice => ({ decisionId: 'datacentre-campus', optionId, companyId: 'closedai' });
 
 /** Play `years` turns, making `first` in year one. Uses rngForTurn so runs are reproducible. */
 function play(seed: number, first: PlayerChoice[], years: number, stepFn = step): WorldState {
@@ -79,7 +79,7 @@ describe('step: purity and determinism', () => {
   });
   it('rejects unknown decisions, options and non-player companies', () => {
     const s = fresh();
-    expect(() => step(s, [{ decisionId: 'x', optionId: 'y', companyId: 'novacore' }], createRng(1))).toThrow();
+    expect(() => step(s, [{ decisionId: 'x', optionId: 'y', companyId: 'closedai' }], createRng(1))).toThrow();
     expect(() => step(s, [pick('nope')], createRng(1))).toThrow();
     expect(() => step(s, [{ ...pick('staged'), companyId: 'silicara' }], createRng(1))).toThrow();
   });
@@ -269,7 +269,7 @@ describe('effects and conditions', () => {
     events: [],
   };
   const sim = createStep(content);
-  const choice: PlayerChoice = { decisionId: 'd', optionId: 'o', companyId: 'novacore' };
+  const choice: PlayerChoice = { decisionId: 'd', optionId: 'o', companyId: 'closedai' };
   it('delayed effects land after their delay, not before', () => {
     let s = sim(fresh(), [choice], createRng(1));
     expect(s.pending).toHaveLength(1);

@@ -4,7 +4,7 @@ import { createInitialState, defaultContent, step } from '../sim';
 import { rngForTurn } from '../sim/rng';
 import { evalCondition } from '../sim/vars';
 
-export const PLAYER_COMPANY = 'novacore';
+export const PLAYER_COMPANY = 'closedai'; // flagship; the player controls every playable company
 export const ALL_DECISIONS: Decision[] = defaultContent.decisions;
 
 export function newGame(seed: number): WorldState {
@@ -18,8 +18,12 @@ export function eraContains(era: string, year: number): boolean {
 }
 
 /** Cards the player can answer now: right era, requirements met, not answered yet. Stable order. */
-export function availableDecisions(state: WorldState, decisions: Decision[] = ALL_DECISIONS): Decision[] {
-  const answered = new Set(state.choiceLog.filter((c) => c.companyId === state.playerCompanyId).map((c) => c.decisionId));
+export function availableDecisions(
+  state: WorldState,
+  decisions: Decision[] = ALL_DECISIONS,
+  companyId: string = state.playerCompanyId,
+): Decision[] {
+  const answered = new Set(state.choiceLog.filter((c) => c.companyId === companyId).map((c) => c.decisionId));
   return decisions.filter(
     (d) => !answered.has(d.id) && eraContains(d.era, state.year) && (!d.requirements || evalCondition(state, d.requirements)),
   );
@@ -28,5 +32,10 @@ export function availableDecisions(state: WorldState, decisions: Decision[] = AL
 /** One turn = one year. Pass a choice, or nothing to just let the year pass. */
 export function playTurn(state: WorldState, choice?: { decisionId: string; optionId: string }): WorldState {
   const choices: PlayerChoice[] = choice ? [{ ...choice, companyId: state.playerCompanyId }] : [];
+  return step(state, choices, rngForTurn(state));
+}
+
+/** End the year with one optional decision per company (the player controls every company). */
+export function playYear(state: WorldState, choices: PlayerChoice[]): WorldState {
   return step(state, choices, rngForTurn(state));
 }

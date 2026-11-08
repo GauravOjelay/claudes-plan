@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import type { EventLogEntry, WorldState } from '../contracts';
+import type { EventLogEntry, PlayerChoice, WorldState } from '../contracts';
 import { CITIES } from '../contracts/cities';
 import { CityView, WorldMap } from '../world';
 import { Dashboard, EventModal, HQScreen, IntroScreen, HelpButton, HowToPlay, NewsTicker, TopBar, ReportCard, UiRoot, A11yControls } from '../ui';
 import './app.css';
 import { averageJoe } from '../sim';
-import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from './game';
+import { ALL_DECISIONS, availableDecisions, newGame, playYear } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
 
@@ -27,20 +27,25 @@ export function App() {
   // After each round the player is shown their home city with a floating Continue button.
   const [recap, setRecap] = useState(false);
 
-  // One decision per year (DECISIONS: option 3). Answering a card does NOT end the year:
-  // the choice is held until the player presses "End year" in the top bar, so they can
-  // look around the city and globe first.
-  const [pending, setPending] = useState<{ decisionId: string; optionId: string } | null>(null);
-  const available = useMemo(() => availableDecisions(state), [state]);
-  const openCards = pending ? [] : available.slice(0, 1);
+  // The player controls EVERY company. Each company can make one decision per year (its next card).
+  // Choices are held until the player presses "End <year>" in the top bar, so they can look around first.
+  const [pending, setPending] = useState<Record<string, PlayerChoice>>({});
+  const [lastCompany, setLastCompany] = useState<string | undefined>(undefined);
+  const playable = useMemo(() => state.companies.filter((c) => c.playable), [state]);
+  const openCardsFor = (companyId: string) =>
+    pending[companyId] ? [] : availableDecisions(state, ALL_DECISIONS, companyId).slice(0, 1);
+  const hqCompany = hqId ?? state.playerCompanyId;
+  const openCards = openCardsFor(hqCompany);
+  const companiesWaiting = playable.filter((c) => openCardsFor(c.id).length > 0).length;
 
   const advance = () => {
     const before = state.eventLog.length;
-    const next = playTurn(state, pending ?? undefined);
+    const next = playYear(state, Object.values(pending));
     setPopups((p) => [...p, ...next.eventLog.slice(before).filter((e) => e.popup)]);
-    setPending(null);
+    setPending({});
     setState(next);
-    const home = next.companies.find((c) => c.id === next.playerCompanyId)?.homeCity;
+    const focus = lastCompany ?? next.playerCompanyId;
+    const home = next.companies.find((c) => c.id === focus)?.homeCity;
     if (home) setCityId(home);
     setScreen('city');
     setRecap(true);
@@ -55,7 +60,7 @@ export function App() {
   const restart = () => {
     setState(newGame(seed));
     setPopups([]);
-    setPending(null);
+    setPending({});
     setRecap(false);
     setScreen('map');
     setStarted(false);
@@ -88,7 +93,7 @@ export function App() {
       <TopBar
         year={state.year}
         screen={screen}
-        cardsWaiting={openCards.length}
+        cardsWaiting={screen === 'hq' ? openCards.length : companiesWaiting}
         onSkipYear={() => advance()}
         onNavigate={(next) => {
           if (next === 'hq') setHqId(undefined);
@@ -130,8 +135,10 @@ export function App() {
           companyId={hqId}
           cities={CITIES}
           onChoose={(decisionId, optionId) => {
-            if (hqId && hqId !== state.playerCompanyId) return; // rivals are view-only
-            setPending({ decisionId, optionId });
+            const company = state.companies.find((c) => c.id === hqCompany);
+            if (!company?.playable) return;
+            setPending((p) => ({ ...p, [hqCompany]: { decisionId, optionId, companyId: hqCompany } }));
+            setLastCompany(hqCompany);
           }}
           onBack={() => setScreen('city')}
         />

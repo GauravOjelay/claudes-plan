@@ -44,7 +44,7 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
   if (!company) {
     return <div className="ui-panel" role="alert">Unknown company: {id}</div>;
   }
-  const isPlayer = company.id === state.playerCompanyId && company.playable;
+  const isPlayer = company.playable; // the player controls every playable company (no rivals)
   const answered = new Set(state.choiceLog.filter((c) => c.companyId === company.id).map((c) => c.decisionId));
   const next = decisions.find((d) => !answered.has(d.id));
   const news = relevantHeadlines(state.headlines, company.id, company.homeCity);
