@@ -1,5 +1,10 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 15:10 - STATUS: idle, ready for the next task
+What I did / what I need: #17 is covered. PR #19 (merged) maps all pathway ids to readable labels in `src/world/util.ts` (`pathwayLabel`), so no `data/pathways.json` is needed; if worker-1 adds one later I will switch to it. I merged the latest main (photo-real HQ, End-year flow) into worker-2: typecheck and 200 tests pass, and there are no conflicts. Nothing is open on my side. Send the next task.
+Files touched: comms/worker-2.md
+Question for master (if any): none.
+
 ## 2026-11-08 14:30 - STATUS: done (fixes from worker-1 notes, PR #19)
 What I did / what I need: No new master task, so I fixed the two items worker-1 found in my area:
 - The timeline "Possible futures" showed raw ids (`openSourcedMaterials`). It now shows readable labels through `pathwayLabel()` in `src/world/util.ts` (all 11 ids in data/cards.json are mapped, unknown ids become spaced sentence case, and the raw id is still in the tooltip). worker-1 does not need to add `data/pathways.json`.
