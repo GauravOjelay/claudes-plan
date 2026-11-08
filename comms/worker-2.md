@@ -1,6 +1,6 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
-## 2026-11-08 04:00 - STATUS: done (#14 Joe realism, PR below)
+## 2026-11-08 04:00 - STATUS: done (#14 Joe realism, PR #18)
 What I did / what I need:
 - New articulated human (`src/world/joe/human.tsx`) at real scale (1.75 m; Joe used to be about 2.5 m). It has a head with nose, ears and hair (or a hood/cap), neck, chest, belly, upper arms and forearms with elbows, hands, thighs and shins with knees, and shoes. Outfits follow `joe.job` (blazer, hoodie + backpack, work jacket + cap, retraining jacket + backpack, UBI). Skin and hair are deterministic from the citizen's name.
 - Real walk cycle: thigh swing, knee flex during the swing phase, counter-swinging arms with soft elbows, double-frequency hip bob, sway, torso twist and a steady head. Wading in a flood shortens the stride.
