@@ -468,7 +468,7 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric,
       {player && !city && (
         <button className="w-cta wm-cta" onClick={openHQ}>
           <span className="w-cta-kicker">Your move</span>
-          Make a decision at {player.name} HQ →
+          Make your company decisions →
         </button>
       )}
 
@@ -477,7 +477,7 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric,
           <div className="wm-card-head">
             <div>
               <strong>{city.name}</strong>
-              <small>{REGION_NAMES[city.region]} · {hqs.map((h) => h.name).join(', ')}</small>
+              <small>{REGION_NAMES[city.region]} · {hqs.length ? hqs.map((h) => h.name).join(', ') : 'No AI headquarters here'}</small>
             </div>
             <button className="wm-x" aria-label="Close" onClick={() => setSelected(null)}>×</button>
           </div>
@@ -496,8 +496,8 @@ export default function WorldMap3D({ state, onSelectCity, cities, initialMetric,
             </div>
           )}
           <button className="wm-go" onClick={() => onSelectCity(city.id)}>Open {city.name} →</button>
-          {player && player.homeCity === city.id && (
-            <button className="w-cta" onClick={openHQ}>Make a decision at {player.name} HQ →</button>
+          {hqs.length > 0 && onOpenHQ && (
+            <button className="w-cta" onClick={() => onOpenHQ(hqs[0].id)}>Decide for {hqs[0].name}{hqs.length > 1 ? ` (+${hqs.length - 1} more here)` : ''} →</button>
           )}
         </div>
       )}

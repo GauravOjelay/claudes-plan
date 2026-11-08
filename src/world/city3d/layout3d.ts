@@ -68,7 +68,13 @@ export function riverX(z: number): number {
 }
 export const RIVER_W = 70;
 
-export function buildLayout3D(cityId: string): Layout3D {
+/** Downtown block centres for HQ towers, tallest first. A city uses the first `hqCount`. */
+const HQ_SPOTS: [number, number, number][] = [
+  [10, -130, 155], [-110, -70, 132], [130, -60, 124], [-50, -200, 118], [90, -210, 112], [-160, -160, 104], [190, -150, 100], [-20, -30, 96],
+];
+export const MAX_HQS = HQ_SPOTS.length;
+
+export function buildLayout3D(cityId: string, hqCount = 3): Layout3D {
   const rnd = visualRng(`city3d:${cityId}`);
   const downtown = { x: 10, z: -80 };
   const extent = { x0: -180, x1: 330, z0: -390, z1: 240 };
@@ -83,7 +89,8 @@ export function buildLayout3D(cityId: string): Layout3D {
     x: Math.round(x / PITCH) * PITCH,
     z: Math.round(z / PITCH) * PITCH,
   });
-  const hqCenters = [blockCenter(-70, -60), blockCenter(10, -130), blockCenter(90, -50)];
+  const spots = HQ_SPOTS.slice(0, Math.max(0, Math.min(MAX_HQS, hqCount)));
+  const hqCenters = spots.map(([x, z]) => blockCenter(x, z));
   const bankC = blockCenter(70, 30);
   const hospC = blockCenter(-110, 60);
   const plazaC = blockCenter(-10, 0);
@@ -123,7 +130,7 @@ export function buildLayout3D(cityId: string): Layout3D {
 
       const hqSlot = hqCenters.findIndex((c) => same(c, bx, bz));
       if (hqSlot >= 0) {
-        const H = [125, 155, 115][hqSlot];
+        const H = spots[hqSlot][2];
         const w = 15;
         pushBldg({
           style: 'hq', kind: 2, district: dis, seed: rnd(), hqSlot,

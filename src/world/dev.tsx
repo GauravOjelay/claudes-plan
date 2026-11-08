@@ -33,8 +33,8 @@ const devBase: WorldState = {
   },
   choiceLog: [
     { year: 2026, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'closedai' },
-    { year: 2028, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'helix' },
-    { year: 2028, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'silicara' },
+    { year: 2028, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'pineapple' },
+    { year: 2028, decisionId: 'mock-fossil-power', optionId: 'gas', companyId: 'mvidia' },
     { year: 2030, decisionId: 'mock-fossil-power', optionId: 'renewables', companyId: 'closedai' },
   ],
   eventLog: [
@@ -159,7 +159,8 @@ function Dev() {
       )}
       {route === 'city' && (
         <CityView key={`${cityId}:${mode}:${view}:${situation}`} state={state} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions}
-          onSelectCompany={() => undefined} onBack={() => nav('#map')} initialMode={mode} joe={joe} initialView={view} />
+          onSelectCompany={() => undefined} onBack={() => nav('#map')} initialMode={mode} joe={joe} initialView={view}
+          waitingCompanyIds={['closedai', 'spacey', 'johnstreet', 'shallowseek']} />
       )}
       {route === 'timeline' && <CityTimeline state={devBase} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions} />}
     </div>

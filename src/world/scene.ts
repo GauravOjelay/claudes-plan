@@ -45,11 +45,17 @@ export interface SceneLayout {
   stars: { x: number; y: number; r: number }[];
 }
 
-const HQ_SLOTS = [
-  { cx: 330, w: 96, h: 330 },
-  { cx: 600, w: 104, h: 370 },
-  { cx: 870, w: 96, h: 310 },
-];
+/** HQ tower slots spread across the free middle of the skyline (between hospital and bank). */
+export function hqSlots(count: number): { cx: number; w: number; h: number }[] {
+  const n = Math.max(0, Math.min(8, count));
+  if (!n) return [];
+  const x0 = 190;
+  const x1 = 1010;
+  const span = (x1 - x0) / n;
+  const w = Math.min(96, span - 14);
+  const heights = [370, 330, 345, 310, 355, 300, 335, 320];
+  return Array.from({ length: n }, (_, i) => ({ cx: x0 + span * (i + 0.5), w, h: heights[i] - (n > 4 ? 30 : 0) }));
+}
 
 function makeWindows(x: number, w: number, h: number, rnd: () => number): { windows: Window[]; rows: number } {
   const cols = Math.max(1, Math.floor((w - 10) / 14));
@@ -66,7 +72,8 @@ function building(id: string, kind: BldgKind, x: number, w: number, h: number, r
   return { id, kind, x, w, h, rows, windows, district: rnd(), hqSlot, roofStyle: Math.floor(rnd() * 3) as 0 | 1 | 2 };
 }
 
-export function buildScene(cityId: string): SceneLayout {
+export function buildScene(cityId: string, hqCount = 3): SceneLayout {
+  const HQ_SLOTS = hqSlots(hqCount);
   const rnd = visualRng(`scene:${cityId}`);
 
   const far: FarBuilding[] = [];

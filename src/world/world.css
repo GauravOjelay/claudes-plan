@@ -436,3 +436,13 @@ button.w-feed-row:hover { filter: brightness(1.15); }
 .w3-help { bottom: auto; top: 56px; }
 .joe-wrap .w-fps { top: 12px; right: 12px; }
 .joe-hint { bottom: auto; top: 50px; }
+
+/* ---------- no rivals: every HQ is the player's; highlight the ones with a decision waiting ---------- */
+.w-hq-btn.waiting { border-color: #ffd60a; box-shadow: inset 0 0 0 1px #ffd60a55; }
+.w-hq-badge { font: 700 10px system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #111; background: #ffd60a; border-radius: 999px; padding: 3px 8px; white-space: nowrap; animation: w-cta-pulse 2.4s ease-in-out infinite; }
+.w-hq-empty { margin: 0; color: var(--w-muted); font-size: 0.9em; line-height: 1.4; }
+.w-hq-list { max-height: 330px; overflow: auto; }
+.w3-hq.w3-hq.waiting { color: #fff3b0; border-color: #ffd60a; box-shadow: 0 0 22px rgba(255, 214, 10, 0.75); }
+.w3-hq.compact { padding: 2px 8px 0; }
+.w3-hq.compact .w3-hq-name { font-size: 11.5px; }
+.w3-hq.compact .w3-hq-arrow { font-size: 11px; line-height: 10px; }

@@ -7,7 +7,7 @@ import { CityTimeline } from './CityTimeline';
 import { EFFECT_RENDERERS } from './effects';
 import { REGION_NAMES } from './geo';
 import { GROUND_Y, QUAY_BOTTOM, ROAD_BOTTOM, ROAD_TOP, SCENE_H, SCENE_W, buildScene, type Building, type Window } from './scene';
-import { ALL_EFFECT_KINDS, EFFECT_INFO, companiesInCity, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM } from './util';
+import { ALL_EFFECT_KINDS, ARCHETYPE_LABEL, EFFECT_INFO, companiesInCity, effectsForCity, fmtMoneyBn, fmtPct, fmtPeopleM, orderHqs } from './util';
 import { EventFeed } from './EventFeed';
 import './world.css';
 
@@ -31,6 +31,8 @@ export interface CityViewProps {
   /** The city's average citizen for the "Average Joe" view. Until the sim ships `averageJoe`, `mockJoe` is used. */
   joe?: AverageJoe;
   initialView?: 'city' | 'joe';
+  /** Companies that still have a decision card this year (shown as "Decision waiting"). */
+  waitingCompanyIds?: string[];
 }
 
 type Fx = Map<CityEffectKind, CityEffect>;
@@ -106,10 +108,12 @@ function Bank({ b }: { b: Building }) {
   );
 }
 
-function HqTower({ b, company, isPlayer, onSelect }: { b: Building; company: Company; isPlayer: boolean; onSelect: (id: string) => void }) {
+function HqTower({ b, company, waiting, stagger, onSelect }: { b: Building; company: Company; waiting: boolean; stagger: number; onSelect: (id: string) => void }) {
   const cx = b.x + b.w / 2;
   const top = GROUND_Y - b.h;
-  const color = isPlayer ? '#5cc8ff' : '#ffb547';
+  const lift = stagger; // alternate label heights so neighbouring signs never overlap
+  const ty = top - lift;
+  const color = waiting ? '#ffd60a' : '#5cc8ff';
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -117,22 +121,23 @@ function HqTower({ b, company, isPlayer, onSelect }: { b: Building; company: Com
     }
   };
   return (
-    <g className="w-hq-arrow" role="button" tabIndex={0} aria-label={`${company.name} headquarters${isPlayer ? ' (your company)' : ' (rival, view only)'}`}
+    <g className="w-hq-arrow" role="button" tabIndex={0} aria-label={`${company.name} headquarters${waiting ? ', decision waiting' : ''}`}
       onClick={() => onSelect(company.id)} onKeyDown={onKey}>
       {/* building outline glow */}
+      {lift > 0 && <line x1={cx} y1={ty - 6} x2={cx} y2={top} stroke={color} strokeOpacity={0.5} strokeWidth={1.5} />}
       <rect className="w-glow" x={b.x - 2} y={top - 2} width={b.w + 4} height={b.h + 2} fill="none" stroke={color} strokeWidth={2} opacity={0.55} filter="url(#w-glow)" />
       <rect x={b.x} y={top} width={b.w} height={4} fill={color} />
       {/* name sign */}
-      <rect x={cx - 52} y={top - 26} width={104} height={20} rx={4} fill="rgba(5,10,22,0.85)" stroke={color} />
-      <text x={cx} y={top - 12} textAnchor="middle" fontSize={11} fontWeight={700} fill={color}>{company.name}</text>
+      <rect x={cx - 60} y={ty - 26} width={120} height={20} rx={4} fill="rgba(5,10,22,0.85)" stroke={color} />
+      <text x={cx} y={ty - 12} textAnchor="middle" fontSize={10.5} textLength={company.name.length > 16 ? 112 : undefined} lengthAdjust="spacingAndGlyphs" fontWeight={700} fill={color}>{company.name}</text>
       {/* bobbing glowing arrow */}
       <g className="w-bob" style={{ animationDelay: `${(b.hqSlot ?? 0) * 0.3}s` }}>
-        <circle className="w-glow" cx={cx} cy={top - 58} r={22} fill={color} opacity={0.3} filter="url(#w-glow)" />
-        <polygon points={`${cx - 16},${top - 72} ${cx + 16},${top - 72} ${cx},${top - 40}`} fill={color} stroke="#fff" strokeWidth={1.5} filter="url(#w-glow-soft)" />
-        <text x={cx} y={top - 80} textAnchor="middle" fontSize={10} fill="#fff" fontWeight={600}>{isPlayer ? 'YOUR HQ' : 'RIVAL'}</text>
+        <circle className="w-glow" cx={cx} cy={ty - 58} r={22} fill={color} opacity={0.3} filter="url(#w-glow)" />
+        <polygon points={`${cx - 16},${ty - 72} ${cx + 16},${ty - 72} ${cx},${ty - 40}`} fill={color} stroke="#fff" strokeWidth={1.5} filter="url(#w-glow-soft)" />
+        <text x={cx} y={ty - 80} textAnchor="middle" fontSize={10} fill="#fff" fontWeight={600}>{waiting ? 'DECISION WAITING' : ARCHETYPE_LABEL[company.archetype].toUpperCase()}</text>
       </g>
       {/* larger invisible hit area */}
-      <rect x={b.x - 10} y={top - 100} width={b.w + 20} height={b.h + 100} fill="transparent" />
+      <rect x={b.x - 10} y={ty - 100} width={b.w + 20} height={b.h + 100 + lift} fill="transparent" />
     </g>
   );
 }
@@ -178,14 +183,15 @@ function SceneDefs() {
   );
 }
 
-export function CitySkyline({ state, city, onSelectCompany }: { state: WorldState; city: CityInfo; onSelectCompany: (id: string) => void }) {
-  const layout = useMemo(() => buildScene(city.id), [city.id]);
+export function CitySkyline({ state, city, onSelectCompany, waiting = [] }: { state: WorldState; city: CityInfo; onSelectCompany: (id: string) => void; waiting?: string[] }) {
+  const hqCount = companiesInCity(state, city).length;
+  const layout = useMemo(() => buildScene(city.id, hqCount), [city.id, hqCount]);
   const fx = effectsForCity(state, city.id);
   const companies = companiesInCity(state, city).slice(0, layout.hqSlots.length);
-  // Put the player's company in the tallest (middle) slot.
-  const ordered = [...companies].sort((a, b) => Number(b.id === state.playerCompanyId) - Number(a.id === state.playerCompanyId));
-  const slotOrder = [1, 0, 2];
-  const hqBySlot = new Map(ordered.map((c, i) => [slotOrder[i], c]));
+  // Slots are left to right; the tallest slot gets the first company in HQ order.
+  const ordered = orderHqs(companies, state.playerCompanyId, waiting);
+  const bySize = layout.hqSlots.map((s, i) => [i, s.h] as const).sort((a, b) => b[1] - a[1]).map(([i]) => i);
+  const hqBySlot = new Map(ordered.map((c, i) => [bySize[i], c]));
   const active = ALL_EFFECT_KINDS.filter((k) => fx.has(k));
   const layer = (name: 'sky' | 'street' | 'top') =>
     active.map((kind) => {
@@ -229,14 +235,14 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
       {layer('top')}
       {hqs.map((b) => {
         const c = hqBySlot.get(b.hqSlot!);
-        return c ? <HqTower key={c.id} b={b} company={c} isPlayer={c.id === state.playerCompanyId} onSelect={onSelectCompany} /> : null;
+        return c ? <HqTower key={c.id} b={b} company={c} waiting={waiting.includes(c.id)} stagger={(b.hqSlot ?? 0) % 2 ? 34 : 0} onSelect={onSelectCompany} /> : null;
       })}
       <text x={16} y={SCENE_H - 12} fontSize={12} fill="#93a0ba">{city.name} · {state.year}</text>
     </svg>
   );
 }
 
-export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d', joe, initialView = 'city' }: CityViewProps) {
+export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d', joe, initialView = 'city', waitingCompanyIds = [] }: CityViewProps) {
   const [statsOpen, setStatsOpen] = useState(false);
   const webgl = useMemo(hasWebGL, []);
   const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && webgl ? '3d' : '2d'));
@@ -255,8 +261,12 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
     );
   }
   const region = state.regions[city.region];
-  const companies = companiesInCity(state, city);
+  const companies = orderHqs(companiesInCity(state, city), state.playerCompanyId, waitingCompanyIds);
   const player = state.companies.find((c) => c.id === state.playerCompanyId);
+  // "Your move" goes to a company here that still has a card, else any waiting company, else the flagship.
+  const nextUp = companies.find((c) => waitingCompanyIds.includes(c.id))
+    ?? state.companies.find((c) => waitingCompanyIds.includes(c.id))
+    ?? player;
   const joeData: AverageJoe = joe ?? { ...mockJoe, cityId: city.id };
 
   return (
@@ -287,13 +297,13 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
               <JoeCard2D joe={joeData} />
             )
           ) : mode === '3d' ? (
-            <ThreeBoundary key={`city${attempt}`} onError={crashed} fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
-              <Suspense fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
-                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} onRequest2D={() => { setMode('2d'); setReason('running slowly on this device'); }} />
+            <ThreeBoundary key={`city${attempt}`} onError={crashed} fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} waiting={waitingCompanyIds} />}>
+              <Suspense fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} waiting={waitingCompanyIds} />}>
+                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} waiting={waitingCompanyIds} onRequest2D={() => { setMode('2d'); setReason('running slowly on this device'); }} />
               </Suspense>
             </ThreeBoundary>
           ) : (
-            <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />
+            <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} waiting={waitingCompanyIds} />
           )}
           {mode === '2d' && reason && <FallbackChip reason={reason} onRetry={webgl ? retry3D : undefined} />}
           {region && view === 'city' && (
@@ -321,22 +331,27 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
           )}
         </div>
         <aside>
-          {player && (
-            <button className="w-cta" style={{ marginTop: 0, marginBottom: 12 }} onClick={() => onSelectCompany(player.id)}>
-              <span className="w-cta-kicker">Your move</span>
-              Make a decision at {player.name} HQ →
+          {nextUp && (
+            <button className="w-cta" style={{ marginTop: 0, marginBottom: 12 }} onClick={() => onSelectCompany(nextUp.id)}>
+              <span className="w-cta-kicker">Your move{waitingCompanyIds.length > 1 ? ` · ${waitingCompanyIds.length} companies waiting` : ''}</span>
+              {waitingCompanyIds.length ? `Decide for ${nextUp.name} →` : `Go to ${nextUp.name} HQ →`}
             </button>
           )}
           <section className="w-panel">
             <h3>Headquarters</h3>
             <div className="w-hq-list">
-              {companies.map((c) => (
-                <button key={c.id} className={`w-hq-btn${c.id === state.playerCompanyId ? ' player' : ''}`} onClick={() => onSelectCompany(c.id)}>
-                  <span>{c.name}<br /><small>{c.id === state.playerCompanyId ? 'Your company' : 'Rival · view only'}</small></span>
-                  <span>→</span>
-                </button>
-              ))}
-              {companies.length < 3 && <small style={{ color: 'var(--w-muted)' }}>Only {companies.length} HQ{companies.length === 1 ? '' : 's'} in the city list for {city.name}.</small>}
+              {companies.map((c) => {
+                const waiting = waitingCompanyIds.includes(c.id);
+                return (
+                  <button key={c.id} className={`w-hq-btn${waiting ? ' waiting' : ''}`} onClick={() => onSelectCompany(c.id)}>
+                    <span>{c.name}<br /><small>{ARCHETYPE_LABEL[c.archetype]}</small></span>
+                    {waiting ? <span className="w-hq-badge">Decision waiting</span> : <span aria-hidden>→</span>}
+                  </button>
+                );
+              })}
+              {companies.length === 0 && (
+                <p className="w-hq-empty">No AI headquarters here. The effects and Average Joe still show what this year means for {city.name}.</p>
+              )}
             </div>
           </section>
           <section className="w-panel">

@@ -99,3 +99,17 @@ export function pathwayLabel(id: string): string {
   const words = id.replace(/[-_]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim().toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
+
+export const ARCHETYPE_LABEL: Record<Company['archetype'], string> = {
+  frontierLab: 'Frontier lab', chipMaker: 'Chip maker', researchLab: 'Research lab', stateBackedLab: 'State-backed lab',
+  softwareCompany: 'Software company', financeFirm: 'Finance firm',
+};
+
+/** HQ order for a city: companies with a decision waiting first, then the flagship, then by company value. */
+export function orderHqs(companies: Company[], flagshipId: string, waiting: string[] = []): Company[] {
+  const w = new Set(waiting);
+  return [...companies].sort((a, b) =>
+    Number(w.has(b.id)) - Number(w.has(a.id)) ||
+    Number(b.id === flagshipId) - Number(a.id === flagshipId) ||
+    b.vars.companyValue - a.vars.companyValue);
+}
