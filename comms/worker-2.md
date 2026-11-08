@@ -1,5 +1,24 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 16:30 - STATUS: done (#20 no rivals) + OWNER REQUEST: every city needs companies (roster ready for you)
+What I did / what I need:
+- #20 done on worker-2 (PR below):
+  1. Every HQ is playable. "Rival · view only" / "Your company" are gone; HQs show their archetype, and the companies with a card get a pulsing yellow "Decision waiting" (list, 2D towers, 3D markers).
+  2. Cities with no companies show "No AI headquarters here..." while effects, the feed and Average Joe still work. The globe callout handles them too.
+  3. The 3D city and 2D skyline take 0-8 HQs (SF 5 and NYC 7 fit). 3D labels are compact and staggered; the list scrolls.
+  4. Seattle, Austin, Stockholm and Hangzhou have globe pins and work in 3D.
+  5. Old proposed companies deleted (`roster.ts` is now just `ALL_CITIES = CITIES` plus a lookup).
+  The "Your move" button goes to a waiting company in this city, else any waiting one, else the flagship.
+- NEW optional prop `CityView waitingCompanyIds?: string[]` (companies that still have a card this year). App wiring, one line: `waitingCompanyIds={playable.filter((c) => openCardsFor(c.id).length > 0).map((c) => c.id)}`. The globe's per-city "Decide for <company>" button uses the existing `onOpenHQ`; please pass `onOpenHQ={(id) => { setHqId(id); setScreen('hq'); }}` to `<WorldMap>`.
+- OWNER (Charles) REQUEST: "Every city needs companies. American-style names for North American and European cities; everywhere else, puns on real local companies in the same spirit." I wrote the full roster as typechecked code in `src/world/proposals/companies.ts`: 41 new playable companies, so every one of the 19 cities has at least 3.
+  - NA/EU: Amazoff, Boing (Seattle); Dull, Miracle (Austin); Bimbot, TellMex, Banorth (Mexico City); DeepBlind, Revolting (London); Mistrial, LVMeh, Capgimmick (Paris); Seamens, Allyanz, BMWhy (Munich); Notify, Klarma (Stockholm); Yandoubt, Kasperspy, Sberbunk (Moscow).
+  - Rest of the world: Baidon't, BiteDance, Xiao-Me (Beijing); Alibabble, HikeVision (Hangzhou); NoBank, ItaYou, iFeed (São Paulo); G41, Careen, Emirates NB-Debt (Dubai); Fawrong, Swerve, Instabugged (Cairo); Paystuck, Flatterwave, Andelay (Lagos); Infomess, Flopkart, Krutrimmed (Bengaluru); Grabby, See Ltd, DBSure (Singapore); Phony, SoftBunk, Deferred Networks (Tokyo).
+  - A test checks unique ids, at least 3 per city, and regions matching each city.
+Files touched: src/world/**, comms/worker-2.md
+Question for master (if any):
+1. Please merge the roster into `src/contracts/cities.ts`: `COMPANY_ROSTER.push(...PROPOSED_COMPANIES)` and append `PROPOSED_CITY_COMPANIES[city.id]` to each city's `companyIds` (or copy the rows in). My views need no change: they read `companyIds`. worker-1 may need to check balance with 58 companies, and the HQ photo map for the new archetype/city mix.
+2. Wire `waitingCompanyIds` and `onOpenHQ` as above.
+
 ## 2026-11-08 15:10 - STATUS: idle, ready for the next task
 What I did / what I need: #17 is covered. PR #19 (merged) maps all pathway ids to readable labels in `src/world/util.ts` (`pathwayLabel`), so no `data/pathways.json` is needed; if worker-1 adds one later I will switch to it. I merged the latest main (photo-real HQ, End-year flow) into worker-2: typecheck and 200 tests pass, and there are no conflicts. Nothing is open on my side. Send the next task.
 Files touched: comms/worker-2.md

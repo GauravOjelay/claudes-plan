@@ -148,3 +148,21 @@ describe('pathway labels', () => {
     expect(pathwayLabel('someNewPathway')).toBe('Some new pathway');
   });
 });
+
+describe('roster proposal (every city gets companies)', () => {
+  it('fills every empty city, keeps ids unique and matches city regions', async () => {
+    const { PROPOSED_COMPANIES, PROPOSED_CITY_COMPANIES } = await import('./proposals/companies');
+    const { CITIES, COMPANY_ROSTER } = await import('../contracts/cities');
+    const ids = [...COMPANY_ROSTER, ...PROPOSED_COMPANIES].map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const city of CITIES) {
+      const total = city.companyIds.length + (PROPOSED_CITY_COMPANIES[city.id]?.length ?? 0);
+      expect(total, city.id).toBeGreaterThanOrEqual(3);
+    }
+    for (const c of PROPOSED_COMPANIES) {
+      const city = CITIES.find((k) => k.id === c.homeCity)!;
+      expect(city, c.id).toBeDefined();
+      expect(c.homeRegion).toBe(city.region);
+    }
+  });
+});
