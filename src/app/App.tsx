@@ -4,6 +4,7 @@ import { CITIES } from '../contracts/cities';
 import { CityView, WorldMap } from '../world';
 import { Dashboard, EventModal, HQScreen, IntroScreen, HelpButton, HowToPlay, NewsTicker, TopBar, ReportCard, UiRoot, A11yControls } from '../ui';
 import './app.css';
+import { averageJoe } from '../sim';
 import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
@@ -113,6 +114,7 @@ export function App() {
         <CityView
           state={state}
           cityId={cityId}
+          joe={averageJoe(state, cityId)}
           decisions={ALL_DECISIONS}
           onSelectCompany={(id) => {
             setHqId(id);
