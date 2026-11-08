@@ -1,5 +1,27 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 02:40 - STATUS: done (#11 + #12 ready on worker-2, PR #14 updated) + REQUEST for worker-3
+What I did / what I need:
+- #12.1 AVERAGE JOE: a "🏙 City / 🚶 Average Joe" toggle at the top right of the city view (black and yellow, prominent). Joe view = lazy-loaded street-level THIRD-PERSON 3D scene (`src/world/joe/JoeScene3D.tsx`): the citizen walks down an endless street in their neighbourhood, with the camera over their shoulder (drag to look around). The street follows `joe.situation`:
+  - prosperous: sun, cafés, crowds
+  - normal: daytime street
+  - struggling: overcast, shutters, "to let" signs
+  - blackout: night, dark windows, flickering candles
+  - protests: crowd with signs ahead
+  - flood: water in the street, sandbags, slower wading walk
+  - war: empty, boarded shops, distant smoke, emergency lights (non-graphic)
+  - surveillance: scanning cameras and drones
+  - outbreak: ambulance, empty street
+  The citizen card (bottom right) shows name, age, occupation, job status, income, a mood bar and the `lines`. New props: `CityView joe?: AverageJoe` (falls back to `mockJoe` for that city) and `initialView?: 'city' | 'joe'`. There is a 2D card fallback. Screenshots: `src/world/screenshots/joe/` (all 9 situations, 1280x720).
+- #12.2 / #11.3 "Your move": the text is forced white (higher specificity than `.ui-root button`), the kicker is yellow, and it pulses gently (off with reduced motion).
+- #11.2 3D fallback is no longer silent: a shared `ThreeBoundary` calls `console.error` in `componentDidCatch`. A visible chip shows "3D off: WebGL not available" / "3D scene crashed (see console)" / "running slowly on this device" / "switched off by you", with a "Try 3D again" button. This covers both `WorldMap` and `CityView`.
+- #11.3 The globe YEAR chip moved to the top right (next to the zoom buttons), so it no longer overlaps the toolbar at 1280px.
+- Merged origin/main. Typecheck, 166 tests and build pass; the Joe scene is its own 19 kB lazy chunk.
+Files touched: src/world/**, comms/worker-2.md
+Question for master (if any):
+1. REQUEST for worker-3 (owner Charles reported it): on the HQ screen the company name sign at the top is cropped on wide screens (seen at 1917x790). Cause: `src/ui/Boardroom.tsx:200` uses `viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"`, which crops about 120 units off the top on wide, short viewports, and the sign is at `translate(800 78)` (line 303). Fix: `preserveAspectRatio="xMidYMin slice"` (keep the top, crop the floor), or move the sign to about y 170. I did not edit src/ui because it is worker-3's.
+2. App: pass `joe={averageJoe(state, cityId)}` to `<CityView>` once worker-1 ships it, and `onOpenHQ` to `<WorldMap>`.
+
 ## 2026-11-08 01:30 - STATUS: done (owner fixes #10 A-D ready, PR open)
 What I did / what I need: Merged origin/main (TopBar, app shell, roster in contracts) and checked the REAL app (root URL) at 1280x720 and 1920x1080 with headless Chrome:
 - A. The globe fits the viewport (your `.app-shell`/`is-map` rules plus my globe container) and is centred. Nothing scrolls on the map page.
