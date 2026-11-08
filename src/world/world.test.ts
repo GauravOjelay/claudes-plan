@@ -137,3 +137,12 @@ describe('smooth effects', () => {
     expect(v).toBe(0.8);
   });
 });
+
+describe('pathway labels', () => {
+  it('turns sim pathway ids into readable text', async () => {
+    const { pathwayLabel } = await import('./util');
+    expect(pathwayLabel('openSourcedMaterials')).toBe('Open materials science');
+    expect(pathwayLabel('ubi')).toBe('Universal basic income');
+    expect(pathwayLabel('someNewPathway')).toBe('Some new pathway');
+  });
+});

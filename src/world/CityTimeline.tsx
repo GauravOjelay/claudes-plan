@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CityInfo, Decision, WorldState } from '../contracts';
 import { ALL_CITIES } from './roster';
-import { EFFECT_INFO } from './util';
+import { EFFECT_INFO, pathwayLabel } from './util';
 import './world.css';
 
 export interface CityTimelineProps {
@@ -130,7 +130,7 @@ export function CityTimeline({ state, cityId, cities = ALL_CITIES, decisions, on
         </div>
         <div className="w-tl2-future">
           <small>Possible futures</small>
-          {branches.length === 0 ? <span className="w-tl2-branch muted">None unlocked yet</span> : branches.slice(0, 4).map((p) => <span key={p} className="w-tl2-branch">{p}</span>)}
+          {branches.length === 0 ? <span className="w-tl2-branch muted">None unlocked yet</span> : branches.slice(0, 4).map((p) => <span key={p} className="w-tl2-branch" title={p}>{pathwayLabel(p)}</span>)}
           {branches.length > 4 && <span className="w-tl2-branch muted">+{branches.length - 4} more</span>}
         </div>
       </div>

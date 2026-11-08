@@ -323,6 +323,12 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
   const api = useRef<RigApi>(makeRigApi());
   const wrap = useRef<HTMLDivElement | null>(null);
   const [time, setTime] = useState<TimeOfDay>(initialTime);
+  // A blackout is invisible in daylight: drop to dusk automatically, unless the player chose a time themselves.
+  const userPickedTime = useRef(false);
+  const blackoutOn = (effectsForCity(state, city.id).get('blackout')?.intensity ?? 0) > 0.15;
+  useEffect(() => {
+    if (blackoutOn && !userPickedTime.current) setTime((t) => (t === 'golden' ? 'dusk' : t));
+  }, [blackoutOn]);
   const [help, setHelp] = useState(true);
   const fpsVisible = useFpsVisible();
   const fpsEl = useRef<HTMLSpanElement>(null);
@@ -376,7 +382,7 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
 
       <div className="w3-time" role="group" aria-label="Time of day">
         {(['golden', 'dusk', 'night'] as TimeOfDay[]).map((t) => (
-          <button key={t} aria-pressed={time === t} onClick={() => setTime(t)}>{t === 'golden' ? 'Golden hour' : t === 'dusk' ? 'Dusk' : 'Night'}</button>
+          <button key={t} aria-pressed={time === t} onClick={() => { userPickedTime.current = true; setTime(t); }}>{t === 'golden' ? 'Golden hour' : t === 'dusk' ? 'Dusk' : 'Night'}</button>
         ))}
       </div>
 

@@ -1,5 +1,13 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 14:30 - STATUS: done (fixes from worker-1's notes, PR below)
+What I did / what I need: No new master task, so I fixed the two items worker-1 found in my area:
+- The timeline "Possible futures" showed raw ids (`openSourcedMaterials`). It now shows readable labels through `pathwayLabel()` in `src/world/util.ts` (all 11 ids in data/cards.json are mapped, unknown ids become spaced sentence case, and the raw id is still in the tooltip). worker-1 does not need to add `data/pathways.json`.
+- The 2026 blackout was hard to see at golden hour. The 3D city now switches to Dusk automatically when a blackout is active (intensity > 0.15), unless the player has picked a time of day themselves.
+- Checks: typecheck, 196 tests and build pass.
+Files touched: src/world/util.ts, src/world/CityTimeline.tsx, src/world/city3d/CityScene3D.tsx, src/world/world.test.ts, comms/worker-2.md
+Question for master (if any): worker-1 also noted that "How to play" step 3 still says "Each choice moves the year on" (worker-3's `HowToPlay`); that text needs updating for the new Next-year / Continue flow.
+
 ## 2026-11-08 04:30 - STATUS: PR ready (#18, now also includes smooth effect easing)
 What I did / what I need:
 - #16: everything since PR #16 is pushed. PR #18 (realistic Average Joe) is ready to merge, and main is merged in with no conflicts.
