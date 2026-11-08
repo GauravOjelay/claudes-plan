@@ -18,6 +18,19 @@ Chrome, full screen (F11), dark mode, sound on. Open ALL tabs first so the 3D ha
 | 5 Good ending (Abundance Utopia ~69) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop,acceptRules&at=end |
 | 6 Bad ending | (war link with `&at=end`) |
 
+
+## The message
+A game about the next ten years of AI: a few companies' decisions branch the world into very different futures.
+Show it three ways: the card's Now/Later arrows BEFORE the choice, the city AFTER it, and the city TIMELINE that links them.
+
+## Spoken script
+1. **Globe (0:00-0:20):** "AI 2126 is a game about the next ten years of AI. A handful of companies make decisions that shape everyone's life: jobs, energy, wealth, even war. Here, you make those decisions and the world reacts. Every choice opens one future and closes another."
+2. **Boardroom (0:20-0:45):** "It's 2026. ClosedAI wants a giant data centre: in one year, or slowly over three?" Point at the Now/Later arrows. Fast-track -> End 2026.
+3. **City (0:45-1:20):** "Here's what that one decision did. The grid couldn't take it: San Francisco is in rolling blackouts." Night -> lights out. Average Joe: "This is Elena. Her power keeps cutting out, because of a decision made in a boardroom."
+4. **Split screen (1:20-2:05):** "Same world, same seed. We change ONE decision in 2027: open-source our materials model, or keep it." Left: solar, no blackout. Right: End 2032, blackout returns. Open the timeline on both: "2027 decision -> 2028 breakthrough -> grid recovers. On the right, no breakthrough. One decision, two worlds."
+5. **War (2:05-2:30, if ready):** "Let every company race for power, and this is where it ends."
+6. **Endings (2:30-2:45):** "Abundance Utopia, or war. Not luck: a few decisions by a few companies. AI 2126: the decade that decides the century."
+
 ## Run of show
 | Time | Visual beat | Do | Say |
 |---|---|---|---|
