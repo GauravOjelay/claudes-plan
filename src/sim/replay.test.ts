@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import demo from '../../data/demo.json';
 import { ALL_DECISIONS, availableDecisions, newGame, playTurn } from '../app/game';
 import type { WorldState } from '../contracts';
+import { averageJoe } from './index';
 import { parseReplay, replayGame } from './replay';
 
 const avail = (s: WorldState, companyId: string) => availableDecisions(s, ALL_DECISIONS, companyId);
@@ -116,5 +117,30 @@ describe('replay links', () => {
     expect(md).toContain(`replay=${MAIN_LINK}&at=end`);
     expect(md).toContain(`replay=${WHATIF_LINK}&at=end`);
     expect(run(WHATIF_LINK, 'end').state.status.ending).toBe('slowdown');
+  });
+
+  it('a space works like + (browsers decode + in a URL as a space)', () => {
+    const fromUrl = new URLSearchParams('?seed=44&replay=fastTrack+mvidia:grayChips,keepMaterials&at=2028').get('replay')!;
+    expect(parseReplay(fromUrl)).toEqual(parseReplay('fastTrack+mvidia:grayChips,keepMaterials'));
+    expect(parseReplay(fromUrl)[0]).toEqual([{ option: 'fastTrack' }, { company: 'mvidia', option: 'grayChips' }]);
+  });
+
+  it('the war link: tension passes 80, the war-threat alert pops up and Average Joe shows war, with no world war yet', () => {
+    const md = readFileSync('data/demo.md', 'utf8');
+    const m = md.match(/WAR_LINK:\s*`[^`]*\?seed=44&replay=([^&`]+)&at=(\d+)`/);
+    expect(m, 'the war link is written in data/demo.md').not.toBeNull();
+    const spec = decodeURIComponent(m![1].replace(/\+/g, ' ')); // what the app reads from the URL
+    const r = run(spec, m![2]);
+    expect(r.error).toBeUndefined();
+    expect(r.state.status.over).toBe(false);
+    expect(r.state.year).toBe(Number(m![2]));
+    expect(r.state.global.geopoliticalTension).toBeGreaterThan(80);
+    expect(r.state.global.geopoliticalTension).toBeLessThan(95);
+    expect(r.lastEvents.some((e) => e.eventId === 'war-threat' && e.popup)).toBe(true);
+    const home = r.state.companies.find((c) => c.id === r.state.playerCompanyId)!.homeCity;
+    expect(averageJoe(r.state, home).situation).toBe('war');
+    // and the same choices written as the demo script has them
+    expect(spec).toContain('mvidia:');
+    expect(run(`fastTrack+mvidia:grayChips,keepMaterials+mvidia:sellAll,fossil+mvidia:hoardChips,noNet+mvidia:hype,skipSafety+mvidia:skipSecurity,race+mvidia:stockpile,ignoreWarning+mvidia:openUp,fundScience+mvidia:offence`, '2034').state.global.geopoliticalTension).toBeGreaterThan(80);
   });
 });

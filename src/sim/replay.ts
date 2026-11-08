@@ -6,7 +6,7 @@
  *   - `optionId`                  answers the first card ClosedAI (the flagship) can answer that year, the card the HQ shows
  *   - `-`                         no decision that year
  *   - `companyId:optionId`        the same for another company; join several decisions in one year with `+`
- *                                 e.g. `fastTrack+cancer:openIt,openMaterials,-`
+ *                                 e.g. `fastTrack+cancer:openIt,openMaterials,-` (a space works too: browsers read '+' in a URL as one)
  * `at` is the year to land on (the game stops there, before that year is played); `end` plays on to the ending.
  * Without `at` the game stops right after the last entry.
  * Pure and deterministic: it plays the real sim (`step` with `rngForTurn`), so it matches clicking through the app.
@@ -24,7 +24,8 @@ export function parseReplay(spec: string): ReplayPick[][] {
   return text.split(',').map((entry) => {
     const t = entry.trim();
     if (t === '' || t === '-') return [];
-    return t.split('+').map((part) => {
+    // A browser turns '+' in a URL into a space, so both separate decisions of one year.
+    return t.split(/[+\s]+/).filter(Boolean).map((part) => {
       const i = part.indexOf(':');
       const pick: ReplayPick = i < 0 ? { option: part.trim() } : { company: part.slice(0, i).trim(), option: part.slice(i + 1).trim() };
       if (!pick.option || pick.company === '') throw new Error(`"${part}" is not a choice (use optionId or companyId:optionId)`);

@@ -38,7 +38,7 @@ export const TUNING = {
   regulationPull: 0.15, // share of the gap to (100 - trust) closed each year
   concentrationPerCapability: 0.01, // wealth-gap points per capability point per year (x outlook)
   monopolyFreeShare: 0.1, // a player who steers up to this share of a region's AI company value causes no extra concentration
-  monopolyPerYear: 0.4, // wealth-gap points per year in a region the player fully controls (scaled up from the free share)
+  monopolyPerYear: 0.6, // wealth-gap points per year in a region the player fully controls (scaled up from the free share)
   incomeRate: 0.1, // company income per year as a share of company value (x trust/60)
   burnBase: 12,
   burnPerCapability: 0.4,

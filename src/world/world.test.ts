@@ -248,3 +248,38 @@ describe('3D landmarks and city settings', () => {
     expect(Math.max(...tall.sprawl.map((b) => b.h))).toBeGreaterThan(Math.max(...base.sprawl.map((b) => b.h)));
   });
 });
+
+describe('Average Joe street by country', () => {
+  it('every city has its own street style, with sane numbers and a few props', async () => {
+    const { STREET_STYLES, streetStyle, pickStyle } = await import('./joe/streetStyle');
+    const { CITIES } = await import('../contracts/cities');
+    for (const c of CITIES) {
+      const st = STREET_STYLES[c.id];
+      expect(st, c.id).toBeDefined();
+      expect(st.heightScale, c.id).toBeGreaterThan(0.5);
+      expect(st.heightScale, c.id).toBeLessThan(2);
+      expect(st.widthScale, c.id).toBeGreaterThan(0.5);
+      expect(st.awnings.length, c.id).toBeGreaterThanOrEqual(3);
+      expect(st.cars.length, c.id).toBeGreaterThanOrEqual(3);
+      expect(st.clothes.length, c.id).toBeGreaterThanOrEqual(4);
+      for (const col of [st.asphalt, st.paving, st.treeColor, st.sky.fog, st.sky.sun, ...st.awnings, ...st.cars, ...st.clothes, ...Object.values(st.tint)]) expect(/^#[0-9a-f]{6}$/i.test(col), `${c.id} ${col}`).toBe(true);
+    }
+    expect(streetStyle('nowhere').id).toBe('default');
+    // the signature of each country
+    expect(STREET_STYLES.london.leftHand && STREET_STYLES.tokyo.leftHand && STREET_STYLES.bangalore.leftHand).toBe(true);
+    expect(STREET_STYLES.nyc.leftHand).toBe(false);
+    expect(STREET_STYLES.dubai.tree).toBe('palm');
+    expect(STREET_STYLES.moscow.tree).toBe('bare');
+    expect(STREET_STYLES.moscow.props).toContain('snow');
+    expect(STREET_STYLES.beijing.props).toContain('lanterns');
+    expect(STREET_STYLES.tokyo.props).toEqual(expect.arrayContaining(['neon', 'vending']));
+    expect(STREET_STYLES.bangalore.props).toContain('rickshaw');
+    expect(STREET_STYLES.lagos.props).toContain('stalls');
+    expect(STREET_STYLES.nyc.heightScale).toBeGreaterThan(STREET_STYLES.lagos.heightScale);
+    expect(STREET_STYLES.paris.widthScale).toBeLessThan(STREET_STYLES.moscow.widthScale);
+    // building style weights: stone-heavy Paris, concrete-heavy Tokyo
+    const count = (id: string, kind: string) => Array.from({ length: 200 }, (_, i) => pickStyle(STREET_STYLES[id].mix, (i + 0.5) / 200)).filter((k) => k === kind).length;
+    expect(count('paris', 'stone')).toBeGreaterThan(150);
+    expect(count('tokyo', 'concrete')).toBeGreaterThan(140);
+  });
+});
