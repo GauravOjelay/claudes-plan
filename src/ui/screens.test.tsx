@@ -9,7 +9,7 @@ import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
 import { HQScreen } from './HQScreen';
 import { TopBar } from './TopBar';
 import { Boardroom, boardroomLook } from './Boardroom';
-import { HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, photoLook, signArea } from './PhotoBoardroom';
+import { CITY_PHOTO_LAYOUT, HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, cityPhotoFile, hasBuiltInCityPhoto, photoLook, signArea } from './PhotoBoardroom';
 import { COMPANY_ROSTER } from '../contracts/cities';
 import { RaceTracker } from './RaceTracker';
 import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
@@ -187,6 +187,27 @@ describe('PhotoBoardroom', () => {
       expect(a.y + a.h).toBeLessThanOrEqual(100);
       expect(a.x, c.id).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X);
     }
+  });
+
+  it('tries the city\'s own photo first (boardroom-<cityId>.jpg); the three cities that are mood photos use those', () => {
+    const paris = COMPANY_ROSTER.find((x) => x.homeCity === 'paris')!;
+    const html = renderToStaticMarkup(<PhotoBoardroom company={paris} />);
+    expect(html).toContain('/hq/boardroom-paris.jpg');
+    expect(html).toContain('data-photo="paris"');
+    expect(html).toContain('data-flip="no"'); // a real skyline is never mirrored
+    const tokyo = COMPANY_ROSTER.find((x) => x.homeCity === 'tokyo')!;
+    expect(renderToStaticMarkup(<PhotoBoardroom company={tokyo} />)).toContain('/hq/boardroom-tokyo.jpg');
+    expect(hasBuiltInCityPhoto('dubai') && hasBuiltInCityPhoto('london') && hasBuiltInCityPhoto('tokyo')).toBe(true);
+    expect(hasBuiltInCityPhoto('paris')).toBe(false);
+    expect(cityPhotoFile('sao')).toBe('boardroom-sao.jpg');
+  });
+
+  it('puts the sign of a city\'s own photo clear of the stats panel, the top-right controls and the news', () => {
+    const a = CITY_PHOTO_LAYOUT.logoArea;
+    expect(a.x).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X);
+    expect(a.x + a.w).toBeLessThanOrEqual(100);
+    expect(a.y).toBeGreaterThanOrEqual(14);
+    expect(a.y + a.h).toBeLessThanOrEqual(60);
   });
 
   it('shows the company sign and a table logo on the photo, and darkens in a blackout', () => {
