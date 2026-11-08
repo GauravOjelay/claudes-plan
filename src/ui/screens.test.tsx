@@ -8,6 +8,7 @@ import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
 import { HQScreen } from './HQScreen';
 import { TopBar } from './TopBar';
 import { Boardroom, boardroomLook } from './Boardroom';
+import { HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, photoLook, signArea } from './PhotoBoardroom';
 import { COMPANY_ROSTER } from '../contracts/cities';
 import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
 
@@ -88,12 +89,16 @@ describe('TopBar', () => {
     expect(html).toContain('id="slot"');
   });
 
-  it('shows "N cards waiting" plus Skip year, or Next year when none wait', () => {
-    expect(render(1)).toMatch(/1<\/span> card waiting/);
-    expect(render(3)).toMatch(/3<\/span> cards waiting/);
+  it('asks for the decision while a card waits, then offers End <year>', () => {
+    expect(render(1)).toContain('Make your 2031 decision');
+    expect(render(3)).toContain('Make your 2031 decision');
     expect(render(3)).toContain('Skip year');
-    expect(render(0)).toContain('Next year');
-    expect(render(0)).not.toContain('waiting');
+    expect(render(3)).not.toContain('End 2031');
+    const done = render(0);
+    expect(done).toContain('End 2031');
+    expect(done).not.toContain('Skip year');
+    expect(done).not.toContain('Next year');
+    expect(done).not.toContain('decision');
   });
 });
 
@@ -149,5 +154,47 @@ describe('Boardroom', () => {
     const normal = renderToStaticMarkup(<Boardroom company={c} />);
     const dark = renderToStaticMarkup(<Boardroom company={c} effects={[{ city: c.homeCity, kind: 'blackout', intensity: 1, sinceYear: 2030 }]} />);
     expect(lit(dark)).toBeLessThan(lit(normal) / 3);
+  });
+});
+
+describe('PhotoBoardroom', () => {
+  it('has a photo for every city of the roster, and every photo file exists in the manifest', async () => {
+    const { readFileSync } = await import('node:fs');
+    const manifest = JSON.parse(readFileSync('public/hq/manifest.json', 'utf8')) as { images: Record<string, { file: string }>; cities: Record<string, string> };
+    for (const c of COMPANY_ROSTER) expect(HQ_CITY_PHOTO[c.homeCity], c.homeCity).toBeDefined();
+    for (const [city, key] of Object.entries(HQ_CITY_PHOTO)) expect(manifest.cities[city], city).toBe(key);
+    for (const [key, p] of Object.entries(HQ_PHOTOS)) expect(manifest.images[key].file).toBe(p.file);
+  });
+
+  it('is deterministic and gives the companies of one city different framings', () => {
+    const byCity = new Map<string, string[]>();
+    for (const c of COMPANY_ROSTER) {
+      expect(photoLook(c)).toEqual(photoLook({ ...c }));
+      const l = photoLook(c);
+      byCity.set(c.homeCity, [...(byCity.get(c.homeCity) ?? []), `${l.flip}/${l.zoom}/${l.dx}/${l.dy}/${l.hue}`]);
+    }
+    for (const [city, keys] of byCity) expect(new Set(keys).size, city).toBe(keys.length);
+  });
+
+  it('keeps the sign inside the picture and clear of the stats panel when mirrored', () => {
+    for (const c of COMPANY_ROSTER) {
+      const l = photoLook(c);
+      const a = signArea(HQ_PHOTOS[l.photo], l.flip);
+      expect(a.x).toBeGreaterThanOrEqual(0);
+      expect(a.x + a.w).toBeLessThanOrEqual(100);
+      expect(a.y + a.h).toBeLessThanOrEqual(100);
+      if (l.flip) expect(a.x).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X);
+    }
+  });
+
+  it('shows the company sign and a table logo on the photo, and darkens in a blackout', () => {
+    const c = COMPANY_ROSTER.find((x) => x.id === 'meridian')!;
+    const html = renderToStaticMarkup(<PhotoBoardroom company={c} />);
+    expect(html).toContain('/hq/boardroom-london.jpg');
+    expect(html).toContain('Meridian AI');
+    expect((html.match(/aria-label="Meridian AI logo"/g) ?? []).length).toBe(2); // sign, table
+    expect(html).not.toContain('ui-hqp-blackout');
+    const dark = renderToStaticMarkup(<PhotoBoardroom company={c} effects={[{ city: c.homeCity, kind: 'blackout', intensity: 1, sinceYear: 2030 }]} />);
+    expect(dark).toContain('ui-hqp-blackout');
   });
 });

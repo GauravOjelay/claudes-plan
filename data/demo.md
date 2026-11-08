@@ -11,11 +11,11 @@ You fast-track a giant data centre in 2026. The grid can't take it and **San Fra
 ## The one rule of every year
 
 1. **Your HQ** has one card on screen. **Click the option** from the table below. (The card also takes the ← → keys.)
-2. The card says "No decisions waiting". **Click the blue "Next year →" button** (top right).
+2. The card says "No decisions waiting" and the top-right button now reads **"End 2026 →"** (it shows the current year). **Click it.**
 3. The app now jumps to **your home city, San Francisco**, by itself. If something happened, an **alert** pops up over the city: read it out, press **Continue** in the alert. This is where you talk and point at the skyline and the numbers.
 4. When you are ready, click the floating **"Continue to 2027 →"** banner at the bottom of the screen. It takes you back to Your HQ with the next card.
 
-Never click **"Skip year"** (the yellow "card waiting" button): it throws the year away without answering and breaks the script. You never need the top-bar tabs during the run, except to open **Your HQ** the first time (or use the "Your move" button on the city screen).
+Never click **"Skip year"** (the small grey button next to the yellow "Make your … decision →" button): it throws the year away without answering and breaks the script. You never need the top-bar tabs during the run, except to open **Your HQ** the first time (or the yellow "Make your 2026 decision →" button, or the "Your move" button on the city screen).
 
 ## Before you go on stage (2 minutes)
 
@@ -29,12 +29,12 @@ Never click **"Skip year"** (the yellow "card waiting" button): it throws the ye
 ## Which screen shows what
 
 - **Your HQ:** the card, the company panel (Money, Company value, AI capability, Safety level, Public trust), "Breaking" news, and a line "Now in San Francisco:" with chips such as *Blackouts* and *Solar boom*.
-- **City (San Francisco)** opens by itself after every "Next year". It has the skyline with the effects, a "Happening now" list with strength bars, and a **United States** panel in the corner of the picture. The panel starts small (GDP, Population, Software jobs lost, Public trust); **click its title to expand it** (adds Wealth gap, Energy balance, Water stress, Regulation, World tension). **Switch to "Night"** (top right of the picture): dark districts show the blackout best.
+- **City (San Francisco)** opens by itself after every "End <year>". It has the skyline with the effects, a "Happening now" list with strength bars, and a **United States** panel in the corner of the picture. The panel starts small (GDP, Population, Software jobs lost, Public trust); **click its title to expand it** (adds Wealth gap, Energy balance, Water stress, Regulation, World tension). **Switch to "Night"** (top right of the picture): dark districts show the blackout best.
 - **Dashboard:** world-wide numbers only (World GDP, software jobs lost, "Geopolitical tension", "Public trust in AI", wealth gap). Use it for tension. US trust and wealth gap are on the City screen, not here.
 
 ## Run of show
 
-| Time | Year | Card on screen | Click | Then "Next year →". What you see in the city | Say out loud |
+| Time | Year | Card on screen | Click | Then "End <year> →". What you see in the city | Say out loud |
 |---|---|---|---|---|---|
 | 0:00 | 2026 | **A giant data-centre campus** | **Fast-track the campus** | Orange alert: *"Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid."* Now 2027 and the city opens by itself. Switch to **Night**: dark districts, "Blackout belt" chip and entry in *Happening now*. Expand the US panel: **Public trust 60 → 52, Energy balance 5 → −10**. HQ later: money 492, "Now in San Francisco: Blackouts". | "It is 2026 and I run an AI lab. My board wants a giant data centre, fast. I say yes. Watch San Francisco." *(City, Night)* "One decision and the lights go out. Trust drops from 60 to 52." Then press Continue to 2027. |
 | 0:45 | 2027 | **A materials-science model** | **Open-source it** (left) | No alert. Blackout still on (0.5). | "My lab built a model that makes solar panels cheaper. I could sell it. I give it away. It costs me today and I don't know what it buys." |
@@ -82,7 +82,7 @@ What the what-if run shows (all locked by the test):
 
 - **An alert doesn't appear on time:** the sim is deterministic for this seed, so it is the wrong seed or a wrong click. Reload `/?seed=44`.
 - **You see a different card than the table says:** you changed an earlier option. Reload and start again.
-- **You pressed "Next year →" before picking:** reload and start again.
+- **You pressed "Skip year" before picking:** reload and start again.
 - **You land on the HQ instead of the city, or the city does not open:** you pressed something else; use the "Your move" button on the city screen to get to the HQ.
 - **Money:** you start with 500 and finish with about 120. Don't swap in the costly options (for example "Build your own power plant" costs 150, "Launch a moonshot research programme" costs 120): with more spending the company gets close to bankruptcy and the game can end early.
 - **Time:** the long beats are 2026 (blackout) and 2028 (solar boom). Everything between can go fast.

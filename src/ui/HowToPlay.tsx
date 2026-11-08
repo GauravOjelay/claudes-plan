@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react';
 
 /** The three steps. Keep the whole overlay under 60 words (master task #7). */
 export const HOW_TO_PLAY_STEPS: { title: string; text: string }[] = [
-  { title: 'Pick a city', text: 'Click a city on the world map.' },
-  { title: 'Open your HQ', text: 'Your company is the one you can play. Rivals are view-only.' },
-  { title: 'Answer cards', text: 'Each choice moves the year on. Watch jobs, wealth and risk change.' },
+  { title: 'Make your decision', text: 'Open your HQ and pick one option.' },
+  { title: 'Look around', text: 'Explore the globe, cities and Average Joe.' },
+  { title: 'End the year', text: 'Press End year, then Continue to see what changed.' },
 ];
 
 /** "How to play" overlay. Closes with the button, Escape or a click outside. */
