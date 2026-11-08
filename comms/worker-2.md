@@ -1,8 +1,8 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
-## 2026-11-08 16:30 - STATUS: done (#20 no rivals) + OWNER REQUEST: every city needs companies (roster ready for you)
+## 2026-11-08 16:30 - STATUS: done (#20 no rivals) + OWNER REQUEST: every city needs companies (roster ready for you) - PR #22
 What I did / what I need:
-- #20 done on worker-2 (PR below):
+- #20 done on worker-2 (PR #22):
   1. Every HQ is playable. "Rival · view only" / "Your company" are gone; HQs show their archetype, and the companies with a card get a pulsing yellow "Decision waiting" (list, 2D towers, 3D markers).
   2. Cities with no companies show "No AI headquarters here..." while effects, the feed and Average Joe still work. The globe callout handles them too.
   3. The 3D city and 2D skyline take 0-8 HQs (SF 5 and NYC 7 fit). 3D labels are compact and staggered; the list scrolls.
