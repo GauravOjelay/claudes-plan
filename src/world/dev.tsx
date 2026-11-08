@@ -10,7 +10,8 @@
 import { StrictMode, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { CityEffectKind, WorldState } from '../contracts';
-import { mockDecisions, mockWorldState } from '../contracts/mocks';
+import { mockDecisions, mockJoe, mockWorldState } from '../contracts/mocks';
+import type { JoeSituation } from '../contracts';
 import { CityTimeline } from './CityTimeline';
 import { CityView } from './CityView';
 import { useEventDemo } from './demo';
@@ -98,6 +99,9 @@ function Dev() {
   });
   const state = live ? demo : fixed;
   const mode = params.get('mode') === '2d' ? '2d' : '3d';
+  const view = params.get('view') === 'joe' ? 'joe' : 'city';
+  const situation = (params.get('situation') ?? mockJoe.situation) as JoeSituation;
+  const joe = { ...mockJoe, cityId, situation };
 
   return (
     <div className="dev">
@@ -135,6 +139,15 @@ function Dev() {
             )}
           </>
         )}
+        {route === 'city' && (
+          <label className="dev-field">
+            Joe
+            <select value={view === 'joe' ? situation : ''} onChange={(e) => nav(e.target.value ? `#city?city=${cityId}&view=joe&situation=${e.target.value}` : `#city?city=${cityId}`)}>
+              <option value="">(city view)</option>
+              {(['prosperous', 'normal', 'struggling', 'blackout', 'protests', 'flood', 'war', 'surveillance', 'outbreak'] as JoeSituation[]).map((k) => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </label>
+        )}
         <span className="dev-live" data-on={live}>{live ? 'Live event demo' : 'Fixed effects'}</span>
       </header>
 
@@ -145,8 +158,8 @@ function Dev() {
           initialOverlays={(params.get('overlays')?.split(',').filter(Boolean) as MapOverlay[]) ?? []} initialMode={mode} />
       )}
       {route === 'city' && (
-        <CityView key={`${cityId}:${mode}`} state={state} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions}
-          onSelectCompany={() => undefined} onBack={() => nav('#map')} initialMode={mode} />
+        <CityView key={`${cityId}:${mode}:${view}:${situation}`} state={state} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions}
+          onSelectCompany={() => undefined} onBack={() => nav('#map')} initialMode={mode} joe={joe} initialView={view} />
       )}
       {route === 'timeline' && <CityTimeline state={devBase} cityId={cityId} cities={ALL_CITIES} decisions={mockDecisions} />}
     </div>

@@ -1,4 +1,5 @@
-import { Component, Suspense, lazy, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Suspense, lazy, useMemo, useState, type KeyboardEvent } from 'react';
+import { FallbackChip, NO_WEBGL, ThreeBoundary, hasWebGL } from './ThreeFallback';
 import type { CityInfo, RegionId, WorldState } from '../contracts';
 import { ALL_CITIES } from './roster';
 import { MAP_H, MAP_W, OTHER_LAND_PATH, REGION_LABEL_POS, REGION_NAMES, REGION_PATHS } from './geo';
@@ -10,24 +11,6 @@ export { rampColor, regionMetric } from './mapMetrics';
 
 const WorldMap3D = lazy(() => import('./map3d/WorldMap3D'));
 
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
-class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
-}
 import './world.css';
 
 
@@ -46,16 +29,25 @@ export interface WorldMapProps {
 
 export function WorldMap(props: WorldMapProps) {
   const { cities = ALL_CITIES, initialMode = '3d' } = props;
-  const [mode] = useState(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
-  const flat = <WorldMap2D {...props} />;
+  const webgl = useMemo(hasWebGL, []);
+  const [mode, setMode] = useState<'3d' | '2d'>(() => (initialMode === '3d' && webgl ? '3d' : '2d'));
+  const [reason, setReason] = useState<string | null>(() => (initialMode === '3d' && !webgl ? NO_WEBGL : null));
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setReason(null); setMode('3d'); setAttempt((a) => a + 1); };
+  const flat = (
+    <div style={{ position: 'relative' }}>
+      <WorldMap2D {...props} />
+      {reason && <FallbackChip reason={reason} onRetry={webgl ? retry : undefined} />}
+    </div>
+  );
   if (mode === '2d') return flat;
   return (
     <div className="w-root" style={{ padding: 12 }}>
-      <Fallback fallback={flat}>
+      <ThreeBoundary key={attempt} fallback={flat} onError={(r) => { setReason(r); setMode('2d'); }}>
         <Suspense fallback={<div className="wm-wrap wm-loading">Loading map…</div>}>
           <WorldMap3D state={props.state} onSelectCity={props.onSelectCity} cities={cities} initialMetric={props.initialMetric} initialOverlays={props.initialOverlays} onOpenHQ={props.onOpenHQ} />
         </Suspense>
-      </Fallback>
+      </ThreeBoundary>
     </div>
   );
 }
