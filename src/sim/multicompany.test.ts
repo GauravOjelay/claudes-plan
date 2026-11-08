@@ -125,18 +125,26 @@ describe('takeover risk and endings follow the companies the player directs', ()
     few.companies[1].vars.money = -1;
     expect(NONE(few, [], rngForTurn(few)).status.over).toBe(false);
     const most = structuredClone(s);
-    for (const c of most.companies.slice(0, 10)) c.vars.money = -1;
+    const n = most.companies.length;
+    const half = Math.floor(n / 2) + 1;
+    for (const c of most.companies.slice(0, half)) c.vars.money = -1;
     const over = NONE(most, [], rngForTurn(most));
     expect(over.status).toMatchObject({ over: true, ending: 'bankrupt' });
-    expect(over.status.reason).toContain('10 of your 17 companies');
+    expect(over.status.reason).toContain(`${half} of your ${n} companies`);
   });
-  it('the state takes the companies over when most of them sit in a region regulated to the limit', () => {
+  it('the state takes the companies over when most of the ones the player steers sit in a region regulated to the limit', () => {
     const s = fresh();
-    s.regions.US.regulationStrictness = 100; // 14 of the 17 companies are in the US
+    s.regions.US.regulationStrictness = 100; // the flagship alone is in the US
     expect(NONE(s, [], rngForTurn(s)).status.ending).toBe('nationalised');
     const t = fresh();
-    t.regions.UK.regulationStrictness = 100; // one company: not enough
+    t.regions.UK.regulationStrictness = 100; // a UK firm the player does not steer: not counted
     expect(NONE(t, [], rngForTurn(t)).status.over).toBe(false);
+    const mixed = fresh();
+    mixed.choiceLog = ['cancer', 'twelvelabs', 'shallowseek'].map((companyId) => ({ year: 2026, decisionId: 'x', optionId: 'y', companyId }));
+    mixed.regions.US.regulationStrictness = 100; // 2 of the 4 steered companies: not a majority
+    expect(NONE(mixed, [], rngForTurn(mixed)).status.over).toBe(false);
+    mixed.choiceLog.push({ year: 2026, decisionId: 'x', optionId: 'y', companyId: 'pineapple' }); // 3 of 5
+    expect(NONE(mixed, [], rngForTurn(mixed)).status.ending).toBe('nationalised');
   });
 });
 

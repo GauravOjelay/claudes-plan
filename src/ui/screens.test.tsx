@@ -178,14 +178,14 @@ describe('PhotoBoardroom', () => {
     for (const [city, keys] of byCity) expect(new Set(keys).size, city).toBe(keys.length);
   });
 
-  it('keeps the sign inside the picture and clear of the stats panel when mirrored', () => {
+  it('keeps the sign inside the picture and always clear of the stats panel on the left', () => {
     for (const c of COMPANY_ROSTER) {
       const l = photoLook(c);
       const a = signArea(HQ_PHOTOS[l.photo], l.flip);
       expect(a.x).toBeGreaterThanOrEqual(0);
       expect(a.x + a.w).toBeLessThanOrEqual(100);
       expect(a.y + a.h).toBeLessThanOrEqual(100);
-      if (l.flip) expect(a.x).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X);
+      expect(a.x, c.id).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X);
     }
   });
 

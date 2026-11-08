@@ -116,11 +116,10 @@ describe('event demo envelopes', () => {
 });
 
 describe('city roster (no rivals)', () => {
-  it('every city resolves its own companies by reference; cities may have none; HQ order puts waiting first', async () => {
+  it('every city resolves its own companies by reference; HQ order puts waiting first', async () => {
     const { ALL_CITIES, staticCompany } = await import('./roster');
     const { orderHqs } = await import('./util');
     expect(ALL_CITIES.find((c) => c.id === 'nyc')!.companyIds.length).toBe(7);
-    expect(ALL_CITIES.some((c) => c.companyIds.length === 0)).toBe(true);
     for (const c of ALL_CITIES) for (const id of c.companyIds) expect(staticCompany(id)?.homeCity).toBe(c.id);
     const sf = ALL_CITIES.find((c) => c.id === 'sf')!.companyIds.map((id) => staticCompany(id)!);
     expect(orderHqs(sf, 'closedai')[0].id).toBe('closedai');
@@ -149,20 +148,36 @@ describe('pathway labels', () => {
   });
 });
 
-describe('roster proposal (every city gets companies)', () => {
-  it('fills every empty city, keeps ids unique and matches city regions', async () => {
-    const { PROPOSED_COMPANIES, PROPOSED_CITY_COMPANIES } = await import('./proposals/companies');
+describe('roster (every city has companies)', () => {
+  const CITIES_WITHOUT_OWNER_COMPANIES = ['beijing', 'paris', 'munich', 'moscow', 'dubai', 'cairo', 'lagos', 'bangalore', 'singapore', 'tokyo', 'mexicocity', 'saopaulo'];
+  it('gives every city at least one company, with unique ids and matching regions', async () => {
     const { CITIES, COMPANY_ROSTER } = await import('../contracts/cities');
-    const ids = [...COMPANY_ROSTER, ...PROPOSED_COMPANIES].map((c) => c.id);
+    const ids = COMPANY_ROSTER.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const city of CITIES) {
-      const total = city.companyIds.length + (PROPOSED_CITY_COMPANIES[city.id]?.length ?? 0);
-      expect(total, city.id).toBeGreaterThanOrEqual(3);
+      expect(city.companyIds.length, city.id).toBeGreaterThanOrEqual(1);
+      for (const id of city.companyIds) {
+        const c = COMPANY_ROSTER.find((x) => x.id === id)!;
+        expect(c, id).toBeDefined();
+        expect(c.homeCity, id).toBe(city.id);
+        expect(c.homeRegion, id).toBe(city.region);
+        expect(c.playable, id).toBe(true);
+        if (id !== 'closedai') expect(c.vars.aiCapability, id).toBeLessThanOrEqual(9);
+      }
     }
-    for (const c of PROPOSED_COMPANIES) {
-      const city = CITIES.find((k) => k.id === c.homeCity)!;
-      expect(city, c.id).toBeDefined();
-      expect(c.homeRegion).toBe(city.region);
+    // every company is listed by exactly one city
+    expect(CITIES.flatMap((c) => c.companyIds).sort()).toEqual([...ids].sort());
+  });
+  it('gives the 12 formerly empty cities 2-3 companies each, with a mix of archetypes', async () => {
+    const { CITIES, COMPANY_ROSTER } = await import('../contracts/cities');
+    for (const id of CITIES_WITHOUT_OWNER_COMPANIES) {
+      const city = CITIES.find((c) => c.id === id)!;
+      expect(city.companyIds.length, id).toBeGreaterThanOrEqual(2);
+      expect(city.companyIds.length, id).toBeLessThanOrEqual(3);
+      const kinds = new Set(city.companyIds.map((cid) => COMPANY_ROSTER.find((c) => c.id === cid)!.archetype));
+      expect(kinds.size, id).toBeGreaterThanOrEqual(2);
     }
+    const all = new Set(COMPANY_ROSTER.map((c) => c.archetype));
+    expect(all.has('softwareCompany') && all.has('financeFirm')).toBe(true);
   });
 });

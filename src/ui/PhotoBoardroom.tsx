@@ -78,7 +78,7 @@ function hashString(s: string): number {
 /** The stats panel covers the left ~25% of the HQ screen, so a mirrored sign must start right of it. */
 export const MIN_FLIPPED_SIGN_X = 28;
 
-const ARCHETYPES: Company['archetype'][] = ['frontierLab', 'chipMaker', 'researchLab', 'stateBackedLab'];
+const ARCHETYPES: Company['archetype'][] = ['frontierLab', 'chipMaker', 'researchLab', 'stateBackedLab', 'softwareCompany', 'financeFirm'];
 
 /** The photo variation of one company. The three companies of a city always differ in zoom. */
 export function photoLook(company: Pick<Company, 'id' | 'archetype' | 'homeCity'>): PhotoLook {
@@ -89,9 +89,11 @@ export function photoLook(company: Pick<Company, 'id' | 'archetype' | 'homeCity'
   const area = HQ_PHOTOS[photo].logoArea;
   // Mirror only when the sign stays clear of the stats panel on the left (x >= MIN_FLIPPED_SIGN_X).
   const canFlip = 100 - area.x - area.w >= MIN_FLIPPED_SIGN_X;
+  // A photo whose sign sits under the stats panel (Dubai, Europe) is always mirrored.
+  const mustFlip = area.x < MIN_FLIPPED_SIGN_X;
   return {
     photo,
-    flip: canFlip && (((h >>> 3) + a) & 1) === 1,
+    flip: canFlip && (mustFlip || (((h >>> 3) + a) & 1) === 1),
     // zoom steps by archetype, so same-city companies never share a framing
     zoom: 1.03 + a * 0.02 + bit(5, 5) * 0.012,
     dx: (bit(9, 7) - 0.5) * 0.03,
