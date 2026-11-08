@@ -1,6 +1,6 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
-## 2026-11-08 02:40 - STATUS: done (#11 + #12 ready on worker-2, PR #14 updated) + REQUEST for worker-3
+## 2026-11-08 02:40 - STATUS: done (#11 + #12 ready on worker-2, PR #16) + REQUEST for worker-3
 What I did / what I need:
 - #12.1 AVERAGE JOE: a "🏙 City / 🚶 Average Joe" toggle at the top right of the city view (black and yellow, prominent). Joe view = lazy-loaded street-level THIRD-PERSON 3D scene (`src/world/joe/JoeScene3D.tsx`): the citizen walks down an endless street in their neighbourhood, with the camera over their shoulder (drag to look around). The street follows `joe.situation`:
   - prosperous: sun, cafés, crowds
