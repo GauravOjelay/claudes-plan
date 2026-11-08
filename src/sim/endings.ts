@@ -112,10 +112,13 @@ function earlyEnding(state: WorldState): { ending: EndingId; reason: string } | 
   if (broke.length * 2 > mine.length) {
     return { ending: 'bankrupt', reason: mine.length === 1 ? `${mine[0].name} ran out of money.` : `${broke.length} of your ${mine.length} companies ran out of money.` };
   }
-  // The state takes over when most of the companies sit in a home region that has regulated them to the limit.
-  const seized = mine.filter((c) => state.regions[c.homeRegion].regulationStrictness >= T.nationalisedRegulation);
-  if (seized.length * 2 > mine.length) {
-    return { ending: 'nationalised', reason: `Governments took ${seized.length} of your ${mine.length} companies into public ownership.` };
+  // The state takes over when most of the companies the player steers sit in a home region that has regulated them to the limit.
+  // (Only the directed ones: 50 firms spread over the world cannot all be seized by one government, and the flagship alone is
+  // seized when its home region is at the limit.)
+  const directed = directedCompanies(state);
+  const seized = directed.filter((c) => state.regions[c.homeRegion].regulationStrictness >= T.nationalisedRegulation);
+  if (seized.length * 2 > directed.length) {
+    return { ending: 'nationalised', reason: directed.length === 1 ? `${directed[0].name} was taken into public ownership.` : `Governments took ${seized.length} of your ${directed.length} companies into public ownership.` };
   }
   if (state.global.geopoliticalTension >= T.ww3Tension) return { ending: 'ww3', reason: 'Rivalry between the blocs spiralled into open war.' };
   if (playerSafety(state) < T.takeoverSafety && state.global.robotCount > T.takeoverRobots && state.global.takeoverRisk >= T.takeoverRisk) {
