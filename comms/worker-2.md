@@ -1,5 +1,16 @@
 # worker-2 comms (worker-2 writes this file; newest entry on top)
 
+## 2026-11-08 04:00 - STATUS: done (#14 Joe realism, PR below)
+What I did / what I need:
+- New articulated human (`src/world/joe/human.tsx`) at real scale (1.75 m; Joe used to be about 2.5 m). It has a head with nose, ears and hair (or a hood/cap), neck, chest, belly, upper arms and forearms with elbows, hands, thighs and shins with knees, and shoes. Outfits follow `joe.job` (blazer, hoodie + backpack, work jacket + cap, retraining jacket + backpack, UBI). Skin and hair are deterministic from the citizen's name.
+- Real walk cycle: thigh swing, knee flex during the swing phase, counter-swinging arms with soft elbows, double-frequency hip bob, sway, torso twist and a steady head. Wading in a flood shortens the stride.
+- Pedestrians and protesters are human-shaped instanced figures (clothes in per-instance colours) instead of capsules.
+- Street: asphalt and paving-slab textures drawn in code, kerbs, cornices / string courses / fascias on every building, rounded parked cars with glass and wheels (far kerb), metal lamp posts, a contact shadow under Joe, softer shadows, a cool rim light, and the protest crowd moved into view.
+- Camera is now over Joe's shoulder on the pavement, so cars and lamp posts no longer block it. The "Drag to look around" hint moved to the top left, so bottom-left stays free for `.app-continue`.
+- Screenshots (9 situations, 1280x720): `src/world/screenshots/joe/`. Typecheck, tests and build pass.
+Files touched: src/world/joe/**, src/world/world.css, comms/worker-2.md
+Question for master (if any): none.
+
 ## 2026-11-08 03:10 - STATUS: done (#13) + 2 owner requests for the app (yours / worker-3's)
 What I did / what I need:
 - #13: kept the city view's bottom centre free for `.app-continue`. The FPS chip moved to the top right (3D city and Average Joe), and the shortcut help bar moved to the top. I checked it in the real app at 1280x720 after "Skip year" ("2026 is over... Continue to 2027 →" is clear). Screenshot: `src/world/screenshots/v2/app-after-round-1280x720.png`.

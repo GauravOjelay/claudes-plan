@@ -435,3 +435,4 @@ button.w-feed-row:hover { filter: brightness(1.15); }
 .w3-wrap .w-fps { left: auto; right: 12px; bottom: auto; top: 52px; transform: none; }
 .w3-help { bottom: auto; top: 56px; }
 .joe-wrap .w-fps { top: 12px; right: 12px; }
+.joe-hint { bottom: auto; top: 50px; }
