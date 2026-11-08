@@ -390,3 +390,48 @@ button.w-feed-row:hover { filter: brightness(1.15); }
 .w-tl2-node.w-tl2-node { color: var(--w-text); }
 .w-feed-row.w-feed-row { color: inherit; }
 .w-scene-wrap > svg.w-scene { height: var(--w-scene-h); width: 100%; background: #050a16; }
+
+/* ---------- City / Average Joe toggle (prominent, top right of the city view) ---------- */
+.w-view-toggle { margin-left: auto; display: inline-flex; padding: 3px; border-radius: 12px; background: #000; box-shadow: 0 0 0 2px #ffd60a33; }
+.w-view-toggle.w-view-toggle button { font: 700 13px system-ui, sans-serif; color: #e7ecf5; background: transparent; border: 0; border-radius: 9px; padding: 7px 14px; cursor: pointer; }
+.w-view-toggle.w-view-toggle button[aria-pressed='true'] { background: #ffd60a; color: #111; }
+.w-city-title .w-mode { margin-left: 8px; }
+.w-seg.w-seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- 3D-off chip ---------- */
+.w-fallback-chip { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 8; display: flex; gap: 8px; align-items: center; font: 600 12px system-ui, sans-serif; color: #fff; background: rgba(20, 10, 0, 0.85); border: 1px solid #ffb547; border-radius: 10px; padding: 6px 10px; }
+.w-fallback-chip.w-fallback-chip button { font: inherit; color: #2a1600; background: #ffb547; border: 0; border-radius: 7px; padding: 4px 9px; cursor: pointer; }
+
+/* ---------- Average Joe ---------- */
+.joe-wrap { background: #9fb3c8; }
+.joe-situation { position: absolute; top: 12px; left: 12px; font: 800 13px system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: rgba(0, 0, 0, 0.65); border-radius: 10px; padding: 6px 12px; }
+.joe-hint { position: absolute; bottom: 12px; left: 12px; font: 12px system-ui, sans-serif; color: #fff; background: rgba(0, 0, 0, 0.45); border-radius: 8px; padding: 4px 8px; pointer-events: none; }
+.joe-card { position: absolute; right: 12px; bottom: 12px; width: 290px; max-width: calc(100% - 24px); padding: 12px 14px; border-radius: 14px; color: #f2f2f7; background: rgba(12, 14, 20, 0.84); border: 1px solid rgba(255, 255, 255, 0.16); backdrop-filter: blur(10px); font: 13px system-ui, sans-serif; z-index: 5; }
+.joe-card header { display: flex; flex-direction: column; margin-bottom: 8px; }
+.joe-card header strong { font-size: 17px; }
+.joe-card header span { color: #a1a1a6; text-transform: capitalize; }
+.joe-card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; align-items: center; }
+.joe-card dt { color: #a1a1a6; }
+.joe-card dd { margin: 0; text-align: right; }
+.joe-mood { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.joe-mood > i { display: block; height: 100%; border-radius: 4px; transition: width 400ms; }
+.joe-card ul { margin: 10px 0 0; padding: 8px 0 0; list-style: none; border-top: 1px solid rgba(255, 255, 255, 0.12); display: grid; gap: 5px; font-style: italic; color: #dcdce2; }
+.joe-2d { position: relative; height: var(--w-scene-h); background: linear-gradient(#8fa8c0, #c9b9a3 70%, #6b6458 70%); display: flex; align-items: center; justify-content: center; }
+.joe-2d-person { font-size: 90px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)); }
+.joe-card.static { position: absolute; }
+
+/* ---------- "Your move" = the obvious first click: white subtitle, gentle pulse ---------- */
+.w-cta.w-cta { color: #fff; }
+.w-cta.w-cta, .w-cta.w-cta * { text-shadow: none; }
+.w-cta { animation: w-cta-glow 2.4s ease-in-out infinite, w-cta-pulse 2.4s ease-in-out infinite; }
+@keyframes w-cta-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { .w-cta { animation: none; } }
+
+/* ---------- globe: keep the YEAR chip clear of the toolbar at 1280px ---------- */
+.wm-globe .w-year-badge { left: auto; right: 72px; transform: none; }
+.wm-globe .wm-feed { top: 92px; }
+
+/* Keep the bottom-centre of the city view free for the app's floating Continue button (.app-continue). */
+.w3-wrap .w-fps { left: auto; right: 12px; bottom: auto; top: 52px; transform: none; }
+.w3-help { bottom: auto; top: 56px; }
+.joe-wrap .w-fps { top: 12px; right: 12px; }

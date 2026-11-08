@@ -1,5 +1,7 @@
-import { Component, Suspense, lazy, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
-import type { CityEffect, CityEffectKind, CityInfo, Company, Decision, WorldState } from '../contracts';
+import { Suspense, lazy, useMemo, useState, type KeyboardEvent } from 'react';
+import type { AverageJoe, CityEffect, CityEffectKind, CityInfo, Company, Decision, WorldState } from '../contracts';
+import { mockJoe } from '../contracts/mocks';
+import { CRASHED, FallbackChip, NO_WEBGL, ThreeBoundary, hasWebGL } from './ThreeFallback';
 import { ALL_CITIES } from './roster';
 import { CityTimeline } from './CityTimeline';
 import { EFFECT_RENDERERS } from './effects';
@@ -10,28 +12,9 @@ import { EventFeed } from './EventFeed';
 import './world.css';
 
 const CityScene3D = lazy(() => import('./city3d/CityScene3D'));
+const JoeScene3D = lazy(() => import('./joe/JoeScene3D'));
 
 export type CityRenderMode = '3d' | '2d';
-
-function hasWebGL(): boolean {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
-/** If the 3D scene throws (driver issue etc.), fall back to the 2D skyline instead of a blank screen. */
-class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
-}
 
 export interface CityViewProps {
   state: WorldState;
@@ -45,6 +28,9 @@ export interface CityViewProps {
   showTimeline?: boolean;
   /** 3D is the default (DECISIONS.md #4); 2D SVG skyline is the fallback. */
   initialMode?: CityRenderMode;
+  /** The city's average citizen for the "Average Joe" view. Until the sim ships `averageJoe`, `mockJoe` is used. */
+  joe?: AverageJoe;
+  initialView?: 'city' | 'joe';
 }
 
 type Fx = Map<CityEffectKind, CityEffect>;
@@ -250,9 +236,15 @@ export function CitySkyline({ state, city, onSelectCompany }: { state: WorldStat
   );
 }
 
-export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d' }: CityViewProps) {
+export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, decisions, onBack, showTimeline = true, initialMode = '3d', joe, initialView = 'city' }: CityViewProps) {
   const [statsOpen, setStatsOpen] = useState(false);
-  const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && hasWebGL() ? '3d' : '2d'));
+  const webgl = useMemo(hasWebGL, []);
+  const [mode, setMode] = useState<CityRenderMode>(() => (initialMode === '3d' && webgl ? '3d' : '2d'));
+  const [reason, setReason] = useState<string | null>(() => (initialMode === '3d' && !webgl ? NO_WEBGL : null));
+  const [attempt, setAttempt] = useState(0);
+  const [view, setView] = useState<'city' | 'joe'>(initialView);
+  const crashed = () => { setReason(CRASHED); setMode('2d'); };
+  const retry3D = () => { setReason(null); setMode('3d'); setAttempt((a) => a + 1); };
   const city = cities.find((c) => c.id === cityId);
   if (!city) {
     return (
@@ -265,6 +257,7 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
   const region = state.regions[city.region];
   const companies = companiesInCity(state, city);
   const player = state.companies.find((c) => c.id === state.playerCompanyId);
+  const joeData: AverageJoe = joe ?? { ...mockJoe, cityId: city.id };
 
   return (
     <div className="w-root">
@@ -272,23 +265,38 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
         {onBack && <button className="w-btn" onClick={onBack}>← World map</button>}
         <h2>{city.name}</h2>
         <span className="w-sub">{REGION_NAMES[city.region]} · {state.year}</span>
-        <div className="w-seg w-mode" role="group" aria-label="City view mode">
-          <button aria-pressed={mode === '3d'} onClick={() => setMode('3d')}>3D</button>
-          <button aria-pressed={mode === '2d'} onClick={() => setMode('2d')}>2D</button>
+        <div className="w-view-toggle" role="group" aria-label="City or Average Joe view">
+          <button aria-pressed={view === 'city'} onClick={() => setView('city')}>🏙 City</button>
+          <button aria-pressed={view === 'joe'} onClick={() => setView('joe')}>🚶 Average Joe</button>
+        </div>
+        <div className="w-seg w-mode" role="group" aria-label="3D or 2D">
+          <button aria-pressed={mode === '3d'} disabled={!webgl} onClick={retry3D}>3D</button>
+          <button aria-pressed={mode === '2d'} onClick={() => { setMode('2d'); setReason('switched off by you'); }}>2D</button>
         </div>
       </div>
       <div className="w-city-layout">
         <div className="w-scene-wrap">
-          {mode === '3d' ? (
-            <Fallback fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
+          {view === 'joe' ? (
+            mode === '3d' ? (
+              <ThreeBoundary key={`joe${attempt}`} onError={crashed} fallback={<JoeCard2D joe={joeData} />}>
+                <Suspense fallback={<JoeCard2D joe={joeData} />}>
+                  <JoeScene3D joe={joeData} />
+                </Suspense>
+              </ThreeBoundary>
+            ) : (
+              <JoeCard2D joe={joeData} />
+            )
+          ) : mode === '3d' ? (
+            <ThreeBoundary key={`city${attempt}`} onError={crashed} fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
               <Suspense fallback={<CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />}>
-                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} onRequest2D={() => setMode('2d')} />
+                <CityScene3D state={state} city={city} onSelectCompany={onSelectCompany} onRequest2D={() => { setMode('2d'); setReason('running slowly on this device'); }} />
               </Suspense>
-            </Fallback>
+            </ThreeBoundary>
           ) : (
             <CitySkyline state={state} city={city} onSelectCompany={onSelectCompany} />
           )}
-          {region && (
+          {mode === '2d' && reason && <FallbackChip reason={reason} onRetry={webgl ? retry3D : undefined} />}
+          {region && view === 'city' && (
             <section className={`w-statcard${statsOpen ? ' open' : ''}`} aria-label={`${REGION_NAMES[city.region]} stats`}>
               <button className="w-statcard-head" aria-expanded={statsOpen} onClick={() => setStatsOpen((o) => !o)}>
                 <span>{REGION_NAMES[city.region]}</span><span aria-hidden>{statsOpen ? '▾' : '▸'}</span>
@@ -337,6 +345,24 @@ export function CityView({ state, cityId, onSelectCompany, cities = ALL_CITIES, 
         </aside>
       </div>
       {showTimeline && <CityTimeline state={state} cityId={city.id} cities={cities} decisions={decisions} />}
+    </div>
+  );
+}
+
+/** Flat version of the Average Joe card (2D fallback or while the 3D street loads). */
+function JoeCard2D({ joe }: { joe: AverageJoe }) {
+  const mood = Math.max(0, Math.min(100, joe.mood));
+  return (
+    <div className="joe-2d">
+      <div className="joe-2d-person" aria-hidden>🚶</div>
+      <section className="joe-card static" aria-label={`Average Joe: ${joe.name}`}>
+        <header><strong>{joe.name}</strong><span>{joe.age} · {joe.occupation}</span></header>
+        <dl>
+          <dt>Income</dt><dd>${Math.round(joe.income).toLocaleString()} / yr</dd>
+          <dt>Mood</dt><dd className="joe-mood"><i style={{ width: `${mood}%`, background: mood >= 60 ? '#4fd18b' : mood >= 35 ? '#ffb547' : '#ff6b5b' }} /></dd>
+        </dl>
+        {joe.lines.length > 0 && <ul>{joe.lines.slice(0, 3).map((l, i) => <li key={i}>“{l}”</li>)}</ul>}
+      </section>
     </div>
   );
 }
