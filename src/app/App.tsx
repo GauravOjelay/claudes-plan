@@ -119,6 +119,10 @@ export function App() {
       {screen === 'map' && (
         <WorldMap
           state={state}
+          onOpenHQ={(id: string) => {
+            setHqId(id);
+            setScreen('hq');
+          }}
           onSelectCity={(id) => {
             setCityId(id);
             setScreen('city');
@@ -130,6 +134,7 @@ export function App() {
           state={state}
           cityId={cityId}
           joe={averageJoe(state, cityId)}
+          waitingCompanyIds={playable.filter((c) => openCardsFor(c.id).length > 0).map((c) => c.id)}
           decisions={ALL_DECISIONS}
           onSelectCompany={(id) => {
             setHqId(id);

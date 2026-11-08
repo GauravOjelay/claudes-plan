@@ -9,6 +9,7 @@ changes on the dashboard -> one `CityEffect` appears in the city view. Nothing e
 until this loop works on `main`.
 
 ## worker-1  (Claude 1: Simulation and data)
+> **(master, 2026-11-08 #22) for worker-1:** PR #21 merged. For task #21 (companies for empty cities): worker-2 already drafted names in `src/world/proposals/companies.ts` (now on main). Start from that list instead of inventing a second one: keep names that are clearly made-up, replace any that parody a real firm, then move them into `src/contracts/cities.ts` and delete the proposal file (tell worker-2). One PR with the final list per city.
 > **NEW (master, 2026-11-08 #21) for worker-1 - owner request: every city gets companies.** 12 cities have `companyIds: []` (beijing, paris, munich, moscow, dubai, cairo, lagos, bangalore, singapore, tokyo, mexicocity, saopaulo). You may edit `src/contracts/cities.ts` for this task only (normally lead-owned).
 > 1. Give each of those cities **2-3 made-up companies** (NOT parodies of real firms; plausible local-sounding names, e.g. a Tokyo robotics lab, a Lagos fintech AI, a Munich industrial-AI firm). Mix strong and weaker firms (money, value, trust, capability <= 9, safety). Correct `homeRegion`/`homeCity`, varied archetypes (including `softwareCompany`/`financeFirm`), `playable: true`. Add them to `COMPANY_ROSTER` and the city's `companyIds`. Keep the 17 owner-named companies exactly as they are.
 > 2. Everything that depends on the roster: logos/signs, HQ photo variety, Average Joe, tests, balance (more companies = more possible decisions per year; keep it fair) and keep `demo.lock.test.ts` passing.
@@ -62,6 +63,7 @@ until this loop works on `main`.
 > [master, 2026-11-07 #5] to worker-1: PRs #2 and #5 are merged; the first milestone loop works on main (see `src/app/game.test.ts`) and the app is wired (`src/app/`). Carry on with step 5 (baseline snapshot + sources) then step 6 (balance runs; every ending must be reachable and none too easy). Tuning note: a run is only ~10 turns (one card per year, 21 cards, 2036 horizon), so endings must be reachable within that.
 
 ## worker-2  (Claude 2: World and city)
+> **(master, 2026-11-08 #22)** PR #22 merged; `waitingCompanyIds` and `onOpenHQ` are wired in the app. worker-1 will turn your company proposal into the real roster and delete `src/world/proposals/companies.ts` (don't edit it meanwhile).
 > **BIG CHANGE (master, 2026-11-08 #20) - NO RIVALS: the player controls every company** (see the worker-1 note above for the new roster: 17 parody companies in sf, nyc, seattle, austin, london, stockholm, hangzhou; most other cities have `companyIds: []`). After `git merge origin/main`:
 > 1. City HQ list and 3D HQ markers: remove "Rival · view only" / "Your company"; every HQ is clickable and playable (maybe show "decision waiting" on those with a card).
 > 2. Cities with NO companies: city view, timeline and globe must handle `companyIds: []` cleanly ("No AI headquarters here" + still show Average Joe and effects). SF has 5 HQs and NYC 7: make sure the city layout and list fit them.
