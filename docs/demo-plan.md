@@ -14,9 +14,9 @@ Chrome, full screen (F11), dark mode, sound on. Open ALL tabs first so the 3D ha
 | 1 Live start | http://localhost:4173/?seed=44&fps=0 |
 | 2 After the solar boom (2029) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,openMaterials,clean&at=2029 |
 | 3 What-if, one choice changed (2032) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty&at=2032 |
-| 4 War | (worker-1 adds the link to `data/demo.md`; paste it here) |
+| 4 War (2034, tension 90, red alert; open Average Joe for the war street) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack+mvidia:grayChips,keepMaterials+mvidia:sellAll,fossil+mvidia:hoardChips,noNet+mvidia:hype,skipSafety+mvidia:skipSecurity,race+mvidia:stockpile,ignoreWarning+mvidia:openUp,fundScience+mvidia:offence&at=2034 |
 | 5 Good ending (Abundance Utopia ~69) | http://localhost:4173/?seed=44&fps=0&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop,acceptRules&at=end |
-| 6 Bad ending | (war link with `&at=end`) |
+| 6 Bad ending | PENDING: worker-1 is adding a tested link that ends in World War (the war link with `at=end` currently ends in Corporate Feudalism, not war). Fallback: show Tab 4 only. |
 
 
 ## The message
