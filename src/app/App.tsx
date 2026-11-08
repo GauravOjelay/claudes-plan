@@ -5,6 +5,7 @@ import { CityView, WorldMap } from '../world';
 import { Dashboard, EventModal, HQScreen, IntroScreen, HelpButton, HowToPlay, NewsTicker, TopBar, ReportCard, UiRoot, A11yControls } from '../ui';
 import './app.css';
 import { averageJoe } from '../sim';
+import { replayGame } from '../sim/replay';
 import { ALL_DECISIONS, availableDecisions, newGame, playYear } from './game';
 
 type Screen = 'map' | 'city' | 'hq' | 'dashboard';
@@ -17,15 +18,27 @@ function seedFromUrl(): number {
 
 export function App() {
   const [seed] = useState(seedFromUrl);
-  const [state, setState] = useState<WorldState>(() => newGame(seed));
-  const [screen, setScreen] = useState<Screen>('map');
-  const [cityId, setCityId] = useState('sf');
+  // Replay link (`?seed=44&replay=fastTrack,openMaterials&at=2032`): start with those choices already played (src/sim/replay.ts).
+  const [replay] = useState(() => {
+    const q = new URLSearchParams(window.location.search);
+    return replayGame(newGame(seed), q.get('replay'), q.get('at'), (s, id) => availableDecisions(s, ALL_DECISIONS, id));
+  });
+  const jumped = replay.played > 0;
+  const replayBanner = replay.error ? (
+    <div role="alert" style={{ position: 'fixed', left: 12, bottom: 12, zIndex: 80, maxWidth: 520, padding: '8px 12px', borderRadius: 8, background: '#7a1f1f', color: '#fff', font: '13px system-ui' }}>
+      Replay link stopped: {replay.error}
+    </div>
+  ) : null;
+  const [state, setState] = useState<WorldState>(replay.state);
+  // A replay lands where "End <year>" would: in the home city, with the Continue banner and that year's alerts.
+  const [screen, setScreen] = useState<Screen>(jumped && !replay.state.status.over ? 'city' : 'map');
+  const [cityId, setCityId] = useState(() => replay.state.companies.find((c) => c.id === replay.state.playerCompanyId)?.homeCity ?? 'sf');
   const [hqId, setHqId] = useState<string | undefined>(undefined);
-  const [popups, setPopups] = useState<EventLogEntry[]>([]);
-  const [started, setStarted] = useState(false);
+  const [popups, setPopups] = useState<EventLogEntry[]>(replay.lastEvents);
+  const [started, setStarted] = useState(jumped);
   const [help, setHelp] = useState(false);
   // After each round the player is shown their home city with a floating Continue button.
-  const [recap, setRecap] = useState(false);
+  const [recap, setRecap] = useState(jumped && !replay.state.status.over);
 
   // The player controls EVERY company. Each company can make one decision per year (its next card).
   // Choices are held until the player presses "End <year>" in the top bar, so they can look around first.
@@ -81,6 +94,7 @@ export function App() {
             setStarted(true);
             setHelp(true);
           }} />
+        {replayBanner}
       </UiRoot>
     );
   }
@@ -174,6 +188,8 @@ export function App() {
           </span>
         </button>
       )}
+
+      {replayBanner}
 
       {help && <HowToPlay onClose={() => setHelp(false)} />}
 

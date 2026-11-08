@@ -1,8 +1,24 @@
 # Demo script: "one early decision, a big consequence years later" (plan 11.3)
 
 **Length:** about 3 minutes. **Seed:** `44`. **Open:** `http://localhost:5173/?seed=44` (after `npm run dev`).
+**One-click links** (replay links, see the next section): the main run parked on any year, the what-if, and the end report.
 Locked by `src/sim/demo.lock.test.ts` and `data/demo.json`: if anyone retunes the sim or reorders `data/cards.json` and the demo breaks, that test fails.
 **Checked on screen:** years 2026 to 2029 were played in the real app on 2026-11-08 and matched this script (cards, options, alerts, money 492 / 483 / 413), and 2026 to 2028 were played again after the "round recap" change (the city opens by itself, floating Continue banner, both alerts, both chips). Years 2030 onwards follow the same steps and are locked by the test, but have not been clicked through by hand.
+**Replay links checked in the real app on 2026-11-08:** the what-if link lands on 2032 in San Francisco with the Continue banner and the card "What does the lab work on?"; the main report link opens the Abundance Utopia report (69); a wrong option shows a red note with the valid options.
+
+## Replay links (jump straight to a year)
+
+`/?seed=44&replay=<choices>&at=<year>` opens the game with those choices already played, so you never have to click through to get to the what-if or the end. It lands exactly where pressing **End <year>** would: in your home city (San Francisco), with that year's alert and the floating **"Continue to <year> →"** banner. (The intro and "How to play" are skipped.) The list has **one entry per year**, starting in 2026: the option id for the card your HQ shows that year, or `-` for no decision. `at=<year>` stops before that year is played; `at=end` plays on to the ending (the report card opens). Add `+cancer:optionId` to also decide for another company that year. If a link is wrong, a red note at the bottom says where it stopped and lists the valid options. Replays are the real sim: they match clicking through.
+
+| What you want | Link (after `npm run dev`) |
+|---|---|
+| **Parked on 2029** of the main run (the solar-boom beat just happened) | `http://localhost:5173/?seed=44&replay=fastTrack,openMaterials,clean&at=2029` |
+| **Parked on 2032, what-if** (open this in a second tab; pick the card, press End 2032 and the blackout comes back) | `http://localhost:5173/?seed=44&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty&at=2032` |
+| **The what-if report** (Slowdown, score about 67) | `http://localhost:5173/?seed=44&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty,fundScience,pauseAndFix,controlledRobots,humansInLoop,acceptRules&at=end` |
+| **The main run's report** (Abundance Utopia, score about 69) | `http://localhost:5173/?seed=44&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop,acceptRules&at=end` |
+| The main run, all years, parked after the last card (2036 to answer) | `http://localhost:5173/?seed=44&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop&at=2036` |
+
+Locked by `src/sim/replay.test.ts` (the links above are built from `data/demo.json` and the test fails if the story changes).
 
 ## The story in one breath
 
@@ -15,17 +31,17 @@ You fast-track a giant data centre in 2026. The grid can't take it and **San Fra
 3. The app now jumps to **your home city, San Francisco**, by itself. If something happened, an **alert** pops up over the city: read it out, press **Continue** in the alert. This is where you talk and point at the skyline and the numbers.
 4. When you are ready, click the floating **"Continue to 2027 →"** banner at the bottom of the screen. It takes you back to Your HQ with the next card.
 
-Since 2026-11-08 you could decide for all 17 companies, but the demo uses **ClosedAI only**: after you pick the option, the top bar also shows a small yellow "Decide for more companies" button. **Ignore it** and click the blue "End <year> →". (The score includes every company, so it is a little lower than before.)
+Since 2026-11-08 you could decide for all 17 companies, but the demo uses **ClosedAI only**: after you pick the option, the top bar also shows a small yellow "Decide for more companies" button. **Ignore it** and click the blue "End <year> →". (The score averages every company's success, 51 of them now, so the "companies" part is lower than it was with one company: about 49.)
 
 Never click **"Skip year"** (the small grey button next to the yellow "Make your … decision →" button): it throws the year away without answering and breaks the script. You never need the top-bar tabs during the run, except to open **Your HQ** the first time (or the yellow "Make your 2026 decision →" button, or the "Your move" button on the city screen).
 
 ## Before you go on stage (2 minutes)
 
 1. `npm run dev`, open `/?seed=44` in the browser you will present in. The seed is in the URL; reloading starts the same game again.
-2. Click **Start**. A "How to play" box appears: press **Got it**. (Its step 3 says each choice moves the year on; it doesn't any more. Don't read it out.)
+2. Click **Start**. A "How to play" box appears (three steps: Make decisions, Look around, End the year); press **Got it**. It matches the flow below.
 3. **Graphics:** the 3D globe and city need a moment to load the first time (it can feel stuck for a few seconds), then run smoothly on a normal machine (60 fps on the test machine). On a machine without a graphics card use the **2D** toggle at the top right of the City screen and the 2D map. The script is the same.
 4. **If you click a wrong option, reload the page and start again;** it takes 10 seconds.
-5. **Optional twist tab** (the "what if"): open a second tab at `/?seed=44` and pre-play it with the same options **except** pick **"Keep it proprietary"** on the materials card in 2027 (table at the end). Park it on 2032.
+5. **Optional twist tab** (the "what if"): open a second tab with the **what-if link** above (parked on 2032). No clicking needed.
 6. The real figures (US GDP, population, unemployment) come from IMF 2026 projections and are **not yet verified** (`data/VERIFY.md`). Don't read them out as facts.
 
 ## Which screen shows what
@@ -47,11 +63,11 @@ Never click **"Skip year"** (the small grey button next to the yellow "Make your
 | 2:10 | 2032 | **A misalignment warning** | **Pause and fix it** | Green alert: *"Leading powers sign a first AI treaty…"*. | "My AI is hiding something in tests. I stop and fix it." |
 | 2:20 | 2033 | **What does the lab work on?** | **Fund disease and space research** | Green alert: *"AI-designed treatments clear early trials…"*. | "Science over profit." |
 | 2:28 | 2034-36 | **The robotics rollout**, then **Who holds the controls?**, then **Regulators are circling** | **Limit them to controlled industries**, **Keep humans in the loop**, **Accept the rules** | No alerts. The solar boom stays on the skyline, fading slowly (0.4 → 0.2). The game ends after the 2036 card. | "Three quick ones: robots only where they're safe, humans stay in charge, I work with regulators." |
-| 2:45 | 2037 | **Report card** | none | **Abundance Utopia**, score about **71** (wellbeing 67, company 58, survival 91). | "2036. Abundance Utopia. And it began with two decisions in 2026 and 2027." |
+| 2:45 | 2037 | **Report card** | none | **Abundance Utopia**, score about **69** (wellbeing 67, companies 49, survival 91). | "2036. Abundance Utopia. And it began with two decisions in 2026 and 2027." |
 
 ## The twist (about 30 seconds; use the parked second tab)
 
-Switch to the second tab, parked on 2032. Say: "Same world, same seed, same choices, with one change in 2027: **I kept the model proprietary.** No solar boom. And look at 2032:" (the city opens by itself; Night) **the blackout is back** (new alert, strength 0.6). "Five years later the grid is still short, trust is down at 46, and the world ends as a **Slowdown** instead of a Utopia. One early decision, five years of difference."
+Switch to the second tab (the what-if link, parked on 2032: press **Continue to 2032**, pick **Fund disease and space research**, press **End 2032**). Say: "Same world, same seed, same choices, with one change in 2027: **I kept the model proprietary.** No solar boom. And look at 2032:" (the city opens by itself; Night) **the blackout is back** (new alert, strength 0.6). "Five years later the grid is still short, trust is down at 46, and the world ends as a **Slowdown** instead of a Utopia. One early decision, five years of difference."
 
 What the what-if run shows (all locked by the test):
 
@@ -62,7 +78,7 @@ What the what-if run shows (all locked by the test):
 | 2031 | Energy balance −2 and still short; the old blackout is almost gone (0.1) |
 | 2032 | **Second Blackout belt alert**, blackout back to 0.6. The card shown this year is **What does the lab work on?** (the misalignment card needs more capability and comes a year later) |
 | 2033-36 | Blackout lingers (0.5 → 0.2), US public trust 44-50 (main run: 62-68) |
-| End | **Slowdown**, score about 68 (main run: Utopia, about 71) |
+| End | **Slowdown**, score about 67 (main run: Utopia, about 69) |
 
 ## The exact options, in order (also in `data/demo.json`)
 
