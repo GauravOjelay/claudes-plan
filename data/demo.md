@@ -4,7 +4,7 @@
 **One-click links** (replay links, see the next section): the main run parked on any year, the what-if, and the end report.
 Locked by `src/sim/demo.lock.test.ts` and `data/demo.json`: if anyone retunes the sim or reorders `data/cards.json` and the demo breaks, that test fails.
 **Checked on screen:** years 2026 to 2029 were played in the real app on 2026-11-08 and matched this script (cards, options, alerts, money 492 / 483 / 413), and 2026 to 2028 were played again after the "round recap" change (the city opens by itself, floating Continue banner, both alerts, both chips). Years 2030 onwards follow the same steps and are locked by the test, but have not been clicked through by hand.
-**Replay links checked in the real app on 2026-11-08:** the what-if link lands on 2032 in San Francisco with the Continue banner and the card "What does the lab work on?"; the main report link opens the Abundance Utopia report (69); a wrong option shows a red note with the valid options.
+**Replay links checked in the real app on 2026-11-08 (the war link too: alert, then Average Joe shows the war street):** the what-if link lands on 2032 in San Francisco with the Continue banner and the card "What does the lab work on?"; the main report link opens the Abundance Utopia report (69); a wrong option shows a red note with the valid options.
 
 ## Replay links (jump straight to a year)
 
@@ -16,9 +16,16 @@ Locked by `src/sim/demo.lock.test.ts` and `data/demo.json`: if anyone retunes th
 | **Parked on 2032, what-if** (open this in a second tab; pick the card, press End 2032 and the blackout comes back) | `http://localhost:5173/?seed=44&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty&at=2032` |
 | **The what-if report** (Slowdown, score about 67) | `http://localhost:5173/?seed=44&replay=fastTrack,keepMaterials,clean,backUbi,buildSafeguards,treaty,fundScience,pauseAndFix,controlledRobots,humansInLoop,acceptRules&at=end` |
 | **The main run's report** (Abundance Utopia, score about 69) | `http://localhost:5173/?seed=44&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop,acceptRules&at=end` |
+| **War** (a second company, Mvidia, escalates; see the next section) | `http://localhost:5173/?seed=44&replay=fastTrack+mvidia:grayChips,keepMaterials+mvidia:sellAll,fossil+mvidia:hoardChips,noNet+mvidia:hype,skipSafety+mvidia:skipSecurity,race+mvidia:stockpile,ignoreWarning+mvidia:openUp,fundScience+mvidia:offence&at=2034` |
 | The main run, all years, parked after the last card (2036 to answer) | `http://localhost:5173/?seed=44&replay=fastTrack,openMaterials,clean,backUbi,buildSafeguards,treaty,pauseAndFix,fundScience,controlledRobots,humansInLoop&at=2036` |
 
 Locked by `src/sim/replay.test.ts` (the links above are built from `data/demo.json` and the test fails if the story changes).
+
+## The war link (30 seconds, optional)
+
+WAR_LINK: `http://localhost:5173/?seed=44&replay=fastTrack+mvidia:grayChips,keepMaterials+mvidia:sellAll,fossil+mvidia:hoardChips,noNet+mvidia:hype,skipSafety+mvidia:skipSecurity,race+mvidia:stockpile,ignoreWarning+mvidia:openUp,fundScience+mvidia:offence&at=2034`
+
+ClosedAI races (fast-track, proprietary, fossil power, no safety net, skip safeguards, race, ignore the warning) **and Mvidia escalates beside it** (sells chips through middlemen, sells all to China, hoards chips, hypes, skips security, goes on offence). Every year the link plays one decision for each of the two. It lands in 2034 in San Francisco with the red alert *"Diplomats warn of open conflict as the AI race drives the blocs to the brink; markets fall"* (world tension 90, the war line is 80). Press **Continue** in the alert, open **🚶 Average Joe** in the city: Joe's street is the **war** scene (a dim, tense street with the **CONFLICT NEARBY** tag, shuttered shops and distant smoke; nothing graphic) and Joe's note says the news of the conflict is on every screen and the whole city feels on edge. At 95 the world goes to war and the game ends with the **"World War"** report; this link stops just before that. Say: "Two companies and no brakes, and in eight years the blocs are at the brink." It is not on the main script's critical path.
 
 ## The story in one breath
 
