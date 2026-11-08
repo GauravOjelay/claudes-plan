@@ -26,3 +26,7 @@ html, body { margin: 0; }
 .app-continue small { color: #e6e6e6 !important; }
 /* Owner request: the news ticker should not run edge to edge (match the page gutter). */
 .app-shell > .ui-ticker { margin: 0 12px 10px; }
+/* Contrast fix: `.ui-root button { color: inherit }` was beating the CTA's own colour, so dark mode
+   showed white text on yellow. Force near-black text on the yellow button in every theme. */
+.ui-root .ui-topbar-cta, .ui-root .ui-topbar-cta * { color: #1d1d1f; }
+.ui-root .ui-topbar-cta .ui-topbar-count { color: #f0e442; }
