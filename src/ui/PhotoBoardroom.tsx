@@ -12,7 +12,9 @@ import { ARCHETYPE_COLOR, CompanyLogo } from './CompanyLogo';
  * colour grade, sign style. The company logo is a backlit sign on a blank wall/glass area of the
  * photo (`logoArea`, in % of the image) and a small inlay on the table.
  * Motion is slow and uses only transform/opacity (see ui.css); it is off with reduced motion.
- * If the photo fails to load, the drawn SVG boardroom is shown instead.
+ * A city can have its own photo: `public/hq/boardroom-<cityId>.jpg` is tried first (see CITY_PHOTO_LAYOUT for where
+ * the sign goes), and the mood photo above is the fallback when that file is missing.
+ * If no photo loads, the drawn SVG boardroom is shown instead.
  * Everything is derived from the company id, so it is deterministic (no Math.random).
  */
 
@@ -49,6 +51,30 @@ export const HQ_CITY_PHOTO: Record<string, HqPhotoKey> = {
   dubai: 'dubai', cairo: 'dubai', lagos: 'dubai',
   seattle: 'newyork', austin: 'newyork', stockholm: 'europe', hangzhou: 'tokyo',
 };
+
+/**
+ * Layout of a city's OWN photo (`boardroom-<cityId>.jpg`). The image prompts in references/hq-image-prompts.md ask for the
+ * blank sign panel in the upper right (60-86% across, 16-40% down), clear of the stats panel on the left, and a clear
+ * table top in the lower centre. The photo is never mirrored (that would flip the real skyline).
+ * Tune one photo by adding it to CITY_PHOTO_LAYOUT_OVERRIDES.
+ */
+export const CITY_PHOTO_LAYOUT: Omit<HqPhoto, 'file' | 'mood'> = {
+  logoArea: { x: 60, y: 16, w: 26, h: 24 }, tableLogo: { x: 50, y: 80, w: 6 }, tilt: 0, aspect: 1.78,
+};
+export const CITY_PHOTO_LAYOUT_OVERRIDES: Record<string, Partial<Omit<HqPhoto, 'file' | 'mood'>>> = {};
+
+/** File name of a city's own photo. */
+export function cityPhotoFile(cityId: string): string {
+  return `boardroom-${cityId}.jpg`;
+}
+
+/** Cities whose id is also a mood photo (dubai, london, tokyo) already have their own photo, with its own layout. */
+export function hasBuiltInCityPhoto(cityId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(HQ_PHOTOS, cityId);
+}
+
+/** Files that failed to load this session (404 = the owner has not added that photo yet): not tried again. */
+const missingFiles = new Set<string>();
 
 export interface PhotoLook {
   photo: HqPhotoKey;
@@ -124,11 +150,23 @@ export interface PhotoBoardroomProps {
 
 /** Decorative background; the HQ screen shows the same facts in text. */
 export function PhotoBoardroom({ company, effects = [] }: PhotoBoardroomProps) {
+  const [, rerender] = useState(0);
   const [failed, setFailed] = useState(false);
   if (failed) return <Boardroom company={company} effects={effects} />;
 
-  const look = photoLook(company);
-  const photo = HQ_PHOTOS[look.photo];
+  const mood = photoLook(company);
+  const moodPhoto = HQ_PHOTOS[mood.photo];
+  // Own photo first (unless the city is one of the five that ARE the mood photos), then the mood photo.
+  const ownFile = cityPhotoFile(company.homeCity);
+  const useOwn = !hasBuiltInCityPhoto(company.homeCity) && !missingFiles.has(ownFile);
+  const look: PhotoLook = useOwn ? { ...mood, flip: false } : mood;
+  const photo: HqPhoto = useOwn
+    ? { file: ownFile, mood: moodPhoto.mood, ...CITY_PHOTO_LAYOUT, ...CITY_PHOTO_LAYOUT_OVERRIDES[company.homeCity] }
+    : moodPhoto;
+  const onImageError = () => {
+    if (useOwn) { missingFiles.add(ownFile); rerender((n) => n + 1); } // fall back to the mood photo
+    else setFailed(true);
+  };
   const sign = signArea(photo, look.flip);
   const table = { ...photo.tableLogo, x: look.flip ? 100 - photo.tableLogo.x : photo.tableLogo.x };
   const accent = ARCHETYPE_COLOR[company.archetype];
@@ -152,12 +190,12 @@ export function PhotoBoardroom({ company, effects = [] }: PhotoBoardroomProps) {
   };
 
   return (
-    <div className="ui-boardroom ui-hqp" data-photo={look.photo} data-flip={look.flip ? 'yes' : 'no'}
+    <div className="ui-boardroom ui-hqp" data-photo={useOwn ? company.homeCity : look.photo} data-flip={look.flip ? 'yes' : 'no'}
       data-sign={look.signStyle} data-mood={photo.mood} data-city={company.homeCity} aria-hidden="true">
       <div className="ui-hqp-stage" style={stage}>
         <div className="ui-hqp-kb">
-          <img className="ui-hqp-img" src={photoUrl(photo.file)} alt="" draggable={false}
-            onError={() => setFailed(true)}
+          <img key={photo.file} className="ui-hqp-img" src={photoUrl(photo.file)} alt="" draggable={false}
+            onError={onImageError}
             style={{
               transform: look.flip ? 'scaleX(-1)' : undefined,
               filter: `hue-rotate(${look.hue}deg) saturate(${look.saturate.toFixed(2)}) brightness(${look.brightness.toFixed(2)})`,
