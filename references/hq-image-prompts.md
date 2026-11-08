@@ -25,8 +25,9 @@ panel above the windows in the centre (for a company logo). Faces small and not 
 # One photo per city (task: matching HQ photo for every city)
 
 The HQ screen loads `public/hq/boardroom-<cityId>.jpg` first and falls back to the closest of the five existing
-photos when that file is missing. `dubai`, `london` and `tokyo` already have their own photo, so the 16 cities below
-are the ones still to generate. Save each result with the exact file name shown (16:9, at least 1920x1080, JPG under
+photos when that file is missing. `dubai`, `london` and `tokyo` already have their own photo, and the owner added `sf`, `nyc`, `seattle`, `austin`,
+`stockholm`, `hangzhou`, `lagos`, `cairo` and `bangalore` on 2026-11-08 (their sign positions are set in
+`CITY_PHOTO_LAYOUT_OVERRIDES`). The **7 cities below** are the ones still to generate (they show the closest mood photo until then). Save each result with the exact file name shown (16:9, at least 1920x1080, JPG under
 about 500 KB; if it is a PNG, convert it) and drop it in `public/hq/`. No code change is needed.
 
 **Add this paragraph to EVERY prompt below:**
@@ -43,8 +44,6 @@ Each line names the real skyline and landmarks (so the picture says "this is tha
 
 | File name | City | Prompt (put the paragraph above after it) |
 |---|---|---|
-| `boardroom-sf.jpg` | San Francisco | Boardroom on a high floor in San Francisco's financial district at golden hour: the Golden Gate Bridge and a low bank of fog in the distance, the Bay with the Bay Bridge, a pointed pyramid-shaped tower and a tall tapered glass tower in the skyline, steep hills. Warm light, dark wood table, black leather chairs. |
-| `boardroom-nyc.jpg` | New York | Boardroom on a high floor in Manhattan at dusk: the Empire State Building, the One World Trade tower and the Hudson River with lights coming on, dense grid of towers, yellow cabs as tiny dots far below. Long oval table, leather chairs, moody blue-orange light. |
 | `boardroom-mexicocity.jpg` | Mexico City | Boardroom above Paseo de la Reforma in Mexico City in the late afternoon: the Torre Latinoamericana, a row of glass towers along the avenue, the green treetops of Chapultepec park, and the snow-capped volcano Popocatepetl faint in the haze on the horizon. Warm terracotta and walnut interior, golden-pink light. |
 | `boardroom-saopaulo.jpg` | São Paulo | Boardroom on a high floor in São Paulo at dusk: a vast dense skyline of concrete towers stretching to the horizon, the cable-stayed Octavio Frias bridge with its X-shaped mast on the right, grey-pink hazy sky, tropical plants in the room. Warm wood, concrete and green accents. |
 | `boardroom-paris.jpg` | Paris | Elegant boardroom in Paris on an overcast morning: the Eiffel Tower in the distance, cream Haussmann rooftops with zinc roofs and chimney pots, the Seine curving through, the golden dome of Les Invalides. Herringbone parquet, pale oak table, soft daylight. |
@@ -52,13 +51,6 @@ Each line names the real skyline and landmarks (so the picture says "this is tha
 | `boardroom-moscow.jpg` | Moscow | Boardroom in Moscow at winter dusk: the glass skyscrapers of the Moscow City business district beside the frozen Moskva river, snow on the roofs, the onion domes and red-brick towers of the old city glowing in the distance. Dark panelled walls, long table, warm lamps against a blue twilight. |
 | `boardroom-beijing.jpg` | Beijing | Boardroom in Beijing's central business district at dawn: the unusual looped shape of the big television-headquarters building, a tall vase-shaped skyscraper, wide ring roads with early traffic, pale haze, and curved temple roofs far in the distance. Black stone table, red-lacquer accents, cool dawn light. |
 | `boardroom-singapore.jpg` | Singapore | Boardroom in Singapore at night: the three towers topped by a ship-shaped sky park at Marina Bay, the giant tree-like Supertrees of the gardens, a big observation wheel, the harbour full of cargo ships and the water glittering. Tropical plants in the room, glass table, teal and gold lights. |
-| `boardroom-bangalore.jpg` | Bengaluru | Boardroom in Bengaluru in the monsoon season: glass tech-park towers rising out of a canopy of green trees, a grand granite government building with a domed centre in the distance, heavy grey-silver clouds with a break of sunlight. Warm teak, plants, soft humid light. |
-| `boardroom-cairo.jpg` | Cairo | Boardroom in Cairo at sunset: the Nile with feluccas, a tall lotus-shaped lattice tower on an island, minarets and domes of the old city, and the faint triangles of the Giza pyramids on the dusty golden horizon. Sandstone and dark wood, brass lamps, warm amber light. |
-| `boardroom-lagos.jpg` | Lagos | Boardroom in Lagos at sunset: the lagoon with fishing boats and canoes, a long bridge crossing the water, the tall modern towers of Victoria Island and Eko Atlantic on the shore, the ocean beyond, humid orange haze. Bright patterned fabrics on the chairs, warm wood table, lively colours. |
-| `boardroom-seattle.jpg` | Seattle | Boardroom in Seattle on a clear evening after rain: the saucer-topped Space Needle, the green ferries on Puget Sound, a distinctive old tower among the glass towers, and snow-capped Mount Rainier glowing pink on the horizon. Timber, glass and green plants, cool damp light with warm lamps. |
-| `boardroom-austin.jpg` | Austin | Boardroom in Austin at golden hour: the pink-granite Texas State Capitol dome at the end of a wide avenue, glass towers of downtown, a long bridge over a calm lake with kayaks, big live oak trees. Warm timber and leather, relaxed and sunny. |
-| `boardroom-stockholm.jpg` | Stockholm | Boardroom in Stockholm in the late-afternoon Nordic light: the copper spires and ochre buildings of the old island town, a red-brick city hall tower on the waterfront, sailboats and ferries on the bright water between islands. Pale birch wood, white walls, wool throws on the chairs, calm and minimal. |
-| `boardroom-hangzhou.jpg` | Hangzhou | Boardroom in Hangzhou on a misty morning: the still West Lake with willows and a small arched stone bridge, a slender old pagoda on a green hill, and modern glass towers and a lotus-shaped stadium along the river in the distance, soft mist over bamboo hills. Pale bamboo and jade accents, serene silvery light. |
 
 After adding a photo, check the sign is not cut off by the stats panel: open that city's HQ at 1280x720. If the blank
 panel is somewhere else in the picture, set its position in `CITY_PHOTO_LAYOUT_OVERRIDES` in `src/ui/PhotoBoardroom.tsx`.

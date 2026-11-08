@@ -10,4 +10,4 @@ Prompts that work: see `references/hq-image-prompts.md`.
 ## One photo per city
 Name a city's own photo `boardroom-<cityId>.jpg` (e.g. `boardroom-paris.jpg`; city ids are in `src/contracts/cities.ts`).
 The HQ screen tries that file first and falls back to the mood photo in `manifest.json` when it is missing. Prompts for
-the 16 cities that still need one (and the composition rules for the sign panel) are in `references/hq-image-prompts.md`.
+the 7 cities that still need one (mexicocity, saopaulo, paris, munich, moscow, beijing, singapore) (and the composition rules for the sign panel) are in `references/hq-image-prompts.md`.

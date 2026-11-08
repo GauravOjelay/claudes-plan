@@ -1,3 +1,4 @@
+import * as nodeFs from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { CityEffectKind, Decision, WorldState } from '../contracts';
@@ -9,12 +10,15 @@ import { CITY_EFFECT_LABEL, Skyline } from './Skyline';
 import { HQScreen } from './HQScreen';
 import { TopBar } from './TopBar';
 import { Boardroom, boardroomLook } from './Boardroom';
-import { CITY_PHOTO_LAYOUT, HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, cityPhotoFile, hasBuiltInCityPhoto, photoLook, signArea } from './PhotoBoardroom';
+import { CITY_PHOTO_LAYOUT, CITY_PHOTO_LAYOUT_OVERRIDES, HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, cityPhotoFile, hasBuiltInCityPhoto, photoLook, signArea } from './PhotoBoardroom';
 import { COMPANY_ROSTER } from '../contracts/cities';
 import { RaceTracker } from './RaceTracker';
 import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
 
 const ALL_KINDS = Object.keys(CITY_EFFECT_LABEL) as CityEffectKind[];
+
+// The project has no @types/node; these two functions are all the test needs.
+const fs = nodeFs as unknown as { readFileSync(path: string): Uint8Array; existsSync(path: string): boolean };
 
 describe('IntroScreen', () => {
   it('shows the title, pitch, speculation note and a Start button', () => {
@@ -208,6 +212,34 @@ describe('PhotoBoardroom', () => {
     expect(a.x + a.w).toBeLessThanOrEqual(100);
     expect(a.y).toBeGreaterThanOrEqual(14);
     expect(a.y + a.h).toBeLessThanOrEqual(60);
+  });
+
+  it('every owner-made city photo has a sign layout that matches the picture and avoids the panel and the controls', () => {
+    const jpegSize = (file: string): [number, number] => {
+      const b = fs.readFileSync(file);
+      const dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+      for (let i = 2; i < b.length - 9;) {
+        if (b[i] !== 0xff) { i++; continue; }
+        const m = b[i + 1];
+        if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return [dv.getUint16(i + 7), dv.getUint16(i + 5)];
+        i += 2 + dv.getUint16(i + 2);
+      }
+      throw new Error(`no size in ${file}`);
+    };
+    const own = ['sf', 'nyc', 'seattle', 'austin', 'stockholm', 'hangzhou', 'lagos', 'cairo', 'bangalore'];
+    for (const city of own) {
+      const file = `public/hq/${cityPhotoFile(city)}`;
+      expect(fs.existsSync(file), file).toBe(true);
+      const o = CITY_PHOTO_LAYOUT_OVERRIDES[city];
+      expect(o, city).toBeDefined();
+      const [w, h] = jpegSize(file);
+      expect(o.aspect!, city).toBeCloseTo(w / h, 2);
+      const a = o.logoArea!;
+      expect(a.x, city).toBeGreaterThanOrEqual(MIN_FLIPPED_SIGN_X); // stats panel on the left
+      expect(a.x + a.w, city).toBeLessThanOrEqual(98); // the picture is cropped a little at the sides
+      expect(a.y + a.h, city).toBeLessThanOrEqual(60);
+      expect(a.x + a.w <= 66 || a.y >= 20, `${city}: clear of the year / text-size controls (top right)`).toBe(true);
+    }
   });
 
   it('shows the company sign and a table logo on the photo, and darkens in a blackout', () => {
