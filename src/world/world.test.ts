@@ -125,3 +125,15 @@ describe('city roster', () => {
     expect(EXTRA_COMPANIES.some((c) => c.vars.safetyLevel <= 35 && c.vars.publicTrust <= 45)).toBe(true);
   });
 });
+
+describe('smooth effects', () => {
+  it('eases intensity toward the target at a capped rate, never overshooting', async () => {
+    const { easeToward, SMOOTH_RATE } = await import('./smoothEffects');
+    expect(easeToward(0, 1, 1)).toBeCloseTo(SMOOTH_RATE);
+    expect(easeToward(0.9, 1, 1)).toBe(1);
+    expect(easeToward(1, 0, 0.5)).toBeCloseTo(1 - SMOOTH_RATE * 0.5);
+    let v = 0;
+    for (let i = 0; i < 100; i++) v = easeToward(v, 0.8, 0.05);
+    expect(v).toBe(0.8);
+  });
+});

@@ -5,7 +5,7 @@
  * Lazy-loaded by CityView. Units match the city scene (1 unit ~ 2.5 m).
  */
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerformanceMonitor, Sky } from '@react-three/drei';
+import { OrbitControls, PerformanceMonitor, RoundedBox, Sky } from '@react-three/drei';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { AverageJoe, JoeJob, JoeSituation } from '../../contracts';
@@ -14,11 +14,12 @@ import { softTexture } from '../city3d/effects3d';
 import type { Bldg3, Style } from '../city3d/layout3d';
 import { FpsMeter, useFpsVisible } from '../FpsMeter';
 import { visualRng } from '../util';
+import { Human, M, makeCrowdGeometry } from './human';
 import '../world.css';
 
 const P = 120; // street period (units); the street repeats seamlessly every P
 const COPIES = [0, -P, -2 * P, P];
-const WALK_X = 3.0; // Joe walks on the right-hand pavement
+const WALK_X = 3.15; // Joe walks on the right-hand pavement
 const SPEED = 0.6; // units per second (~1.5 m/s)
 
 interface Look {
@@ -70,8 +71,8 @@ function buildStreet(seed: string): StreetLayout {
     }
   }
   const trees = Array.from({ length: 10 }, (_, i) => ({ x: (i % 2 ? 1 : -1) * 2.55, z: -i * (P / 10) - 4 }));
-  const lamps = Array.from({ length: 10 }, (_, i) => ({ x: (i % 2 ? -1 : 1) * 2.45, z: -i * (P / 10) - 9 }));
-  const cars = Array.from({ length: 8 }, (_, i) => ({ x: (i % 2 ? -1 : 1) * 1.7, z: -i * (P / 8) - 6 - rnd() * 5, c: ['#d9dde6', '#2e2e34', '#7a8796', '#a83232', '#2f4f7a'][Math.floor(rnd() * 5)] }));
+  const lamps = Array.from({ length: 10 }, (_, i) => ({ x: (i % 2 ? -1 : 1) * 2.45, z: -i * (P / 10) - 3 }));
+  const cars = Array.from({ length: 8 }, (_, i) => ({ x: -1.7, z: -i * (P / 8) - 6 - rnd() * 5, c: ['#d9dde6', '#2e2e34', '#7a8796', '#a83232', '#2f4f7a'][Math.floor(rnd() * 5)] }));
   return { buildings, shops, trees, lamps, cars };
 }
 
@@ -84,6 +85,7 @@ function StreetCopy({ street, geos, mats, situation, look, candleTex }: {
   return (
     <group>
       {(Object.keys(geos) as Style[]).map((s) => <mesh key={s} geometry={geos[s]} material={mats[s]} castShadow receiveShadow />)}
+      <Cornices street={street} />
       {/* shop fronts: glass + awning, or shutters / boards */}
       {street.shops.map((sh, i) => {
         const closed = shuttered && (i % 3 !== 0 || situation === 'war');
@@ -119,14 +121,21 @@ function StreetCopy({ street, geos, mats, situation, look, candleTex }: {
       ))}
       {street.lamps.map((l, i) => (
         <group key={i} position={[l.x, 0, l.z]}>
-          <mesh position={[0, 1.7, 0]}><cylinderGeometry args={[0.04, 0.05, 3.4, 6]} /><meshStandardMaterial color="#3a3f48" /></mesh>
+          <mesh position={[0, 1.7, 0]} castShadow><cylinderGeometry args={[0.035, 0.045, 3.4, 10]} /><meshStandardMaterial color="#6b717c" metalness={0.5} roughness={0.45} /></mesh>
           <mesh position={[0, 3.4, 0]}><sphereGeometry args={[0.14, 10, 8]} /><meshBasicMaterial color={look.streetLights ? '#ffe2a6' : '#55585e'} toneMapped={false} /></mesh>
         </group>
       ))}
       {street.cars.map((c, i) => (
         <group key={i} position={[c.x, 0, c.z]}>
-          <mesh position={[0, 0.35, 0]} castShadow><boxGeometry args={[0.8, 0.5, 1.8]} /><meshStandardMaterial color={c.c} metalness={0.3} roughness={0.4} /></mesh>
-          <mesh position={[0, 0.7, -0.1]}><boxGeometry args={[0.7, 0.32, 1.0]} /><meshStandardMaterial color="#1f2a33" metalness={0.4} roughness={0.2} /></mesh>
+          <RoundedBox args={[0.74, 0.32, 1.78]} radius={0.08} smoothness={3} position={[0, 0.3, 0]} castShadow>
+            <meshStandardMaterial color={c.c} metalness={0.45} roughness={0.35} />
+          </RoundedBox>
+          <RoundedBox args={[0.66, 0.26, 0.95]} radius={0.09} smoothness={3} position={[0, 0.56, -0.05]} castShadow>
+            <meshStandardMaterial color="#9fb4c4" metalness={0.6} roughness={0.08} />
+          </RoundedBox>
+          {[[-0.36, 0.55], [0.36, 0.55], [-0.36, -0.58], [0.36, -0.58]].map(([wx, wz], k) => (
+            <mesh key={k} position={[wx, 0.14, wz]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.14, 0.14, 0.1, 16]} /><meshStandardMaterial color="#1b1b1d" roughness={0.9} /></mesh>
+          ))}
         </group>
       ))}
       {/* situation props that live on the street */}
@@ -199,113 +208,111 @@ function ScanCamera({ x, z, phase }: { x: number; z: number; phase: number }) {
   );
 }
 
-const JOB_COLOR: Record<JoeJob, string> = { employed: '#2f5d8a', lostSoftwareJob: '#6b6f78', lostPhysicalJob: '#7a6a58', retraining: '#c79a3a', onUbi: '#3f8a6a' };
-
-/** Joe: a simple low-poly figure with a walk cycle. Exposes his position through `pos`. */
-function Joe({ job, pos, wading }: { job: JoeJob; pos: React.MutableRefObject<THREE.Vector3>; wading: boolean }) {
+/** Joe: an articulated human (see human.tsx) walking down the pavement. Exposes his position through `pos`. */
+function Joe({ name, job, pos, wading }: { name: string; job: JoeJob; pos: React.MutableRefObject<THREE.Vector3>; wading: boolean }) {
   const root = useRef<THREE.Group>(null);
-  const legL = useRef<THREE.Group>(null);
-  const legR = useRef<THREE.Group>(null);
-  const armL = useRef<THREE.Group>(null);
-  const armR = useRef<THREE.Group>(null);
   const speed = wading ? SPEED * 0.55 : SPEED;
-  useFrame((s, dt) => {
+  useFrame((_, dt) => {
     const p = pos.current;
     p.z -= speed * Math.min(dt, 0.05);
-    const t = s.clock.elapsedTime * (wading ? 4 : 6.5);
-    const swing = Math.sin(t) * (wading ? 0.35 : 0.55);
-    if (legL.current) legL.current.rotation.x = swing;
-    if (legR.current) legR.current.rotation.x = -swing;
-    if (armL.current) armL.current.rotation.x = -swing * 0.8;
-    if (armR.current) armR.current.rotation.x = swing * 0.8;
-    if (root.current) root.current.position.set(p.x, Math.abs(Math.cos(t)) * 0.03, p.z);
+    root.current?.position.set(p.x, 0.12, p.z);
   });
-  const jacket = JOB_COLOR[job];
   return (
-    <group ref={root} rotation={[0, Math.PI, 0]}>
-      <group ref={legL} position={[-0.07, 0.42, 0]}><mesh position={[0, -0.21, 0]} castShadow><boxGeometry args={[0.1, 0.42, 0.11]} /><meshStandardMaterial color="#2b3140" /></mesh></group>
-      <group ref={legR} position={[0.07, 0.42, 0]}><mesh position={[0, -0.21, 0]} castShadow><boxGeometry args={[0.1, 0.42, 0.11]} /><meshStandardMaterial color="#2b3140" /></mesh></group>
-      <mesh position={[0, 0.6, 0]} castShadow><boxGeometry args={[0.3, 0.38, 0.17]} /><meshStandardMaterial color={jacket} roughness={0.8} /></mesh>
-      <group ref={armL} position={[-0.19, 0.76, 0]}><mesh position={[0, -0.17, 0]} castShadow><boxGeometry args={[0.07, 0.34, 0.08]} /><meshStandardMaterial color={jacket} /></mesh></group>
-      <group ref={armR} position={[0.19, 0.76, 0]}><mesh position={[0, -0.17, 0]} castShadow><boxGeometry args={[0.07, 0.34, 0.08]} /><meshStandardMaterial color={jacket} /></mesh></group>
-      <mesh position={[0, 0.9, 0]} castShadow><sphereGeometry args={[0.1, 14, 12]} /><meshStandardMaterial color="#c99a78" roughness={0.7} /></mesh>
-      <mesh position={[0, 0.96, 0.02]}><sphereGeometry args={[0.104, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#3a2a20" /></mesh>
-      {job !== 'employed' && <mesh position={[0, 0.62, -0.11]}><boxGeometry args={[0.22, 0.24, 0.08]} /><meshStandardMaterial color="#4a3a2c" /></mesh>}
+    <group ref={root} rotation={[0, Math.PI, 0]} scale={M}>
+      <Human name={name} job={job} speed={speed / M} wading={wading} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <circleGeometry args={[0.38, 24]} />
+        <meshBasicMaterial color="#000" transparent opacity={0.25} depthWrite={false} />
+      </mesh>
     </group>
   );
 }
 
-/** Other pedestrians: instanced, walking both ways around Joe. */
+/** Other pedestrians: instanced human figures walking both ways around Joe. */
 function Pedestrians({ n, joe }: { n: number; joe: React.MutableRefObject<THREE.Vector3> }) {
-  const ref = useRef<THREE.InstancedMesh>(null);
+  const clothes = useRef<THREE.InstancedMesh>(null);
+  const body = useRef<THREE.InstancedMesh>(null);
+  const geo = useMemo(makeCrowdGeometry, []);
   const peds = useMemo(() => {
     const r = visualRng(`peds:${n}`);
-    return Array.from({ length: n }, () => ({ side: r() < 0.5 ? 1 : -1, off: r() * 160, speed: 0.4 + r() * 0.4, dir: r() < 0.5 ? 1 : -1, x: 2.7 + r() * 0.8, c: ['#e6e0d4', '#2b2f3a', '#7d5b46', '#4b6584', '#b8433a', '#d8b46a'][Math.floor(r() * 6)] }));
+    return Array.from({ length: n }, () => ({ side: r() < 0.5 ? 1 : -1, off: r() * 160, speed: 0.45 + r() * 0.25, dir: r() < 0.5 ? 1 : -1, x: 2.75 + r() * 0.8, s: 0.92 + r() * 0.14, c: ['#e6e0d4', '#2b2f3a', '#7d5b46', '#4b6584', '#b8433a', '#d8b46a', '#5d7a4a', '#8a6a9a'][Math.floor(r() * 8)] }));
   }, [n]);
   useLayoutEffect(() => {
-    peds.forEach((p, i) => ref.current?.setColorAt(i, new THREE.Color(p.c)));
-    if (ref.current?.instanceColor) ref.current.instanceColor.needsUpdate = true;
+    peds.forEach((p, i) => clothes.current?.setColorAt(i, new THREE.Color(p.c)));
+    if (clothes.current?.instanceColor) clothes.current.instanceColor.needsUpdate = true;
   }, [peds]);
   const o = useMemo(() => new THREE.Object3D(), []);
-  useFrame((s) => {
-    if (!ref.current) return;
-    const t = s.clock.elapsedTime;
+  useFrame((st) => {
+    const t = st.clock.elapsedTime;
     const jz = joe.current.z;
     peds.forEach((p, i) => {
       const along = (((p.off + t * p.speed * p.dir) % 160) + 160) % 160;
-      o.position.set(p.side * p.x, 0.42 + Math.abs(Math.sin(t * 6 + p.off)) * 0.03, jz - along + 40);
-      o.scale.set(1, 1, 1);
+      o.position.set(p.side * p.x, 0.12 + Math.abs(Math.sin(t * 7 * p.speed + p.off)) * 0.012, jz - along + 40);
+      o.rotation.set(0, p.dir > 0 ? Math.PI : 0, Math.sin(t * 7 * p.speed + p.off) * 0.03);
+      o.scale.setScalar(M * p.s);
       o.updateMatrix();
-      ref.current!.setMatrixAt(i, o.matrix);
+      clothes.current?.setMatrixAt(i, o.matrix);
+      body.current?.setMatrixAt(i, o.matrix);
     });
-    ref.current.instanceMatrix.needsUpdate = true;
+    if (clothes.current) clothes.current.instanceMatrix.needsUpdate = true;
+    if (body.current) body.current.instanceMatrix.needsUpdate = true;
   });
   if (!n) return null;
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, n]} frustumCulled={false} castShadow>
-      <capsuleGeometry args={[0.12, 0.6, 4, 8]} />
-      <meshStandardMaterial roughness={0.8} />
-    </instancedMesh>
+    <group>
+      <instancedMesh ref={clothes} args={[geo.clothes, undefined, n]} frustumCulled={false} castShadow>
+        <meshStandardMaterial roughness={0.8} />
+      </instancedMesh>
+      <instancedMesh ref={body} args={[geo.body, undefined, n]} frustumCulled={false} castShadow>
+        <meshStandardMaterial vertexColors roughness={0.7} />
+      </instancedMesh>
+    </group>
   );
 }
 
 /** A protest gathering ahead in the road (repeats each street period). */
 function ProtestCrowd() {
-  const ref = useRef<THREE.InstancedMesh>(null);
+  const clothes = useRef<THREE.InstancedMesh>(null);
+  const body = useRef<THREE.InstancedMesh>(null);
   const signs = useRef<THREE.InstancedMesh>(null);
+  const geo = useMemo(makeCrowdGeometry, []);
   const people = useMemo(() => {
     const r = visualRng('protest');
-    return Array.from({ length: 220 }, () => ({ x: (r() - 0.5) * 5.5, z: -40 - r() * 30, ph: r() * 6, sign: r() < 0.25 }));
+    return Array.from({ length: 220 }, () => ({ x: (r() - 0.5) * 4.2, z: -22 - r() * 26, ph: r() * 6, sign: r() < 0.25, rot: (r() - 0.5) * 0.8, c: ['#b8433a', '#e6e0d4', '#4b6584', '#d8b46a', '#2b2f3a'][Math.floor(r() * 5)] }));
   }, []);
+  const signCount = people.filter((p) => p.sign).length;
+  useLayoutEffect(() => {
+    people.forEach((p, i) => clothes.current?.setColorAt(i, new THREE.Color(p.c)));
+    if (clothes.current?.instanceColor) clothes.current.instanceColor.needsUpdate = true;
+  }, [people]);
   const o = useMemo(() => new THREE.Object3D(), []);
-  useFrame((s) => {
-    const t = s.clock.elapsedTime;
+  useFrame((st) => {
+    const t = st.clock.elapsedTime;
     let k = 0;
     people.forEach((p, i) => {
-      const bob = Math.max(0, Math.sin(t * 4 + p.ph)) * 0.08;
-      o.position.set(p.x, 0.42 + bob, p.z);
-      o.rotation.set(0, 0, 0);
+      const bob = Math.max(0, Math.sin(t * 4 + p.ph)) * 0.03;
+      o.position.set(p.x, bob, p.z);
+      o.rotation.set(0, p.rot, 0);
+      o.scale.setScalar(M);
       o.updateMatrix();
-      ref.current?.setMatrixAt(i, o.matrix);
+      clothes.current?.setMatrixAt(i, o.matrix);
+      body.current?.setMatrixAt(i, o.matrix);
       if (p.sign) {
-        o.position.set(p.x, 1.25 + bob, p.z);
-        o.rotation.set(0, 0, Math.sin(t * 2 + p.ph) * 0.15);
+        o.position.set(p.x, 0.92 + bob, p.z);
+        o.rotation.set(0, p.rot, Math.sin(t * 2 + p.ph) * 0.15);
+        o.scale.set(1, 1, 1);
         o.updateMatrix();
         signs.current?.setMatrixAt(k++, o.matrix);
       }
     });
-    if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
-    if (signs.current) signs.current.instanceMatrix.needsUpdate = true;
+    [clothes, body, signs].forEach((r) => { if (r.current) r.current.instanceMatrix.needsUpdate = true; });
   });
-  const signCount = people.filter((p) => p.sign).length;
   return (
     <group>
-      <instancedMesh ref={ref} args={[undefined, undefined, people.length]} frustumCulled={false}>
-        <capsuleGeometry args={[0.12, 0.6, 4, 8]} />
-        <meshStandardMaterial color="#5a6a8a" roughness={0.8} />
-      </instancedMesh>
+      <instancedMesh ref={clothes} args={[geo.clothes, undefined, people.length]} frustumCulled={false}><meshStandardMaterial roughness={0.8} /></instancedMesh>
+      <instancedMesh ref={body} args={[geo.body, undefined, people.length]} frustumCulled={false}><meshStandardMaterial vertexColors roughness={0.7} /></instancedMesh>
       <instancedMesh ref={signs} args={[undefined, undefined, signCount]} frustumCulled={false}>
-        <boxGeometry args={[0.5, 0.32, 0.03]} />
+        <boxGeometry args={[0.36, 0.22, 0.02]} />
         <meshStandardMaterial color="#f4e04d" emissive="#f4e04d" emissiveIntensity={0.15} />
       </instancedMesh>
     </group>
@@ -388,6 +395,7 @@ function JoeWorld({ joe, situation }: { joe: AverageJoe; situation: JoeSituation
   const geos = useMemo(() => buildCityGeometries(street.buildings), [street]);
   const mats = useMemo(() => Object.fromEntries((Object.keys(geos) as Style[]).map((s) => [s, makeBuildingMaterial(s, uniforms)])) as Partial<Record<Style, THREE.Material>>, [geos, uniforms]);
   const soft = useMemo(softTexture, []);
+  const tex = useMemo(groundTextures, []);
   const pos = useRef(new THREE.Vector3(WALK_X, 0, -10));
   const camera = useThree((s) => s.camera);
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
@@ -421,7 +429,7 @@ function JoeWorld({ joe, situation }: { joe: AverageJoe; situation: JoeSituation
     const d = p.clone().sub(last.current);
     camera.position.add(d);
     if (controls) {
-      controls.target.set(p.x - 0.4, 0.95, p.z - 1.2);
+      controls.target.set(p.x - 0.12, 0.62, p.z - 1.2);
       controls.update();
     }
     last.current.copy(p);
@@ -436,21 +444,25 @@ function JoeWorld({ joe, situation }: { joe: AverageJoe; situation: JoeSituation
     <>
       <Sky distance={4500} sunPosition={sunDir.clone().multiplyScalar(1000).toArray()} turbidity={look.turbidity} rayleigh={situation === 'blackout' ? 0.2 : 1.4} mieCoefficient={0.01} />
       <hemisphereLight args={['#dfe8ff', '#6b5a48', look.hemi]} />
-      <directionalLight position={sunDir.clone().multiplyScalar(60).toArray()} intensity={look.sunI} color={look.sun} castShadow
+      <directionalLight position={[-20, 12, 30]} intensity={look.sunI * 0.25} color="#cfe0ff" />
+      <directionalLight position={sunDir.clone().multiplyScalar(60).toArray()} intensity={look.sunI} color={look.sun} castShadow shadow-radius={4}
         shadow-mapSize={[2048, 2048]} shadow-camera-left={-30} shadow-camera-right={30} shadow-camera-top={30} shadow-camera-bottom={-30} shadow-camera-far={200} shadow-bias={-0.0005} />
       {situation === 'blackout' && <ambientLight intensity={0.12} color="#8fa0ff" />}
       <FollowLight pos={pos} sunDir={sunDir} />
       {/* ground: road + pavements, long enough for all copies */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -P]} receiveShadow><planeGeometry args={[400, P * 8]} /><meshStandardMaterial color="#4d4c4a" roughness={1} /></mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -P]} receiveShadow><planeGeometry args={[400, P * 8]} /><meshStandardMaterial map={tex.asphalt} color="#77746f" roughness={0.95} /></mesh>
       {[1, -1].map((s) => (
-        <mesh key={s} position={[s * 3.2, 0.06, -P]} receiveShadow><boxGeometry args={[2.0, 0.12, P * 8]} /><meshStandardMaterial color="#a39a8c" roughness={0.95} /></mesh>
+        <group key={s}>
+          <mesh position={[s * 3.2, 0.06, -P]} receiveShadow><boxGeometry args={[2.0, 0.12, P * 8]} /><meshStandardMaterial map={tex.paving} color="#c9c0b2" roughness={0.9} /></mesh>
+          <mesh position={[s * 2.22, 0.065, -P]} receiveShadow castShadow><boxGeometry args={[0.1, 0.13, P * 8]} /><meshStandardMaterial color="#b9b3a8" roughness={0.8} /></mesh>
+        </group>
       ))}
       {Array.from({ length: 40 }, (_, i) => <mesh key={i} position={[0, 0.01, 60 - i * 12]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[0.12, 4]} /><meshBasicMaterial color="#c8b25a" /></mesh>)}
       <PeriodicStreet pos={pos}>
         <StreetCopy street={street} geos={geos} mats={mats} situation={situation} look={look} candleTex={soft} />
         {situation === 'protests' && <ProtestCrowd />}
       </PeriodicStreet>
-      <Joe job={joe.job} pos={pos} wading={situation === 'flood'} />
+      <Joe name={joe.name} job={joe.job} pos={pos} wading={situation === 'flood'} />
       <Pedestrians n={look.people} joe={pos} />
       {situation === 'flood' && <FloodWater />}
       {situation === 'war' && <DistantSmoke tex={soft} joe={pos} />}
@@ -508,9 +520,9 @@ export default function JoeScene3D({ joe }: { joe: AverageJoe }) {
   const moodColor = mood >= 60 ? '#4fd18b' : mood >= 35 ? '#ffb547' : '#ff6b5b';
   return (
     <div className="w3-wrap joe-wrap">
-      <Canvas shadows dpr={dpr} camera={{ position: [WALK_X - 1.5, 1.75, -10 + 3.6], fov: 55, near: 0.1, far: 1200 }}>
+      <Canvas shadows dpr={dpr} camera={{ position: [WALK_X - 0.3, 0.95, -10 + 1.7], fov: 50, near: 0.05, far: 1200 }}>
         <PerformanceMonitor flipflops={4} onIncline={() => setDpr((d) => Math.min(1.75, d + 0.25))} onDecline={() => setDpr((d) => Math.max(0.6, d - 0.3))} />
-        <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.08} minDistance={1.6} maxDistance={9} minPolarAngle={0.6} maxPolarAngle={1.52} rotateSpeed={0.6} />
+        <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.08} minDistance={0.8} maxDistance={7} minPolarAngle={0.6} maxPolarAngle={1.52} rotateSpeed={0.6} />
         {fpsVisible && <FpsMeter target={fpsEl} />}
         <JoeWorld joe={joe} situation={joe.situation} />
       </Canvas>
@@ -532,4 +544,81 @@ export default function JoeScene3D({ joe }: { joe: AverageJoe }) {
       <div className="joe-hint">Drag to look around</div>
     </div>
   );
+}
+
+/** Stone cornices, a string course and a shop-front fascia on every building: breaks up the plain boxes. */
+function Cornices({ street }: { street: StreetLayout }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const items = useMemo(() => street.buildings.flatMap((b) => {
+    const p = b.parts[0];
+    return [
+      { x: p.x, y: p.h + 0.12, z: p.z, w: p.w + 0.35, h: 0.24, d: p.d + 0.1 },
+      { x: p.x, y: p.h - 0.35, z: p.z, w: p.w + 0.16, h: 0.1, d: p.d + 0.04 },
+      { x: p.x, y: 2.15, z: p.z, w: p.w + 0.12, h: 0.12, d: p.d + 0.02 },
+    ];
+  }), [street]);
+  useLayoutEffect(() => {
+    const o = new THREE.Object3D();
+    items.forEach((it, i) => {
+      o.position.set(it.x, it.y, it.z);
+      o.scale.set(it.w, it.h, it.d);
+      o.updateMatrix();
+      ref.current?.setMatrixAt(i, o.matrix);
+    });
+    if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+  }, [items]);
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, items.length]} castShadow receiveShadow>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#d8cfbf" roughness={0.85} />
+    </instancedMesh>
+  );
+}
+
+/** Asphalt and paving-slab textures drawn in code (no downloads). */
+function groundTextures() {
+  const make = (w: number, h: number, draw: (g: CanvasRenderingContext2D) => void, rx: number, ry: number) => {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    draw(c.getContext('2d')!);
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(rx, ry);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    return t;
+  };
+  const r = visualRng('ground');
+  const asphalt = make(256, 256, (g) => {
+    g.fillStyle = '#8a8782';
+    g.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 9000; i++) {
+      const v = 110 + Math.floor(r() * 70);
+      g.fillStyle = `rgb(${v},${v - 2},${v - 5})`;
+      g.fillRect(r() * 256, r() * 256, 1 + r() * 1.5, 1 + r() * 1.5);
+    }
+    g.strokeStyle = 'rgba(40,40,40,0.25)';
+    g.lineWidth = 1.5;
+    for (let i = 0; i < 4; i++) {
+      g.beginPath();
+      g.moveTo(r() * 256, r() * 256);
+      g.bezierCurveTo(r() * 256, r() * 256, r() * 256, r() * 256, r() * 256, r() * 256);
+      g.stroke();
+    }
+  }, 160, 480);
+  const paving = make(128, 128, (g) => {
+    g.fillStyle = '#e2dbcf';
+    g.fillRect(0, 0, 128, 128);
+    for (let y = 0; y < 2; y++) for (let x = 0; x < 2; x++) {
+      const v = 210 + Math.floor(r() * 30);
+      g.fillStyle = `rgb(${v},${v - 6},${v - 16})`;
+      g.fillRect(x * 64 + 2, y * 64 + 2, 60, 60);
+    }
+    for (let i = 0; i < 900; i++) {
+      g.fillStyle = `rgba(0,0,0,${r() * 0.08})`;
+      g.fillRect(r() * 128, r() * 128, 2, 2);
+    }
+  }, 1.2, 380);
+  return { asphalt, paving };
 }
