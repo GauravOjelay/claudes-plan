@@ -103,6 +103,9 @@ export function endingFit(state: WorldState): { id: EndingId; fit: number }[] {
   ];
 }
 
+/** `abundanceUtopia` -> `Abundance Utopia`, for text the player reads. */
+const readable = (id: string): string => id.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+
 /** Threshold endings that can end the game early, in priority order. Returns undefined if none apply. */
 function earlyEnding(state: WorldState): { ending: EndingId; reason: string } | undefined {
   const mine = playableCompanies(state);
@@ -135,7 +138,7 @@ export function checkEndings(state: WorldState): void {
     state.status = { over: true, ending: early.ending, reason: early.reason };
   } else if (state.year > END_YEAR) {
     const best = endingFit(state).reduce((a, b) => (b.fit > a.fit ? b : a));
-    state.status = { over: true, ending: best.id, reason: `The world of ${END_YEAR} best fits: ${best.id}.` };
+    state.status = { over: true, ending: best.id, reason: `The world of ${END_YEAR} best fits: ${readable(best.id)}.` };
   } else {
     return;
   }
