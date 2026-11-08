@@ -78,3 +78,24 @@ export function fmtPeopleM(m: number): string {
 export function fmtPct(n: number): string {
   return Number.isFinite(n) ? `${Math.round(n)}%` : '-';
 }
+
+/** Readable labels for the sim's pathway ids (data/cards.json `unlocks`). Unknown ids fall back to spaced camelCase. */
+const PATHWAY_LABELS: Record<string, string> = {
+  fundedScience: 'Funded science',
+  looseContentPolicy: 'Loose content rules',
+  openSourced: 'Open-source AI',
+  openSourcedMaterials: 'Open materials science',
+  robotDividend: 'Robot dividend',
+  robotsEverywhere: 'Robots everywhere',
+  safeguardsBuilt: 'Safeguards built',
+  sellsAgents: 'Office agents sold',
+  skippedSecurity: 'Security skipped',
+  treaty: 'AI treaty',
+  ubi: 'Universal basic income',
+};
+
+export function pathwayLabel(id: string): string {
+  if (PATHWAY_LABELS[id]) return PATHWAY_LABELS[id];
+  const words = id.replace(/[-_]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim().toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
