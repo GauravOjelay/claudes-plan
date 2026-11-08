@@ -14,6 +14,8 @@ describe('scene', () => {
   it('is deterministic per city and has 3 HQ slots', () => {
     expect(buildScene('sf')).toEqual(buildScene('sf'));
     expect(buildScene('sf').buildings.filter((b) => b.kind === 'hq')).toHaveLength(3);
+    expect(buildScene('nyc', 7).buildings.filter((b) => b.kind === 'hq')).toHaveLength(7);
+    expect(buildScene('cairo', 0).buildings.filter((b) => b.kind === 'hq')).toHaveLength(0);
   });
 
   it('has a renderer and label for every CityEffectKind', () => {
@@ -90,6 +92,8 @@ describe('3D layout', () => {
     const a = buildLayout3D('sf');
     expect(buildLayout3D('sf')).toEqual(a);
     expect(a.hq).toHaveLength(3);
+    expect(buildLayout3D('nyc', 7).hq).toHaveLength(7);
+    expect(buildLayout3D('lagos', 0).hq).toHaveLength(0);
     expect(a.buildings.filter((b) => b.kind === 4)).toHaveLength(1);
     expect(a.buildings.filter((b) => b.kind === 3)).toHaveLength(1);
     for (const b of a.buildings) for (const p of b.parts) expect(p.x - p.w / 2).toBeGreaterThan(riverX(p.z) + RIVER_W / 2);
@@ -111,18 +115,16 @@ describe('event demo envelopes', () => {
   });
 });
 
-describe('city roster', () => {
-  it('gives every extra city 3 companies of its own, with a spread of good and weak firms', async () => {
-    const { EXTRA_CITIES, EXTRA_COMPANIES, ALL_CITIES } = await import('./roster');
-    expect(ALL_CITIES.length).toBeGreaterThanOrEqual(15);
-    for (const c of EXTRA_CITIES) {
-      expect(c.companyIds).toHaveLength(3);
-      for (const id of c.companyIds) expect(EXTRA_COMPANIES.find((k) => k.id === id)?.homeCity).toBe(c.id);
-    }
-    const ids = EXTRA_COMPANIES.map((c) => c.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(EXTRA_COMPANIES.some((c) => c.vars.safetyLevel >= 75 && c.vars.publicTrust >= 65)).toBe(true);
-    expect(EXTRA_COMPANIES.some((c) => c.vars.safetyLevel <= 35 && c.vars.publicTrust <= 45)).toBe(true);
+describe('city roster (no rivals)', () => {
+  it('every city resolves its own companies by reference; cities may have none; HQ order puts waiting first', async () => {
+    const { ALL_CITIES, staticCompany } = await import('./roster');
+    const { orderHqs } = await import('./util');
+    expect(ALL_CITIES.find((c) => c.id === 'nyc')!.companyIds.length).toBe(7);
+    expect(ALL_CITIES.some((c) => c.companyIds.length === 0)).toBe(true);
+    for (const c of ALL_CITIES) for (const id of c.companyIds) expect(staticCompany(id)?.homeCity).toBe(c.id);
+    const sf = ALL_CITIES.find((c) => c.id === 'sf')!.companyIds.map((id) => staticCompany(id)!);
+    expect(orderHqs(sf, 'closedai')[0].id).toBe('closedai');
+    expect(orderHqs(sf, 'closedai', ['spacey'])[0].id).toBe('spacey');
   });
 });
 

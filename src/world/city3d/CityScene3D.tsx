@@ -8,7 +8,7 @@ import { Html, MapControls, PerformanceMonitor, Sky } from '@react-three/drei';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import * as THREE from 'three';
 import type { CityEffectKind, CityInfo, Company, WorldState } from '../../contracts';
-import { ALL_EFFECT_KINDS, companiesInCity, effectsForCity } from '../util';
+import { ALL_EFFECT_KINDS, ARCHETYPE_LABEL, companiesInCity, effectsForCity, orderHqs } from '../util';
 import { Toasts } from '../EventFeed';
 import { useSmoothEffects } from '../smoothEffects';
 import { FpsMeter, useFpsVisible } from '../FpsMeter';
@@ -187,24 +187,24 @@ function Clouds({ tex }: { tex: THREE.Texture }) {
 }
 
 // ------------------------------------------------------------------ HQ markers
-function HqMarkers({ layout, companies, playerId, onSelect }: { layout: Layout3D; companies: (Company | undefined)[]; playerId: string; onSelect: (id: string) => void }) {
+function HqMarkers({ layout, companies, waiting, onSelect }: { layout: Layout3D; companies: Company[]; waiting: string[]; onSelect: (id: string) => void }) {
   return (
     <group>
       {layout.hq.map((h, i) => {
         const c = companies[i];
         if (!c) return null;
-        const mine = c.id === playerId;
+        const wait = waiting.includes(c.id);
         return (
           <group key={c.id}>
             <mesh position={[h.x, h.top + 0.5, h.z]}>
               <sphereGeometry args={[1.4, 12, 12]} />
-              <meshBasicMaterial color={mine ? '#5cc8ff' : '#ffb547'} toneMapped={false} />
+              <meshBasicMaterial color={wait ? '#ffd60a' : '#5cc8ff'} toneMapped={false} />
             </mesh>
-            <Html position={[h.x, h.top + 14, h.z]} center zIndexRange={[30, 0]}>
-              <button className={`w3-hq${mine ? ' mine' : ''}`} onClick={() => onSelect(c.id)}
-                aria-label={`${c.name} headquarters${mine ? ' (your company)' : ' (rival, view only)'}`}>
+            <Html position={[h.x, h.top + 8 + (i % 4) * 12, h.z]} center zIndexRange={[30, 0]}>
+              <button className={`w3-hq${wait ? ' waiting' : ' mine'}${companies.length > 3 ? ' compact' : ''}`} onClick={() => onSelect(c.id)}
+                title={ARCHETYPE_LABEL[c.archetype]} aria-label={`${c.name} headquarters${wait ? ', decision waiting' : ''}`}>
                 <span className="w3-hq-name">{c.name}</span>
-                <span className="w3-hq-sub">{mine ? 'YOUR HQ' : 'RIVAL'}</span>
+                {(wait || companies.length <= 3) && <span className="w3-hq-sub">{wait ? 'DECISION WAITING' : ARCHETYPE_LABEL[c.archetype].toUpperCase()}</span>}
                 <span className="w3-hq-arrow" aria-hidden>▼</span>
               </button>
             </Html>
@@ -216,10 +216,11 @@ function HqMarkers({ layout, companies, playerId, onSelect }: { layout: Layout3D
 }
 
 // ------------------------------------------------------------------ scene
-function SceneContents({ state, city, onSelectCompany, time, api }: {
-  state: WorldState; city: CityInfo; onSelectCompany: (id: string) => void; time: TimeOfDay; api: MutableRefObject<RigApi>;
+function SceneContents({ state, city, onSelectCompany, time, api, waiting }: {
+  state: WorldState; city: CityInfo; onSelectCompany: (id: string) => void; time: TimeOfDay; api: MutableRefObject<RigApi>; waiting: string[];
 }) {
-  const layout = useMemo(() => buildLayout3D(city.id), [city.id]);
+  const hqCompanies = orderHqs(companiesInCity(state, city), state.playerCompanyId, waiting);
+  const layout = useMemo(() => buildLayout3D(city.id, hqCompanies.length), [city.id, hqCompanies.length]);
   const uniforms = useMemo(makeUniforms, []);
   const smokeTex = useMemo(softTexture, []);
   const fx = useSmoothEffects(effectsForCity(state, city.id));
@@ -229,10 +230,6 @@ function SceneContents({ state, city, onSelectCompany, time, api }: {
   const scene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
 
-  // HQ order: player's company in the tallest (middle) tower.
-  const companies = companiesInCity(state, city).slice(0, 3);
-  const ordered = [...companies].sort((a, b) => Number(b.id === state.playerCompanyId) - Number(a.id === state.playerCompanyId));
-  const bySlot: (Company | undefined)[] = [ordered[1], ordered[0], ordered[2]];
 
   const war = k('warBuildup');
   const fogColor = useMemo(() => new THREE.Color(look.fog).lerp(new THREE.Color('#9a4a38'), war * 0.6), [look.fog, war]);
@@ -282,7 +279,7 @@ function SceneContents({ state, city, onSelectCompany, time, api }: {
       {active.map((kind) => (
         <EffectLayer3D key={kind} kind={kind} k={fx.get(kind)!.intensity} layout={layout} smokeTex={smokeTex} />
       ))}
-      <HqMarkers layout={layout} companies={bySlot} playerId={state.playerCompanyId} onSelect={onSelectCompany} />
+      <HqMarkers layout={layout} companies={hqCompanies} waiting={waiting} onSelect={onSelectCompany} />
       {/* plaza fountain so the protest square reads as a square */}
       <mesh position={[layout.plaza.x, 0.6, layout.plaza.z]}>
         <cylinderGeometry args={[3, 3.4, 0.9, 24]} />
@@ -314,9 +311,11 @@ export interface CityScene3DProps {
   initialTime?: TimeOfDay;
   /** Shown as a button when the frame rate stays low even at reduced quality. */
   onRequest2D?: () => void;
+  /** Companies with a decision still waiting this year. */
+  waiting?: string[];
 }
 
-export default function CityScene3D({ state, city, onSelectCompany, initialTime = 'golden', onRequest2D }: CityScene3DProps) {
+export default function CityScene3D({ state, city, onSelectCompany, initialTime = 'golden', onRequest2D, waiting = [] }: CityScene3DProps) {
   // Adaptive quality: drop the pixel ratio when frames stall; offer the 2D view if it is still slow.
   const [dpr, setDpr] = useState(1.5);
   const [slow, setSlow] = useState(false);
@@ -373,7 +372,7 @@ export default function CityScene3D({ state, city, onSelectCompany, initialTime 
           onDecline={() => setDpr((d) => Math.max(0.6, d - 0.3))} onFallback={() => { setDpr(0.6); setSlow(true); }} />
         <CameraRig api={api} container={wrap} />
         {fpsVisible && <FpsMeter target={fpsEl} />}
-        <SceneContents state={state} city={city} onSelectCompany={onSelectCompany} time={time} api={api} />
+        <SceneContents state={state} city={city} onSelectCompany={onSelectCompany} time={time} api={api} waiting={waiting} />
       </Canvas>
 
       <Toasts state={state} cities={ALL_CITIES} cityId={city.id} />
