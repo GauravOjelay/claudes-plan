@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { CityEffectKind, WorldState } from '../contracts';
+import type { CityEffectKind, Decision, WorldState } from '../contracts';
+import cards from '../../data/cards.json';
 import { mockWorldState } from '../contracts/mocks';
 import { IntroScreen } from './IntroScreen';
 import { ReportCard } from './ReportCard';
@@ -10,6 +11,7 @@ import { TopBar } from './TopBar';
 import { Boardroom, boardroomLook } from './Boardroom';
 import { HQ_CITY_PHOTO, HQ_PHOTOS, MIN_FLIPPED_SIGN_X, PhotoBoardroom, photoLook, signArea } from './PhotoBoardroom';
 import { COMPANY_ROSTER } from '../contracts/cities';
+import { RaceTracker } from './RaceTracker';
 import { HelpButton, HowToPlay, HOW_TO_PLAY_STEPS } from './HowToPlay';
 
 const ALL_KINDS = Object.keys(CITY_EFFECT_LABEL) as CityEffectKind[];
@@ -196,5 +198,67 @@ describe('PhotoBoardroom', () => {
     expect(html).not.toContain('ui-hqp-blackout');
     const dark = renderToStaticMarkup(<PhotoBoardroom company={c} effects={[{ city: c.homeCity, kind: 'blackout', intensity: 1, sinceYear: 2030 }]} />);
     expect(dark).toContain('ui-hqp-blackout');
+  });
+});
+
+describe('TopBar with several companies', () => {
+  const bar = (waiting: number, made: number) => renderToStaticMarkup(
+    <TopBar year={2027} screen="hq" onNavigate={() => {}} cardsWaiting={waiting} decisionsMade={made} onSkipYear={() => {}} />,
+  );
+
+  it('before any decision: Make your decision + small Skip year, no End button', () => {
+    const html = bar(17, 0);
+    expect(html).toContain('Make your 2027 decision');
+    expect(html).toContain('Skip year');
+    expect(html).not.toContain('End 2027');
+  });
+
+  it('after a decision with other companies waiting: both "Decide for more companies" (with the count) and End <year>', () => {
+    const html = bar(16, 1);
+    expect(html).toMatch(/16<\/span> Decide for more companies/);
+    expect(html).toContain('End 2027');
+    expect(html).not.toContain('Skip year');
+    expect(html).not.toContain('Make your');
+  });
+
+  it('when nobody is waiting: only End <year>', () => {
+    const html = bar(0, 3);
+    expect(html).toContain('End 2027');
+    expect(html).not.toContain('Decide for more');
+  });
+});
+
+describe('every company is the player\'s (no rivals)', () => {
+  const state: WorldState = {
+    ...mockWorldState,
+    companies: COMPANY_ROSTER.map((c) => ({ ...c })),
+    choiceLog: [
+      { year: 2026, decisionId: 'datacentre-campus', optionId: 'staged', companyId: 'closedai' },
+      { year: 2026, decisionId: 'datacentre-campus', optionId: 'fastTrack', companyId: 'mvidia' },
+    ],
+    status: { over: true, ending: 'slowdown', reason: 'x', score: { total: 60, wellbeing: 60, company: 60, survival: 60 } },
+  };
+  const text = (html: string) => html.replace(/<[^>]+>/g, ' ');
+
+  it('has no rival / view-only / "your company" wording on any screen', () => {
+    const pages = [
+      renderToStaticMarkup(<HQScreen state={state} decisions={[]} onChoose={() => {}} companyId="mvidia" />),
+      renderToStaticMarkup(<ReportCard state={state} />),
+      renderToStaticMarkup(<RaceTracker state={state} />),
+      renderToStaticMarkup(<HowToPlay onClose={() => {}} />),
+    ];
+    for (const html of pages) expect(text(html)).not.toMatch(/rival|view only|view-only|your company\b|\(you\)/i);
+  });
+
+  it('lets any company HQ take decisions', () => {
+    const d = (cards as unknown as Decision[])[0];
+    const html = renderToStaticMarkup(<HQScreen state={{ ...state, status: { over: false } }} decisions={[d]} onChoose={() => {}} companyId="cancer" />);
+    expect(html).toContain(d.title);
+  });
+
+  it('report card lists the decisions of ALL companies with the company name', () => {
+    const html = text(renderToStaticMarkup(<ReportCard state={state} />));
+    expect(html).toContain('ClosedAI');
+    expect(html).toContain('Mvidia');
   });
 });

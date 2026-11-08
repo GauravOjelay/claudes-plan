@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 /** The three steps. Keep the whole overlay under 60 words (master task #7). */
 export const HOW_TO_PLAY_STEPS: { title: string; text: string }[] = [
-  { title: 'Make your decision', text: 'Open your HQ and pick one option.' },
+  { title: 'Make decisions', text: 'Open any company HQ and pick an option. You run every company.' },
   { title: 'Look around', text: 'Explore the globe, cities and Average Joe.' },
   { title: 'End the year', text: 'Press End year, then Continue to see what changed.' },
 ];

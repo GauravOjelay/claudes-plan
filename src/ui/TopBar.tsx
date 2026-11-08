@@ -7,8 +7,12 @@ export interface TopBarProps {
   /** The screen being shown, highlighted as the active tab. */
   screen: GameScreen;
   onNavigate: (screen: GameScreen) => void;
-  /** Decision cards the player can answer this year. */
+  /** Companies that still have a decision card waiting this year (the player runs every company). */
   cardsWaiting: number;
+  /** Decisions already made this year (held until the year is ended). */
+  decisionsMade?: number;
+  /** Open the next company that still has a card. Defaults to opening the HQ tab. */
+  onDecideMore?: () => void;
   /** Let a year pass without answering a card. */
   onSkipYear: () => void;
   /** Extra controls on the right, e.g. <HelpButton/> and <A11yControls/>. */
@@ -24,11 +28,13 @@ const TABS: { id: GameScreen; label: string }[] = [
 
 /**
  * The game's header: year, screen tabs and the one obvious next step (task #17.2):
- * "Make your <year> decision →" (pulsing) while a card waits, then "End <year> →" once it is answered.
- * "Skip year" stays small. A slot on the right holds extra controls.
+ * "Make your <year> decision →" (pulsing) until the first decision is made. After that "End <year> →" is the
+ * prominent button, next to "Decide for more companies (N waiting)" while other companies still have cards.
+ * "Skip year" (no decision at all) stays small. A slot on the right holds extra controls.
  */
-export function TopBar({ year, screen, onNavigate, cardsWaiting, onSkipYear, children }: TopBarProps) {
+export function TopBar({ year, screen, onNavigate, cardsWaiting, decisionsMade = 0, onDecideMore, onSkipYear, children }: TopBarProps) {
   const n = Math.max(0, Math.floor(Number(cardsWaiting) || 0));
+  const made = Math.max(0, Math.floor(Number(decisionsMade) || 0));
   return (
     <header className="ui-topbar">
       <div className="ui-topbar-brand">
@@ -46,18 +52,26 @@ export function TopBar({ year, screen, onNavigate, cardsWaiting, onSkipYear, chi
       </nav>
 
       <div className="ui-topbar-actions">
-        {n > 0 ? (
+        {n > 0 && made === 0 ? (
           <>
             <button className="ui-topbar-cta ui-topbar-pulse" onClick={() => onNavigate('hq')}
-              title={`${n} decision card${n === 1 ? '' : 's'} waiting at your HQ`}>
+              title={`${n} compan${n === 1 ? 'y has' : 'ies have'} a decision waiting`}>
               Make your {year} decision →
             </button>
-            <button className="ui-btn ui-topbar-skip" onClick={onSkipYear} title="Let a year pass without answering a card">
+            <button className="ui-btn ui-topbar-skip" onClick={onSkipYear} title="Let a year pass without making any decision">
               Skip year
             </button>
           </>
         ) : (
-          <button className="ui-topbar-end" onClick={onSkipYear}>End {year} →</button>
+          <>
+            {n > 0 && (
+              <button className="ui-topbar-cta" onClick={onDecideMore ?? (() => onNavigate('hq'))}
+                title="Other companies can still decide this year">
+                <span className="ui-topbar-count">{n}</span> Decide for more companies →
+              </button>
+            )}
+            <button className="ui-topbar-end" onClick={onSkipYear}>End {year} →</button>
+          </>
         )}
         {children}
       </div>

@@ -50,7 +50,7 @@ function fmt1(v: unknown): string {
 
 const SCORE_PARTS: { key: keyof Omit<Score, 'total'>; label: string; hint: string }[] = [
   { key: 'wellbeing', label: 'World wellbeing', hint: 'trust, jobs, fair shares' },
-  { key: 'company', label: 'Your company', hint: 'value and money' },
+  { key: 'company', label: 'Your companies', hint: 'value and money' },
   { key: 'survival', label: "Humanity's survival", hint: 'low takeover risk and tension' },
 ];
 
@@ -71,22 +71,23 @@ function ScoreRing({ total }: { total: number }) {
 }
 
 /** End-of-game "Your 2126" report card (docs/plan.md 10.6). Uses state.status.ending. */
-export function ReportCard({ state, decisions = [], maxDecisions = 10, onRestart, showControls = true }: ReportCardProps) {
+export function ReportCard({ state, decisions = [], maxDecisions = 12, onRestart, showControls = true }: ReportCardProps) {
   const [copied, setCopied] = useState(false);
   const ending = state.status.ending ? ENDINGS[state.status.ending] : undefined;
-  const company = state.companies.find((c) => c.id === state.playerCompanyId);
+  const companies = state.companies.filter((c) => c.playable);
+  const nameOf = (id: string) => state.companies.find((c) => c.id === id)?.name ?? id;
   // Set by the sim when the game ends (contracts GameStatus.score); may be missing.
   const raw = state.status.score;
   const score = raw && Number.isFinite(Number(raw.total)) ? raw : undefined;
 
-  const choices = state.choiceLog
-    .filter((c) => c.companyId === state.playerCompanyId)
-    .slice(0, maxDecisions)
-    .map((c) => {
-      const d = decisions.find((x) => x.id === c.decisionId);
-      const o = d?.options.find((x) => x.id === c.optionId);
-      return { year: c.year, title: d?.title ?? c.decisionId, option: o?.label ?? c.optionId };
-    });
+  // Decisions of ALL companies (the player controls every one), oldest first, with the company name.
+  const allChoices = state.choiceLog.map((c) => {
+    const d = decisions.find((x) => x.id === c.decisionId);
+    const o = d?.options.find((x) => x.id === c.optionId);
+    return { year: c.year, company: nameOf(c.companyId), title: d?.title ?? c.decisionId, option: o?.label ?? c.optionId };
+  });
+  const choices = allChoices.slice(0, maxDecisions);
+  const moreChoices = allChoices.length - choices.length;
 
   const worldGdp = Object.values(state.regions).reduce((s, r) => s + (Number(r.gdp) || 0), 0);
   const stats: [string, string][] = [
@@ -101,8 +102,8 @@ export function ReportCard({ state, decisions = [], maxDecisions = 10, onRestart
   const shareText = [
     `My ${state.year} in AI 2126: ${ending?.title ?? 'Unfinished'}`,
     score ? `Score ${Math.round(score.total)}/100 (wellbeing ${Math.round(score.wellbeing)}, company ${Math.round(score.company)}, survival ${Math.round(score.survival)})` : '',
-    company ? `I ran ${company.name}.` : '',
-    ...choices.map((c) => `${c.year}: ${c.title} - ${c.option}`),
+    companies.length > 1 ? `I ran ${companies.length} companies.` : companies[0] ? `I ran ${companies[0].name}.` : '',
+    ...choices.map((c) => `${c.year}: ${c.company}: ${c.title} - ${c.option}`),
     `Seed ${state.seed}`,
   ].filter(Boolean).join('\n');
 
@@ -154,16 +155,17 @@ export function ReportCard({ state, decisions = [], maxDecisions = 10, onRestart
       </header>
 
       <section className="ui-panel" style={{ marginBottom: '1rem' }}>
-        <h2>Key decisions{company ? ` at ${company.name}` : ''}</h2>
+        <h2>Key decisions</h2>
         {choices.length === 0 ? (
           <p className="ui-muted">No decisions recorded.</p>
         ) : (
           <ol>
             {choices.map((c, i) => (
-              <li key={i}><strong>{c.year}:</strong> {c.title} → <em>{c.option}</em></li>
+              <li key={i}><strong>{c.year}:</strong> {c.company}: {c.title} → <em>{c.option}</em></li>
             ))}
           </ol>
         )}
+        {moreChoices > 0 && <p className="ui-small ui-muted">…and {moreChoices} more decision{moreChoices === 1 ? '' : 's'}.</p>}
       </section>
 
       <section className="ui-panel">

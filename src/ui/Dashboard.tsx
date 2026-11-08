@@ -34,7 +34,7 @@ export function GdpChart({ history }: { history: WorldState['history'] }) {
             formatter={(v: number, name: string) => [formatGdp(v), name]}
             contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
           />
-          <Legend />
+          <Legend formatter={(value: string) => <span style={{ color: 'var(--text)' }}>{value}</span>} />
           {regions.map((r, i) => (
             <Line key={r} dataKey={r} name={REGION_NAME[r] ?? r} type="monotone"
               stroke={SERIES[i % SERIES.length].color} strokeDasharray={SERIES[i % SERIES.length].dash}

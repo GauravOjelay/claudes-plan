@@ -13,7 +13,7 @@ export interface HQScreenProps {
   /** Cards available now. The first one the company hasn't answered yet is shown. */
   decisions: Decision[];
   onChoose: (decisionId: string, optionId: string) => void;
-  /** Which HQ to show. Defaults to the player's company. Rivals are view-only (DECISIONS.md #5). */
+  /** Which HQ to show. Defaults to the flagship company. The player controls every company (DECISIONS.md #20). */
   companyId?: string;
   /** Used to show the city name; falls back to the city id. */
   cities?: CityInfo[];
@@ -44,7 +44,7 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
   if (!company) {
     return <div className="ui-panel" role="alert">Unknown company: {id}</div>;
   }
-  const isPlayer = company.playable; // the player controls every playable company (no rivals)
+  const canDecide = company.playable; // the player controls every playable company
   const answered = new Set(state.choiceLog.filter((c) => c.companyId === company.id).map((c) => c.decisionId));
   const next = decisions.find((d) => !answered.has(d.id));
   const news = relevantHeadlines(state.headlines, company.id, company.homeCity);
@@ -63,7 +63,6 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
           <h1>{company.name} HQ</h1>
           <div className="ui-muted">
             {ARCHETYPE_LABEL[company.archetype]} · {city}
-            {!isPlayer && ' · Rival (view only)'}
           </div>
         </div>
         <div className="ui-year" aria-label={`Year ${state.year}`}>{state.year}</div>
@@ -75,10 +74,9 @@ export function HQScreen({ state, decisions, onChoose, companyId, cities, onBack
       <section className="ui-hq-center" aria-label="Decision">
         {gameOver ? (
           <div className="ui-viewonly"><strong>The game is over.</strong></div>
-        ) : !isPlayer ? (
+        ) : !canDecide ? (
           <div className="ui-viewonly">
-            <strong>{company.name} is a rival.</strong>
-            <p className="ui-muted">You can watch its numbers, but only your own company takes decisions.</p>
+            <strong>{company.name} cannot take decisions.</strong>
           </div>
         ) : next ? (
           <>

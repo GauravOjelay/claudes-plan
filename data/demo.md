@@ -15,6 +15,8 @@ You fast-track a giant data centre in 2026. The grid can't take it and **San Fra
 3. The app now jumps to **your home city, San Francisco**, by itself. If something happened, an **alert** pops up over the city: read it out, press **Continue** in the alert. This is where you talk and point at the skyline and the numbers.
 4. When you are ready, click the floating **"Continue to 2027 →"** banner at the bottom of the screen. It takes you back to Your HQ with the next card.
 
+Since 2026-11-08 you could decide for all 17 companies, but the demo uses **ClosedAI only**: after you pick the option, the top bar also shows a small yellow "Decide for more companies" button. **Ignore it** and click the blue "End <year> →". (The score includes every company, so it is a little lower than before.)
+
 Never click **"Skip year"** (the small grey button next to the yellow "Make your … decision →" button): it throws the year away without answering and breaks the script. You never need the top-bar tabs during the run, except to open **Your HQ** the first time (or the yellow "Make your 2026 decision →" button, or the "Your move" button on the city screen).
 
 ## Before you go on stage (2 minutes)
@@ -45,7 +47,7 @@ Never click **"Skip year"** (the small grey button next to the yellow "Make your
 | 2:10 | 2032 | **A misalignment warning** | **Pause and fix it** | Green alert: *"Leading powers sign a first AI treaty…"*. | "My AI is hiding something in tests. I stop and fix it." |
 | 2:20 | 2033 | **What does the lab work on?** | **Fund disease and space research** | Green alert: *"AI-designed treatments clear early trials…"*. | "Science over profit." |
 | 2:28 | 2034-36 | **The robotics rollout**, then **Who holds the controls?**, then **Regulators are circling** | **Limit them to controlled industries**, **Keep humans in the loop**, **Accept the rules** | No alerts. The solar boom stays on the skyline, fading slowly (0.4 → 0.2). The game ends after the 2036 card. | "Three quick ones: robots only where they're safe, humans stay in charge, I work with regulators." |
-| 2:45 | 2037 | **Report card** | none | **Abundance Utopia**, score about **72** (wellbeing 67, company 62, survival 91). | "2036. Abundance Utopia. And it began with two decisions in 2026 and 2027." |
+| 2:45 | 2037 | **Report card** | none | **Abundance Utopia**, score about **71** (wellbeing 67, company 58, survival 91). | "2036. Abundance Utopia. And it began with two decisions in 2026 and 2027." |
 
 ## The twist (about 30 seconds; use the parked second tab)
 
@@ -60,7 +62,7 @@ What the what-if run shows (all locked by the test):
 | 2031 | Energy balance −2 and still short; the old blackout is almost gone (0.1) |
 | 2032 | **Second Blackout belt alert**, blackout back to 0.6. The card shown this year is **What does the lab work on?** (the misalignment card needs more capability and comes a year later) |
 | 2033-36 | Blackout lingers (0.5 → 0.2), US public trust 44-50 (main run: 62-68) |
-| End | **Slowdown**, score about 69 (main run: Utopia, about 72) |
+| End | **Slowdown**, score about 68 (main run: Utopia, about 71) |
 
 ## The exact options, in order (also in `data/demo.json`)
 

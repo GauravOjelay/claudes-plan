@@ -1,5 +1,6 @@
 import type { Company, Condition, Effect, GlobalVar, RegionId, RegionVar, VarRef, WorldState } from '../contracts';
 import { POWERS } from '../contracts';
+import { COMPANY_ROSTER, FLAGSHIP_COMPANY_ID } from '../contracts/cities';
 
 export const ALL_REGIONS = Object.freeze([...POWERS, 'AFRICA', 'LATAM', 'SEA'] as RegionId[]);
 
@@ -39,6 +40,57 @@ export function companyById(state: WorldState, id: string): Company {
 }
 
 export const playerCompany = (state: WorldState): Company => companyById(state, state.playerCompanyId);
+
+/** Every company the player can run (all of them, since the no-rivals decision of 2026-11-08). */
+export const playableCompanies = (state: WorldState): Company[] => state.companies.filter((c) => c.playable);
+
+/**
+ * The companies the player is actively steering: the flagship plus every company that has had a decision.
+ * Safety, takeover risk and the horizon endings are judged on this group. With only the flagship it is the old
+ * single-company game exactly (so the demo script is unchanged).
+ */
+export function directedCompanies(state: WorldState): Company[] {
+  const ids = new Set<string>([state.playerCompanyId, ...state.choiceLog.map((c) => c.companyId)]);
+  return state.companies.filter((c) => c.playable && ids.has(c.id));
+}
+
+/** Money and value figures in cards are written for the flagship (value 100). Other companies scale by their size. */
+const FLAGSHIP_VALUE = COMPANY_ROSTER.find((c) => c.id === FLAGSHIP_COMPANY_ID)?.vars.companyValue ?? 100;
+export function companySize(companyId: string): number {
+  const c = COMPANY_ROSTER.find((x) => x.id === companyId);
+  return c ? c.vars.companyValue / FLAGSHIP_VALUE : 1;
+}
+
+/**
+ * Apply one effect. `companyId` names the acting company for company-scope effects (and for region 'any').
+ * Without one, a company-scope effect hits every playable company (events happen to the whole player group).
+ * Absolute money / company-value changes are scaled by company size, so a 150-money start-up does not pay a 500-money lab's bill.
+ */
+export function applyEffect(state: WorldState, effect: Effect, companyId?: string, weight = 1): void {
+  num(effect.value, 'effect value'); // JSON strings must never reach the arithmetic below
+  if (effect.target.scope === 'company' && companyId === undefined) {
+    for (const c of playableCompanies(state)) applyEffect(state, effect, c.id);
+    return;
+  }
+  const id = companyId ?? state.playerCompanyId;
+  const t = effect.target;
+  if (t.scope === 'company') {
+    const sized = effect.op === 'add' && (t.variable === 'money' || t.variable === 'companyValue');
+    writeVar(state, t, effect.op, sized ? effect.value * companySize(id) : effect.value, id);
+    return;
+  }
+  // World-scale effects are damped by `weight` (see groupWeight): many companies deciding the same thing overlap.
+  const value = effect.op === 'add' ? effect.value * weight : effect.op === 'mul' ? Math.pow(effect.value, weight) : effect.value;
+  writeVar(state, t, effect.op, value, id);
+}
+
+/**
+ * The player may decide for 1 to 17 companies in a year. Each company's effect on the WORLD (regions, global variables)
+ * is scaled by n^-groupDamping, where n is the number of companies the player directs. One company = full effect (the old
+ * single-company game, and the demo, are unchanged); n companies together swing the world n^(1-damping) times as hard.
+ */
+export const GROUP_DAMPING = 0.75;
+export const groupWeight = (directed: number): number => Math.pow(Math.max(1, directed), -GROUP_DAMPING);
 
 /** Current value(s) of a variable. A region of 'any' returns every region's value. */
 export function readVar(state: WorldState, ref: VarRef): number[] {

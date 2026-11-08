@@ -38,6 +38,14 @@ export function App() {
   const openCards = openCardsFor(hqCompany);
   const companiesWaiting = playable.filter((c) => openCardsFor(c.id).length > 0).length;
 
+  // Open the HQ of the next company that still has a card (used by the top bar's "Decide for more companies").
+  const decideMore = () => {
+    const next = playable.find((c) => openCardsFor(c.id).length > 0);
+    if (!next) return;
+    setHqId(next.id);
+    setScreen('hq');
+  };
+
   const advance = () => {
     const before = state.eventLog.length;
     const next = playYear(state, Object.values(pending));
@@ -93,7 +101,9 @@ export function App() {
       <TopBar
         year={state.year}
         screen={screen}
-        cardsWaiting={screen === 'hq' ? openCards.length : companiesWaiting}
+        cardsWaiting={companiesWaiting}
+        decisionsMade={Object.keys(pending).length}
+        onDecideMore={decideMore}
         onSkipYear={() => advance()}
         onNavigate={(next) => {
           if (next === 'hq') setHqId(undefined);
