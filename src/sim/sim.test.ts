@@ -328,7 +328,7 @@ const T = ENDING_THRESHOLDS;
 describe('endings and score', () => {
   it('bankruptcy ends the game with a score, and a finished game no longer changes', () => {
     const s = fresh();
-    s.companies[0].vars.money = -5;
+    for (const c of s.companies) c.vars.money = -5; // most of the companies the player runs go under
     const over = NONE(s, [], createRng(1));
     expect(over.status).toMatchObject({ over: true, ending: 'bankrupt' });
     const sc = over.status.score!;
@@ -336,6 +336,16 @@ describe('endings and score', () => {
     for (const v of Object.values(sc)) expect(v).toBeGreaterThanOrEqual(0);
     for (const v of Object.values(sc)) expect(v).toBeLessThanOrEqual(100);
     expect(NONE(over, [], createRng(1))).toEqual(over);
+  });
+  it('one company going under is news, not the end of the game (most must go under)', () => {
+    const s = fresh();
+    s.companies[0].vars.money = -5;
+    const next = NONE(s, [], createRng(1));
+    expect(next.status.over).toBe(false);
+    expect(next.headlines.some((h) => h.text === `${s.companies[0].name} runs out of money`)).toBe(true);
+    // ... and the headline is only written once
+    const again = NONE(next, [], createRng(2));
+    expect(again.headlines.filter((h) => h.text === `${s.companies[0].name} runs out of money`)).toHaveLength(1);
   });
   it('score parts stay in 0-100 and total is the weighted blend', () => {
     const sc = computeScore(fresh());

@@ -1,5 +1,5 @@
 import type { ExpertOutlook, WorldState } from '../contracts';
-import { ALL_REGIONS, clamp, playerCompany } from './vars';
+import { ALL_REGIONS, clamp, companySize, directedCompanies, playerCompany } from './vars';
 
 /** One line of cause and effect (plan section 3). Mutates the cloned `state`. */
 export interface Rule {
@@ -37,6 +37,8 @@ export const TUNING = {
   trustHome: 60,
   regulationPull: 0.15, // share of the gap to (100 - trust) closed each year
   concentrationPerCapability: 0.01, // wealth-gap points per capability point per year (x outlook)
+  monopolyFreeShare: 0.1, // a player who steers up to this share of a region's AI company value causes no extra concentration
+  monopolyPerYear: 0.7, // wealth-gap points per year in a region the player fully controls (scaled up from the free share)
   incomeRate: 0.1, // company income per year as a share of company value (x trust/60)
   burnBase: 12,
   burnPerCapability: 0.4,
@@ -113,7 +115,17 @@ export const concentration: Rule = {
   id: 'concentration',
   apply(state) {
     const k = TUNING.concentrationPerCapability * OUTLOOK_AUTOMATION[state.outlook] * state.global.aiCapability;
-    for (const r of ALL_REGIONS) state.regions[r].wealthGap = clamp(state.regions[r].wealthGap + k, 0, 100);
+    // The more of a region's AI company value the player steers (flagship + every company with a decision), the more
+    // wealth pools at the top there: running the whole industry is the road to Corporate Feudalism.
+    const mine = directedCompanies(state);
+    for (const r of ALL_REGIONS) {
+      const all = state.companies.filter((c) => c.playable && c.homeRegion === r);
+      const total = all.reduce((t, c) => t + c.vars.companyValue, 0);
+      const owned = mine.filter((c) => c.homeRegion === r).reduce((t, c) => t + c.vars.companyValue, 0);
+      const share = total > 0 ? owned / total : 0;
+      const monopoly = TUNING.monopolyPerYear * clamp((share - TUNING.monopolyFreeShare) / (1 - TUNING.monopolyFreeShare), 0, 1);
+      state.regions[r].wealthGap = clamp(state.regions[r].wealthGap + k + monopoly, 0, 100);
+    }
   },
 };
 
@@ -173,14 +185,24 @@ export const trustAndRegulation: Rule = {
 export const companyEconomy: Rule = {
   id: 'companyEconomy',
   apply(state) {
-    const me = playerCompany(state).vars;
-    const short = state.regions[playerCompany(state).homeRegion].energy < 0;
-    me.money += TUNING.incomeRate * me.companyValue * (me.publicTrust / 60) - (TUNING.burnBase + TUNING.burnPerCapability * me.aiCapability);
-    const growth = TUNING.valueGrowth + TUNING.valueTrust * (me.publicTrust - 50) - (short ? TUNING.valueBlackout : 0);
-    me.companyValue = Math.max(0, me.companyValue * (1 + growth));
-    // Company trust follows the home region's trust, with a lag.
-    const home = state.regions[playerCompany(state).homeRegion].publicTrust;
-    me.publicTrust = clamp(me.publicTrust + (home - me.publicTrust) * 0.3, 0, 100);
+    // Every company the player runs has its own books. Costs scale with size (the flagship, value 100, is the reference).
+    for (const c of state.companies) {
+      if (!c.playable) continue;
+      const me = c.vars;
+      const size = companySize(c.id);
+      const short = state.regions[c.homeRegion].energy < 0;
+      me.money += TUNING.incomeRate * me.companyValue * (me.publicTrust / 60) - (TUNING.burnBase + TUNING.burnPerCapability * me.aiCapability) * size;
+      const growth = TUNING.valueGrowth + TUNING.valueTrust * (me.publicTrust - 50) - (short ? TUNING.valueBlackout : 0);
+      me.companyValue = Math.max(0, me.companyValue * (1 + growth));
+      // Company trust follows the home region's trust, with a lag.
+      const home = state.regions[c.homeRegion].publicTrust;
+      me.publicTrust = clamp(me.publicTrust + (home - me.publicTrust) * 0.3, 0, 100);
+      // One headline the first time a company runs dry (a single bankruptcy is news, not the end of the game).
+      const text = `${c.name} runs out of money`;
+      if (me.money < 0 && !state.headlines.some((h) => h.text === text)) {
+        state.headlines.push({ year: state.year, text, companyId: c.id, city: c.homeCity });
+      }
+    }
   },
 };
 

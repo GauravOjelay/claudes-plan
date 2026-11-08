@@ -1,6 +1,6 @@
 /**
  * Automated balance runs (plan 15.1): play many games with simulated players and count the endings.
- * The harness mirrors the app's rules: one card per year, only cards from the current era whose
+ * The harness mirrors the app's rules: each company the player directs gets one card per year, only cards from the current era whose
  * requirements are met and that have not been answered yet.
  */
 import type { Decision, DecisionOption, EndingId, WorldState } from '../contracts';
@@ -15,8 +15,8 @@ const eraContains = (era: string, year: number): boolean => {
   return year >= a && year <= b;
 };
 
-function available(state: WorldState, decisions: Decision[]): Decision[] {
-  const answered = new Set(state.choiceLog.map((c) => c.decisionId));
+function available(state: WorldState, decisions: Decision[], companyId: string): Decision[] {
+  const answered = new Set(state.choiceLog.filter((c) => c.companyId === companyId).map((c) => c.decisionId));
   return decisions.filter((d) => !answered.has(d.id) && eraContains(d.era, state.year) && (!d.requirements || evalCondition(state, d.requirements)));
 }
 
@@ -69,15 +69,27 @@ export interface GameResult {
  */
 export type CardMode = 'first' | 'any';
 
+/**
+ * How many companies the simulated player decides for each year (the player runs every company, one card each per year):
+ * 'flagship' = only ClosedAI (the old single-company game, and the demo), 'few' = ClosedAI plus two others, 'all' = every playable company.
+ */
+export type Scope = 'flagship' | 'few' | 'all';
+
 /** Play one whole game with a simulated player. The player's own choices use their own rng (not the sim's). */
-export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any', decisions: Decision[] = defaultContent.decisions): GameResult {
+export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any', scope: Scope = 'flagship', decisions: Decision[] = defaultContent.decisions): GameResult {
   const player = createRng(seed * 7919 + 13);
   let state = createInitialState(seed, 'closedai');
+  const playable = state.companies.filter((c) => c.playable).map((c) => c.id);
+  // 'few': the flagship and two other companies the simulated player picks once per game.
+  const others = playable.filter((id) => id !== 'closedai');
+  const few = ['closedai', ...[...others].sort((a, b) => hashPick(seed, a) - hashPick(seed, b)).slice(0, 2)];
+  const directing = scope === 'flagship' ? ['closedai'] : scope === 'few' ? few : playable;
   let guard = 0;
   while (!state.status.over && guard++ < 50) {
-    const cards = available(state, decisions);
-    let choice: { decisionId: string; optionId: string; companyId: string } | undefined;
-    if (cards.length > 0) {
+    const choices: { decisionId: string; optionId: string; companyId: string }[] = [];
+    for (const companyId of directing) {
+      const cards = available(state, decisions, companyId);
+      if (cards.length === 0) continue;
       // A random player answers a random card. A player with a style answers the card where their style matters most.
       const scoreCard = (c: Decision) => c.options.map((o) => ({ o, s: appeal(policy, o) + player.next() * (policy === 'random' ? 1 : 0.5) })).sort((a, b) => b.s - a.s);
       const ranked = cards.map((c) => ({ c, opts: scoreCard(c) }));
@@ -86,11 +98,18 @@ export function playGame(seed: number, policy: PolicyName, mode: CardMode = 'any
         : policy === 'random'
         ? ranked[Math.floor(player.next() * ranked.length)]
         : ranked.sort((a, b) => b.opts[0].s - a.opts[0].s)[0];
-      choice = { decisionId: pickedCard.c.id, optionId: pickedCard.opts[0].o.id, companyId: 'closedai' };
+      choices.push({ decisionId: pickedCard.c.id, optionId: pickedCard.opts[0].o.id, companyId });
     }
-    state = step(state, choice ? [choice] : [], rngForTurn(state));
+    state = step(state, choices, rngForTurn(state));
   }
   return { final: state, ending: state.status.ending as EndingId, year: state.year, score: state.status.score?.total ?? 0, choices: state.choiceLog.length };
+}
+
+/** Deterministic pseudo-shuffle key, so the 'few' scope picks the same companies for the same seed. */
+function hashPick(seed: number, id: string): number {
+  let h = 0x811c9dc5 ^ seed;
+  for (let i = 0; i < id.length; i++) { h ^= id.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
 }
 
 export interface BalanceReport {
@@ -101,14 +120,14 @@ export interface BalanceReport {
   meanYear: Partial<Record<EndingId, number>>;
 }
 
-export function runBalance(gamesPerPolicy: number, policies: PolicyName[] = POLICIES, firstSeed = 1, mode: CardMode = 'any'): BalanceReport {
+export function runBalance(gamesPerPolicy: number, policies: PolicyName[] = POLICIES, firstSeed = 1, mode: CardMode = 'any', scope: Scope = 'flagship'): BalanceReport {
   const byPolicy = {} as BalanceReport['byPolicy'];
   const overall: BalanceReport['overall'] = {};
   const yearSum: Partial<Record<EndingId, number>> = {};
   for (const p of policies) {
     byPolicy[p] = {};
     for (let i = 0; i < gamesPerPolicy; i++) {
-      const r = playGame(firstSeed + i, p, mode);
+      const r = playGame(firstSeed + i, p, mode, scope);
       byPolicy[p][r.ending] = (byPolicy[p][r.ending] ?? 0) + 1;
       overall[r.ending] = (overall[r.ending] ?? 0) + 1;
       yearSum[r.ending] = (yearSum[r.ending] ?? 0) + r.year;

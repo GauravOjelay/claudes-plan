@@ -1,5 +1,5 @@
 import type { EndingId, Score, WorldState } from '../contracts';
-import { ALL_REGIONS, clamp, playerCompany } from './vars';
+import { ALL_REGIONS, clamp, directedCompanies, playableCompanies, playerCompany } from './vars';
 
 /** Population-weighted mean of a per-region number. */
 function weighted(state: WorldState, f: (r: WorldState['regions'][keyof WorldState['regions']]) => number): number {
@@ -13,22 +13,32 @@ function weighted(state: WorldState, f: (r: WorldState['regions'][keyof WorldSta
   return pop > 0 ? sum / pop : 0;
 }
 
+const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+/** Mean safety level of the companies the player directs (just the flagship until another one gets a decision). */
+export const groupSafety = (state: WorldState): number => mean(directedCompanies(state).map((c) => c.vars.safetyLevel));
+
 /**
  * Takeover risk is DERIVED, never set by an effect (plan section 3):
  * risk = capability (0-100) x (1 - safety) x robot readiness (0 at no robots, 1 at 1 billion).
- * Safety is the PLAYER company's safety level: it is the lab the player controls (rivals' safeguards are static for now).
+ * Safety is the mean safety level of the companies the player directs (flagship + every company with a decision),
+ * so steering more companies means looking after more safeguards.
  */
 export function deriveTakeoverRisk(state: WorldState): number {
-  const safety = playerCompany(state).vars.safetyLevel;
+  const safety = groupSafety(state);
   const cap = clamp(state.global.aiCapability, 0, 100) / 100;
   const robots = clamp(state.global.robotCount / 1e9, 0, 1);
   return clamp(100 * cap * (1 - safety / 100) * robots, 0, 100);
 }
 
+/** One company's success, 0-100: 70% company value (200+ = full marks) + 30% money (1000+ = full marks); bankrupt = 0. */
+const companyScore = (v: { money: number; companyValue: number }): number =>
+  v.money < 0 ? 0 : clamp(0.7 * (v.companyValue / 2) + 0.3 * (v.money / 10), 0, 100);
+
 /**
  * Final score, each part 0-100 (plan section 2). Called when the game ends.
  * - wellbeing: population-weighted mean of (public trust, 100 - average unemployment, 100 - wealth gap).
- * - company: 70% company value (200+ = full marks) + 30% money (1000+ = full marks); bankrupt = 0.
+ * - company: the mean success of ALL the companies the player runs; each is 70% company value (200+ = full marks) + 30% money (1000+ = full marks), bankrupt = 0.
  * - survival: 100 - (60% takeover risk + 40% geopolitical tension).
  * - total: 40% wellbeing + 30% company + 30% survival.
  */
@@ -38,8 +48,7 @@ export function computeScore(state: WorldState): Score {
   const equality = 100 - weighted(state, (r) => r.wealthGap);
   const wellbeing = clamp((trust + jobs + equality) / 3, 0, 100);
 
-  const me = playerCompany(state).vars;
-  const company = me.money < 0 ? 0 : clamp(0.7 * (me.companyValue / 2) + 0.3 * (me.money / 10), 0, 100);
+  const company = mean(playableCompanies(state).map((c) => companyScore(c.vars)));
 
   const survival = clamp(100 - (0.6 * state.global.takeoverRisk + 0.4 * state.global.geopoliticalTension), 0, 100);
   const total = 0.4 * wellbeing + 0.3 * company + 0.3 * survival;
@@ -58,12 +67,10 @@ export const ENDING_THRESHOLDS = {
   takeoverRisk: 40, // ... and the derived risk has built up (capability stays under ~60 by 2036, so this is below 60)
 } as const;
 
-const playerSafety = (state: WorldState): number => playerCompany(state).vars.safetyLevel;
+const playerSafety = groupSafety;
 
 /** Linear ramp: 0 at or below `lo`, 1 at or above `hi`. */
 const ramp = (x: number, lo: number, hi: number): number => clamp((x - lo) / (hi - lo), 0, 1);
-const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length;
-
 /**
  * How well the final world fits each horizon ending, 0-1. The best fit wins (plan section 3:
  * "picks the best-fitting ending"). Ties go to the first in this list. Each indicator is a 0-1 ramp
@@ -86,7 +93,7 @@ export function endingFit(state: WorldState): { id: EndingId; fit: number }[] {
   const cap = ramp(state.global.aiCapability, 30, 75);
   const capUtopia = ramp(state.global.aiCapability, 25, 60); // abundance needs capable AI, but not the extreme
   const calm = ramp(100 - state.global.geopoliticalTension, 40, 90);
-  const value = ramp(playerCompany(state).vars.companyValue, 100, 300);
+  const value = ramp(mean(directedCompanies(state).map((c) => c.vars.companyValue)), 100, 300);
   // The weakest ingredient gates each ending, so a world that is only middling at everything fits none of them well.
   const gate = (xs: number[]): number => 0.4 + 0.6 * Math.min(...xs);
   return [
@@ -98,11 +105,17 @@ export function endingFit(state: WorldState): { id: EndingId; fit: number }[] {
 
 /** Threshold endings that can end the game early, in priority order. Returns undefined if none apply. */
 function earlyEnding(state: WorldState): { ending: EndingId; reason: string } | undefined {
-  const me = playerCompany(state);
+  const mine = playableCompanies(state);
   const T = ENDING_THRESHOLDS;
-  if (me.vars.money < 0 || me.vars.companyValue <= 0) return { ending: 'bankrupt', reason: `${me.name} ran out of money.` };
-  if (state.regions[me.homeRegion].regulationStrictness >= T.nationalisedRegulation) {
-    return { ending: 'nationalised', reason: `The government took ${me.name} into public ownership.` };
+  // One company going under is news; the game ends only when most of the companies the player runs are gone.
+  const broke = mine.filter((c) => c.vars.money < 0 || c.vars.companyValue <= 0);
+  if (broke.length * 2 > mine.length) {
+    return { ending: 'bankrupt', reason: mine.length === 1 ? `${mine[0].name} ran out of money.` : `${broke.length} of your ${mine.length} companies ran out of money.` };
+  }
+  // The state takes over when most of the companies sit in a home region that has regulated them to the limit.
+  const seized = mine.filter((c) => state.regions[c.homeRegion].regulationStrictness >= T.nationalisedRegulation);
+  if (seized.length * 2 > mine.length) {
+    return { ending: 'nationalised', reason: `Governments took ${seized.length} of your ${mine.length} companies into public ownership.` };
   }
   if (state.global.geopoliticalTension >= T.ww3Tension) return { ending: 'ww3', reason: 'Rivalry between the blocs spiralled into open war.' };
   if (playerSafety(state) < T.takeoverSafety && state.global.robotCount > T.takeoverRobots && state.global.takeoverRisk >= T.takeoverRisk) {

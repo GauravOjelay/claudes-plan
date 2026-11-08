@@ -19,7 +19,7 @@ import { peaksFromEvents, startIntensity, updateCityEffects } from './cityEffect
 import { checkEndings, deriveTakeoverRisk } from './endings';
 import { RULES } from './rules';
 import { createRng, rngForTurn } from './rng';
-import { ALL_REGIONS, companyById, evalCondition, num, writeVar } from './vars';
+import { ALL_REGIONS, applyEffect, companyById, directedCompanies, evalCondition, groupWeight, num } from './vars';
 
 export { createRng, rngForTurn };
 export { averageJoe } from './averageJoe';
@@ -51,7 +51,7 @@ export function createInitialState(seed: number, playerCompanyId: string): World
   const s = num(seed, 'seed');
   const player = COMPANY_ROSTER.find((c) => c.id === playerCompanyId);
   if (!player) throw new Error(`Unknown company: ${playerCompanyId}`);
-  if (!player.playable) throw new Error(`${player.name} is not playable (only ClosedAI is, for now)`);
+  if (!player.playable) throw new Error(`${player.name} cannot be the flagship company`);
 
   const outlook = OUTLOOKS[Math.floor(createRng(s).next() * OUTLOOKS.length)];
   const regions = Object.fromEntries(ALL_REGIONS.map((r) => [r, regionFromBaseline(baseline.regions[r])])) as WorldState['regions'];
@@ -88,21 +88,33 @@ function recordHistory(state: WorldState): void {
 export function createStep(content: Content): StepFn {
   const decisions = new Map(content.decisions.map((d) => [d.id, d]));
 
+  /** Check a choice against the state as the player saw it (before any choice of this year is applied). */
+  function validate(state: WorldState, choice: PlayerChoice): { decision: Decision; option: Decision['options'][number] } {
+    const company = companyById(state, choice.companyId);
+    if (!company.playable) throw new Error(`${company.name} is not playable`);
+    const decision = decisions.get(choice.decisionId);
+    if (!decision) throw new Error(`Unknown decision: ${choice.decisionId}`);
+    const option = decision.options.find((o) => o.id === choice.optionId);
+    if (!option) throw new Error(`Unknown option ${choice.optionId} on decision ${choice.decisionId}`);
+    if (decision.requirements && !evalCondition(state, decision.requirements)) {
+      throw new Error(`Requirements not met for decision ${decision.id}`);
+    }
+    return { decision, option };
+  }
+
   function applyChoices(state: WorldState, choices: PlayerChoice[]): void {
-    for (const choice of choices) {
-      const company = companyById(state, choice.companyId);
-      if (!company.playable) throw new Error(`${company.name} is not playable`);
-      const decision = decisions.get(choice.decisionId);
-      if (!decision) throw new Error(`Unknown decision: ${choice.decisionId}`);
-      const option = decision.options.find((o) => o.id === choice.optionId);
-      if (!option) throw new Error(`Unknown option ${choice.optionId} on decision ${choice.decisionId}`);
-      if (decision.requirements && !evalCondition(state, decision.requirements)) {
-        throw new Error(`Requirements not met for decision ${decision.id}`);
-      }
+    // The player runs several companies and decides for all of them in one year. Every choice is checked against
+    // the state at the start of the year, so one company's decision can't make another's card unavailable.
+    const checked = choices.map((choice) => ({ choice, ...validate(state, choice) }));
+    // How many companies the player steers after this year's choices decides how hard each one hits the world.
+    const directed = new Set([...directedCompanies(state).map((c) => c.id), ...choices.map((c) => c.companyId)]);
+    const weight = groupWeight(directed.size);
+    for (const { choice, decision, option } of checked) {
       for (const effect of option.effects) {
         const delay = effect.delayYears === undefined ? 0 : num(effect.delayYears, 'delayYears');
-        if (delay > 0) state.pending.push({ applyYear: state.year + delay, effect });
-        else writeVar(state, effect.target, effect.op, effect.value, choice.companyId);
+        // The contract's `pending` has no company/weight fields yet, so they ride along as extra properties.
+        if (delay > 0) state.pending.push(Object.assign({ applyYear: state.year + delay, effect }, { companyId: choice.companyId, weight }));
+        else applyEffect(state, effect, choice.companyId, weight);
       }
       for (const id of option.unlocks ?? []) if (!state.unlockedPathways.includes(id)) state.unlockedPathways.push(id);
       state.choiceLog.push({ year: state.year, decisionId: decision.id, optionId: option.id, companyId: choice.companyId });
@@ -112,7 +124,10 @@ export function createStep(content: Content): StepFn {
   function applyScheduled(state: WorldState): void {
     const due = state.pending.filter((p) => p.applyYear <= state.year);
     state.pending = state.pending.filter((p) => p.applyYear > state.year);
-    for (const p of due) writeVar(state, p.effect.target, p.effect.op, p.effect.value);
+    for (const p of due) {
+      const extra = p as { companyId?: string; weight?: number };
+      applyEffect(state, p.effect, extra.companyId, extra.weight);
+    }
   }
 
   const peaks = peaksFromEvents(content.events);
@@ -129,7 +144,7 @@ export function createStep(content: Content): StepFn {
       for (const effect of event.effects) {
         const delay = effect.delayYears === undefined ? 0 : num(effect.delayYears, 'delayYears');
         if (delay > 0) state.pending.push({ applyYear: state.year + delay, effect });
-        else writeVar(state, effect.target, effect.op, effect.value);
+        else applyEffect(state, effect);
       }
       if (ce) state.activeCityEffects.push({ city: ce.city, kind: ce.kind, intensity: startIntensity(ce.kind, ce.intensity), sinceYear: state.year });
       state.eventLog.push({

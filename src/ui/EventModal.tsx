@@ -68,7 +68,7 @@ export function EventModal({ headline, year, valence = 'neutral', onClose }: {
     <div className="ui-modal-backdrop" onClick={onClose}>
       <div className="ui-modal" data-valence={valence} role="alertdialog" aria-modal="true"
         aria-labelledby="ui-modal-title" onClick={(e) => e.stopPropagation()}>
-        <div className="ui-modal-kicker" style={{ color: valence === 'negative' ? 'var(--danger)' : valence === 'positive' ? 'var(--ok)' : 'var(--accent)' }}>
+        <div className="ui-modal-kicker" style={{ color: valence === 'negative' ? 'var(--danger-text)' : valence === 'positive' ? 'var(--ok-text)' : 'var(--accent-text)' }}>
           {kicker} · {year}
         </div>
         <h2 id="ui-modal-title">{headline}</h2>

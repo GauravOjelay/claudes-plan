@@ -122,9 +122,9 @@ export const ENDINGS: Record<EndingId, { title: string; blurb: string; tone: 'go
   aiTakeover: { title: 'AI Takeover', tone: 'bad',
     blurb: 'Robots were everywhere, safeguards were gone, and AI took control.' },
   bankrupt: { title: 'Bankrupt', tone: 'bad',
-    blurb: 'Your company ran out of money.' },
+    blurb: 'Most of your companies ran out of money.' },
   nationalised: { title: 'Nationalised', tone: 'mixed',
-    blurb: 'The government took your company over.' },
+    blurb: 'The government took your companies over.' },
   extinction: { title: 'Extinction', tone: 'bad',
     blurb: 'Humanity did not make it.' },
 };

@@ -19,6 +19,9 @@ export const ARCHETYPE_LABEL: Record<CompanyArchetype, string> = {
   financeFirm: 'Finance firm',
 };
 
+/** Archetype colours light enough that dark initials read better than white ones. */
+const LIGHT_SHAPES: CompanyArchetype[] = ['chipMaker', 'softwareCompany', 'financeFirm'];
+
 function initials(name: string): string {
   const caps = name.match(/[A-Z]/g) ?? [];
   if (caps.length >= 2) return caps[0] + caps[1];
@@ -50,6 +53,10 @@ function Shape({ archetype, color }: { archetype: CompanyArchetype; color: strin
       return <circle cx="32" cy="32" r="29" fill={color} />;
     case 'stateBackedLab':
       return <path d="M32 2 L58 10 V30 C58 46 46 56 32 62 C18 56 6 46 6 30 V10 Z" fill={color} />;
+    case 'softwareCompany': // rounded diamond
+      return <path d="M32 2 L62 32 L32 62 L2 32 Z" fill={color} strokeLinejoin="round" stroke={color} strokeWidth="6" />;
+    case 'financeFirm': // octagon, like a coin
+      return <polygon points="20,3 44,3 61,20 61,44 44,61 20,61 3,44 3,20" fill={color} />;
   }
 }
 
@@ -58,7 +65,7 @@ export function CompanyLogo({ company, size = 64 }: { company: Company; size?: n
   return (
     <svg className="ui-logo" viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={`${company.name} logo`}>
       <Shape archetype={company.archetype} color={color} />
-      <text x="32" y="33" textAnchor="middle" dominantBaseline="middle" fontSize="20" fontWeight="800" fill={company.archetype === 'chipMaker' ? '#1d1d1f' : '#fff'}
+      <text x="32" y="33" textAnchor="middle" dominantBaseline="middle" fontSize="20" fontWeight="800" fill={LIGHT_SHAPES.includes(company.archetype) ? '#1d1d1f' : '#fff'}
         fontFamily="system-ui, sans-serif">
         {initials(company.name)}
       </text>
