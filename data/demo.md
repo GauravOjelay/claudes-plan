@@ -2,7 +2,7 @@
 
 **Length:** about 3 minutes. **Seed:** `44`. **Open:** `http://localhost:5173/?seed=44` (after `npm run dev`).
 Locked by `src/sim/demo.lock.test.ts` and `data/demo.json`: if anyone retunes the sim or reorders `data/cards.json` and the demo breaks, that test fails.
-**Checked on screen:** years 2026 to 2029 were played in the real app on 2026-11-08 and matched this script (cards, options, alerts, money 492 / 483 / 413). Years 2030 onwards follow the same steps and are locked by the test, but have not been clicked through by hand.
+**Checked on screen:** years 2026 to 2029 were played in the real app on 2026-11-08 and matched this script (cards, options, alerts, money 492 / 483 / 413), and 2026 to 2028 were played again after the "round recap" change (the city opens by itself, floating Continue banner, both alerts, both chips). Years 2030 onwards follow the same steps and are locked by the test, but have not been clicked through by hand.
 
 ## The story in one breath
 
@@ -10,18 +10,18 @@ You fast-track a giant data centre in 2026. The grid can't take it and **San Fra
 
 ## The one rule of every year
 
-1. Open **Your HQ** (top bar tab, or the yellow **"Your move"** button on the globe / city screens). One card is on screen.
-2. **Click the option** from the table below. (The card also takes the ← → keys.)
-3. The screen now says "No decisions waiting". **Click the blue "Next year →" button** (top right). The year moves on and any alert pops up. Press **Continue** to close it.
-4. Whenever the table says "look at the city", click **City** in the top bar *after* step 3.
+1. **Your HQ** has one card on screen. **Click the option** from the table below. (The card also takes the ← → keys.)
+2. The card says "No decisions waiting". **Click the blue "Next year →" button** (top right).
+3. The app now jumps to **your home city, San Francisco**, by itself. If something happened, an **alert** pops up over the city: read it out, press **Continue** in the alert. This is where you talk and point at the skyline and the numbers.
+4. When you are ready, click the floating **"Continue to 2027 →"** banner at the bottom of the screen. It takes you back to Your HQ with the next card.
 
-Never click **"Skip year"** (the yellow button shown while a card is waiting): it throws the year away without answering and breaks the script.
+Never click **"Skip year"** (the yellow "card waiting" button): it throws the year away without answering and breaks the script. You never need the top-bar tabs during the run, except to open **Your HQ** the first time (or use the "Your move" button on the city screen).
 
 ## Before you go on stage (2 minutes)
 
 1. `npm run dev`, open `/?seed=44` in the browser you will present in. The seed is in the URL; reloading starts the same game again.
-2. Click **Start**. A "How to play" box appears: read nothing out, press **Got it**. (Its step 3 still says each choice moves the year on; it doesn't any more. Ignore it on stage.)
-3. **Graphics:** the 3D globe and city are heavy. On a machine without a real graphics card they run at 1-2 frames a second. If it is slow, use the **2D** toggle at the top right of the City screen and the 2D map. The script is the same.
+2. Click **Start**. A "How to play" box appears: press **Got it**. (Its step 3 says each choice moves the year on; it doesn't any more. Don't read it out.)
+3. **Graphics:** the 3D globe and city need a moment to load the first time (it can feel stuck for a few seconds), then run smoothly on a normal machine (60 fps on the test machine). On a machine without a graphics card use the **2D** toggle at the top right of the City screen and the 2D map. The script is the same.
 4. **If you click a wrong option, reload the page and start again;** it takes 10 seconds.
 5. **Optional twist tab** (the "what if"): open a second tab at `/?seed=44` and pre-play it with the same options **except** pick **"Keep it proprietary"** on the materials card in 2027 (table at the end). Park it on 2032.
 6. The real figures (US GDP, population, unemployment) come from IMF 2026 projections and are **not yet verified** (`data/VERIFY.md`). Don't read them out as facts.
@@ -29,17 +29,17 @@ Never click **"Skip year"** (the yellow button shown while a card is waiting): i
 ## Which screen shows what
 
 - **Your HQ:** the card, the company panel (Money, Company value, AI capability, Safety level, Public trust), "Breaking" news, and a line "Now in San Francisco:" with chips such as *Blackouts* and *Solar boom*.
-- **City (San Francisco):** the skyline with the effects, a "Happening now" list with strength bars, and a **United States** panel (GDP, Public trust, Energy balance, Wealth gap, Regulation, World tension). **Switch to "Night"** (top right of the picture): dark districts show the blackout best.
+- **City (San Francisco)** opens by itself after every "Next year". It has the skyline with the effects, a "Happening now" list with strength bars, and a **United States** panel in the corner of the picture. The panel starts small (GDP, Population, Software jobs lost, Public trust); **click its title to expand it** (adds Wealth gap, Energy balance, Water stress, Regulation, World tension). **Switch to "Night"** (top right of the picture): dark districts show the blackout best.
 - **Dashboard:** world-wide numbers only (World GDP, software jobs lost, "Geopolitical tension", "Public trust in AI", wealth gap). Use it for tension. US trust and wealth gap are on the City screen, not here.
 
 ## Run of show
 
-| Time | Year | Card on screen | Click | Then "Next year →". What appears | Say out loud |
+| Time | Year | Card on screen | Click | Then "Next year →". What you see in the city | Say out loud |
 |---|---|---|---|---|---|
-| 0:00 | 2026 | **A giant data-centre campus** | **Fast-track the campus** | Orange alert: *"Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid."* Now 2027. HQ: money 492, "Now in San Francisco: Blackouts". **City**, Night: dark districts, "Blackout belt" in *Happening now*; US panel: **Public trust 60 → 52, Energy balance −10**. | "It is 2026 and I run an AI lab. My board wants a giant data centre, fast. I say yes. Watch San Francisco." *(City, Night)* "One decision and the lights go out. Trust drops from 60 to 52." |
+| 0:00 | 2026 | **A giant data-centre campus** | **Fast-track the campus** | Orange alert: *"Rolling blackouts hit San Francisco districts as the new data-centre campus overloads the grid."* Now 2027 and the city opens by itself. Switch to **Night**: dark districts, "Blackout belt" chip and entry in *Happening now*. Expand the US panel: **Public trust 60 → 52, Energy balance 5 → −10**. HQ later: money 492, "Now in San Francisco: Blackouts". | "It is 2026 and I run an AI lab. My board wants a giant data centre, fast. I say yes. Watch San Francisco." *(City, Night)* "One decision and the lights go out. Trust drops from 60 to 52." Then press Continue to 2027. |
 | 0:45 | 2027 | **A materials-science model** | **Open-source it** (left) | No alert. Blackout still on (0.5). | "My lab built a model that makes solar panels cheaper. I could sell it. I give it away. It costs me today and I don't know what it buys." |
-| 1:00 | 2028 | **Where does the power come from?** (four options) | **Invest in clean power** (second) | Green alert: *"BREAKTHROUGH · 2028: Solar panels spread across rooftops as an open materials model slashes their cost, easing the grid."* Now 2029. HQ chips: *Blackouts* and *Solar boom*. **City**: the solar boom appears (0.35) next to the shrinking blackout (0.4). | "A year later the free model has done its work: solar everywhere." *(City: both effects)* "My decision in 2027 is repairing my mistake from 2026." |
-| 1:35 | 2029 | **When the jobs go** | **Back universal basic income** | No alert. City, US panel: **Wealth gap 50 → 38**. Solar boom up to 0.7, blackout down to 0.3. | "AI is taking software jobs. I back a basic income. Inequality drops." |
+| 1:00 | 2028 | **Where does the power come from?** (four options) | **Invest in clean power** (second) | Green alert: *"BREAKTHROUGH · 2028: Solar panels spread across rooftops as an open materials model slashes their cost, easing the grid."* Now 2029 and the city opens by itself: the picture shows two chips, **Solar boom** and **Blackout belt**, and *Happening now* lists the solar boom (0.35) next to the shrinking blackout (0.4). US public trust 53. | "A year later the free model has done its work: solar everywhere." *(point at both effects in Happening now)* "My decision in 2027 is repairing my mistake from 2026." |
+| 1:35 | 2029 | **When the jobs go** | **Back universal basic income** | No alert. In the city, expanded US panel: **Wealth gap 50 → 38**. Solar boom up to 0.7, blackout down to 0.3. | "AI is taking software jobs. I back a basic income. Inequality drops." |
 | 1:50 | 2030 | **Safeguards before launch** | **Build in safeguards** | Green alert: *"An independent audit praises your safeguards…"*. Blackout gone from the city; US energy balance +6. | "Safety costs me speed. An outside audit praises it." |
 | 2:00 | 2031 | **An international AI treaty** | **Back the treaty** | No alert. **Dashboard**: Geopolitical tension 35 → 22. | "I back the treaty. World tension drops." |
 | 2:10 | 2032 | **A misalignment warning** | **Pause and fix it** | Green alert: *"Leading powers sign a first AI treaty…"*. | "My AI is hiding something in tests. I stop and fix it." |
@@ -49,7 +49,7 @@ Never click **"Skip year"** (the yellow button shown while a card is waiting): i
 
 ## The twist (about 30 seconds; use the parked second tab)
 
-Switch to the second tab, parked on 2032. Say: "Same world, same seed, same choices, with one change in 2027: **I kept the model proprietary.** No solar boom. And look at 2032:" (City, Night) **the blackout is back** (new alert, strength 0.6). "Five years later the grid is still short, trust is down at 46, and the world ends as a **Slowdown** instead of a Utopia. One early decision, five years of difference."
+Switch to the second tab, parked on 2032. Say: "Same world, same seed, same choices, with one change in 2027: **I kept the model proprietary.** No solar boom. And look at 2032:" (the city opens by itself; Night) **the blackout is back** (new alert, strength 0.6). "Five years later the grid is still short, trust is down at 46, and the world ends as a **Slowdown** instead of a Utopia. One early decision, five years of difference."
 
 What the what-if run shows (all locked by the test):
 
@@ -83,6 +83,7 @@ What the what-if run shows (all locked by the test):
 - **An alert doesn't appear on time:** the sim is deterministic for this seed, so it is the wrong seed or a wrong click. Reload `/?seed=44`.
 - **You see a different card than the table says:** you changed an earlier option. Reload and start again.
 - **You pressed "Next year →" before picking:** reload and start again.
+- **You land on the HQ instead of the city, or the city does not open:** you pressed something else; use the "Your move" button on the city screen to get to the HQ.
 - **Money:** you start with 500 and finish with about 120. Don't swap in the costly options (for example "Build your own power plant" costs 150, "Launch a moonshot research programme" costs 120): with more spending the company gets close to bankruptcy and the game can end early.
 - **Time:** the long beats are 2026 (blackout) and 2028 (solar boom). Everything between can go fast.
 
